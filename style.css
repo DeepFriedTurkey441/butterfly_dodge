@@ -1,0 +1,44 @@
+/* style.css — Butterfly Dodge styling */
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background-color: #87ceeb; /* sky blue */
+  font-family: monospace;
+}
+
+#butterfly {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1rem;  /* butterfly size */
+  color: black;
+}
+
+.net {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+}
+
+.net svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#game-over,
+#pause-message {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 2px solid black;
+  border-radius: 12px;
+  padding: 1rem 2rem;
+  font-size: 1rem;
+  text-align: center;
+  z-index: 10;
+}

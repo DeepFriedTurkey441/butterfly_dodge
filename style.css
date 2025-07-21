@@ -1,0 +1,80 @@
+body {
+  margin: 0;
+  overflow: hidden;
+  background-color: skyblue;
+  font-family: monospace;
+  color: black;
+}
+
+#butterfly {
+  position: absolute;
+  font-size: 24px;
+  left: 0;
+  top: 50%;
+}
+
+.net {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  font-size: 32px;
+}
+
+.flower {
+  position: absolute;
+  font-size: 24px;       /* base size */
+  transform: scale(1.5); /* visually enlarges emoji */
+}
+
+#score {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 20px;
+}
+
+#pause-message,
+#game-over {
+  position: absolute;
+  top: 40%;
+  width: 100%;
+  text-align: center;
+  font-size: 24px;
+}
+
+#lives {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 20px;
+  font-family: monospace;
+  color: darkgreen;
+}
+
+#level {
+  position: absolute;
+  top: 40px;
+  right: 10px;
+  font-size: 20px;
+  font-family: monospace;
+  color: darkblue;
+}
+
+#instructions {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: skyblue;
+  color: black;
+  font-size: 18px;
+  padding: 40px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  z-index: 100;
+}
+
+#instructions h2 {
+  text-align: center;
+}

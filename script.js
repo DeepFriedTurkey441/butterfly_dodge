@@ -1,192 +1,278 @@
-// Get references to DOM elements
+// DOM refs
 const butterfly = document.getElementById('butterfly');
-const nets = document.getElementsByClassName('net');
-const scoreDisplay = document.getElementById('score');
-const livesDisplay = document.getElementById('lives');
-const levelDisplay = document.getElementById('level');
-const gameOverDisplay = document.getElementById('game-over');
+const scoreBox = document.getElementById('score');
+const gameOverBox = document.getElementById('game-over');
+const pauseBox = document.getElementById('pause-message');
+const instructionsBox = document.getElementById('instructions');
+const gameArea = document.getElementById('game-area');
 
-// Initial game state
-let points = 0;
-let lives = 3;
-let level = 1;
-let butterflyY = window.innerHeight / 2;
-let butterflySpeed = 5;
-let gameInterval;
-let gameRunning = false;
+// Game control flags
+let gameStarted = false;
+let running = false;
 
-// Update initial displays
-scoreDisplay.textContent = `Score: ${points}`;
-livesDisplay.textContent = `Lives: ${lives}`;
-levelDisplay.textContent = `Level: ${level}`;
+// Net parameters
+const NUM_NETS = 6;
+const BASE_NET_SPEED = 1;
+const MAX_NET_SPEED = 8;
+const SPEED_INCREMENT = (MAX_NET_SPEED - BASE_NET_SPEED) / (NUM_NETS - 1);
 
-// Start the game
-function startGame() {
-  if (!gameRunning) {
-    gameRunning = true;
-    gameInterval = setInterval(gameLoop, 20);
-  }
+// Net SVG
+const svgMarkup = `
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <path d="M50 25 L50 75 M25 50 L75 50" stroke="red" stroke-width="4"/>
+    <path d="M32.5 32.5 L67.5 67.5 M67.5 32.5 L32.5 67.5" stroke="red" stroke-width="4"/>
+    <circle cx="50" cy="50" r="25" stroke="red" stroke-width="4" fill="none"/>
+  </svg>
+`;
+
+// Nets array (will be populated later)
+const nets = [];
+
+// Flowers
+const flowers = [];
+let score = 0;
+
+// Butterfly state & physics
+const SPEED_LEVELS = [1, 3, 6];
+let speedIndex = 0;
+let speed = SPEED_LEVELS[0];
+let bx = 0;
+let by = window.innerHeight / 2;
+let dy = 0;
+let paused = false;
+let gameOver = false;
+let spacePressed = false;
+const GRAVITY = 0.2;
+const MAX_FALL_SPEED = 5;
+const MAX_RISE_SPEED = -5;
+
+// Wing animation
+let flapInt = null;
+let singleFlap = null;
+let wingsUp = false;
+
+function stopFlap() {
+  clearInterval(flapInt);
+  clearTimeout(singleFlap);
+  flapInt = singleFlap = null;
 }
 
-// Main game loop
-function gameLoop() {
-  moveButterfly();
-  moveNets();
-  checkCollision();
-}
-
-// Move butterfly vertically based on user input
-document.addEventListener('keydown', (e) => {
-  if (e.code === 'Space') {
-    butterflyY -= butterflySpeed;
-    if (butterflyY < 0) butterflyY = 0;
-    butterfly.style.top = `${butterflyY}px`;
-  } else if (e.code === 'ArrowLeft') {
-    let left = parseInt(butterfly.style.left || 0, 10);
-    if (left > 0) butterfly.style.left = `${left - butterflySpeed}px`;
-  } else if (e.code === 'ArrowRight') {
-    let left = parseInt(butterfly.style.left || 0, 10);
-    if (left < window.innerWidth - 50) butterfly.style.left = `${left + butterflySpeed}px`;
+// Input handlers
+document.addEventListener('keydown', e => {
+  // Instructions screen startup
+  if (!gameStarted && e.key === 'Enter') {
+    instructionsBox.hidden = true;
+    instructionsBox.style.display = 'none'; // Safety net
+    gameArea.hidden = false;
+    gameStarted = true;
+    startGame();
+    return;
   }
-});
 
-// Apply gravity to butterfly
-setInterval(() => {
-  butterflyY += 2;
-  if (butterflyY > window.innerHeight - 40) butterflyY = window.innerHeight - 40;
-  butterfly.style.top = `${butterflyY}px`;
-}, 30);
-
-// Move nets horizontally across the screen
-function moveNets() {
-  for (let net of nets) {
-    let netLeft = parseInt(net.style.left || window.innerWidth, 10);
-    netLeft -= 3; // Net movement speed; adjust for difficulty later
-    if (netLeft < -80) {
-      netLeft = window.innerWidth + Math.random() * 300;
-      net.style.top = `${Math.random() * (window.innerHeight - 100)}px`;
-      incrementPoints();
-    }
-    net.style.left = `${netLeft}px`;
+  if (gameOver) {
+    if (e.key.toLowerCase() === 'y') restartGame();
+    return;
   }
-}
 
-// Check collisions between butterfly and nets
-function checkCollision() {
-  const butterflyRect = butterfly.getBoundingClientRect();
-  for (let net of nets) {
-    const netRect = net.getBoundingClientRect();
-    if (
-      butterflyRect.left < netRect.right &&
-      butterflyRect.right > netRect.left &&
-      butterflyRect.top < netRect.bottom &&
-      butterflyRect.bottom > netRect.top
-    ) {
-      handleCollision();
+  switch (e.key) {
+    case 'ArrowRight':
+      speedIndex = Math.min(SPEED_LEVELS.length - 1, speedIndex + 1);
+      speed = SPEED_LEVELS[speedIndex];
       break;
-    }
-  }
-}
-
-// Handle collision logic
-function handleCollision() {
-  lives -= 1;
-  updateLivesDisplay();
-
-  if (lives > 0) {
-    resetButterflyPosition();
-  } else {
-    endGame();
-  }
-}
-
-// Reset butterfly position after collision
-function resetButterflyPosition() {
-  butterflyY = window.innerHeight / 2;
-  butterfly.style.top = `${butterflyY}px`;
-  butterfly.style.left = '0px';
-}
-
-// Increment points each time net passes butterfly
-function incrementPoints() {
-  points += 1;
-  updatePointsDisplay();
-}
-
-// Update points display and handle extra life
-function updatePointsDisplay() {
-  scoreDisplay.textContent = `Score: ${points}`;
-
-  if (points >= 10) {
-    points = 0;
-    lives += 1;
-    updateLivesDisplay();
-
-    if (lives >= 5 && level === 1) {
-      level = 2;
-      updateLevelDisplay();
-    }
-  }
-}
-
-// Update lives display
-function updateLivesDisplay() {
-  livesDisplay.textContent = `Lives: ${lives}`;
-}
-
-// Update level display
-function updateLevelDisplay() {
-  levelDisplay.textContent = `Level: ${level}`;
-}
-
-// End the game
-function endGame() {
-  clearInterval(gameInterval);
-  gameRunning = false;
-  gameOverDisplay.hidden = false;
-  butterfly.hidden = true;
-}
-
-// Restart the game after game over
-document.addEventListener('keydown', (e) => {
-  if (!gameRunning && e.key.toLowerCase() === 'y') {
-    restartGame();
+    case 'ArrowLeft':
+      speedIndex = Math.max(0, speedIndex - 1);
+      speed = SPEED_LEVELS[speedIndex];
+      break;
+    case ' ':
+      if (!spacePressed) {
+        spacePressed = true;
+        dy = Math.max(MAX_RISE_SPEED, dy - 2.5);
+        butterfly.textContent = '/\\';
+        wingsUp = true;
+        singleFlap = setTimeout(() => {
+          butterfly.textContent = '\\/';
+          wingsUp = false;
+        }, 200);
+      }
+      if (!flapInt) {
+        flapInt = setInterval(() => {
+          butterfly.textContent = wingsUp ? '\\/' : '/\\';
+          wingsUp = !wingsUp;
+        }, 200);
+      }
+      break;
+    case 'p':
+      paused = !paused;
+      pauseBox.hidden = !paused;
+      break;
+    case 'q':
+      running = false;
+      gameOver = true;
+      gameOverBox.hidden = false;
+      pauseBox.hidden = true;
+      stopFlap();
+      break;
   }
 });
+
+document.addEventListener('keyup', e => {
+  if (e.key === ' ') {
+    spacePressed = false;
+    stopFlap();
+    butterfly.textContent = '\\/';
+    wingsUp = false;
+  }
+});
+
+// Collision detection
+function isColliding(a, b) {
+  const r1 = a.getBoundingClientRect();
+  const r2 = b.getBoundingClientRect();
+  return !(r1.right < r2.left ||
+           r1.left > r2.right ||
+           r1.bottom < r2.top ||
+           r1.top > r2.bottom);
+}
+
+// Flower behavior
+function spawnFlowers() {
+  const w = window.innerWidth * 0.75;
+  const h = window.innerHeight * 0.75;
+  const x0 = (window.innerWidth - w) / 2;
+  const y0 = (window.innerHeight - h) / 2;
+  for (let i = 0; i < 4; i++) {
+    const f = document.createElement('div');
+    f.className = 'flower';
+    f.innerText = '🌸';
+    f.style.left = `${x0 + Math.random() * w}px`;
+    f.style.top = `${y0 + Math.random() * h}px`;
+    document.body.appendChild(f);
+    flowers.push(f);
+  }
+}
+
+function checkFlowers() {
+  flowers.forEach((f, i) => {
+    if (f && isColliding(butterfly, f)) {
+      score++;
+      scoreBox.innerText = `Score: ${score}`;
+      f.remove();
+      flowers[i] = null;
+
+      const w = window.innerWidth * 0.75;
+      const h = window.innerHeight * 0.75;
+      const x0 = (window.innerWidth - w) / 2;
+      const y0 = (window.innerHeight - h) / 2;
+      const newFlower = document.createElement('div');
+      newFlower.className = 'flower';
+      newFlower.innerText = '🌸';
+      newFlower.style.left = `${x0 + Math.random() * w}px`;
+      newFlower.style.top = `${y0 + Math.random() * h}px`;
+      document.body.appendChild(newFlower);
+      flowers[i] = newFlower;
+    }
+  });
+}
+
+// Main loop
+function gameLoop() {
+  if (!running) return;
+  if (!paused) {
+    bx += speed;
+    if (bx > window.innerWidth) bx = -50;
+
+    dy = spacePressed
+      ? Math.max(MAX_RISE_SPEED, dy - 0.5)
+      : Math.min(MAX_FALL_SPEED, dy + GRAVITY);
+
+    by = Math.max(0, Math.min(window.innerHeight - 30, by + dy));
+    butterfly.style.left = bx + 'px';
+    butterfly.style.top = by + 'px';
+
+    checkFlowers();
+
+    nets.forEach(n => {
+      n.y += n.speedY * n.dir;
+      if (n.y < 50 || n.y > window.innerHeight - 130) n.dir *= -1;
+      n.el.style.top = `${n.y}px`;
+
+      const b = butterfly.getBoundingClientRect();
+      const m = n.el.getBoundingClientRect();
+      const cx = b.left + b.width / 2;
+      const cy = b.top + b.height / 2;
+      const nx = m.left + m.width / 2;
+      const ny = m.top + m.height / 2;
+      const r = m.width / 2 * 0.9;
+      const dx = cx - nx;
+      const dy2 = cy - ny;
+      if (dx * dx + dy2 * dy2 < r * r && !gameOver) {
+        running = false;
+        gameOver = true;
+        gameOverBox.hidden = false;
+        pauseBox.hidden = true;
+        stopFlap();
+      }
+    });
+  }
+  requestAnimationFrame(gameLoop);
+}
+
+// Game start logic (includes net creation now)
+function startGame() {
+  // Clear old nets
+  nets.forEach(n => n.el.remove());
+  nets.length = 0;
+
+  // Create fresh nets
+  for (let i = 0; i < NUM_NETS; i++) {
+    const div = document.createElement('div');
+    div.className = 'net';
+    const cx = (i + 1) * window.innerWidth / (NUM_NETS + 1);
+    div.style.left = `${cx - 40}px`;
+    div.style.top = `${window.innerHeight * 0.25}px`;
+    div.innerHTML = svgMarkup;
+    document.body.appendChild(div);
+
+    let speedY = BASE_NET_SPEED + i * SPEED_INCREMENT;
+    if (i >= NUM_NETS - 3) speedY *= 0.7;
+    nets.push({ el: div, y: window.innerHeight * 0.25, dir: 1, speedY });
+  }
+
+  // Reset butterfly physics
+  bx = 0;
+  by = window.innerHeight / 2;
+  dy = 0;
+  speedIndex = 0;
+  speed = SPEED_LEVELS[0];
+  paused = false;
+  running = true;
+  gameOver = false;
+  spacePressed = false;
+  gameStarted = true;
+
+  // Reset butterfly state
+  butterfly.style.left = bx + 'px';
+  butterfly.style.top = by + 'px';
+  butterfly.textContent = '\\/';
+  wingsUp = false;
+
+  // Reset score
+  score = 0;
+  scoreBox.innerText = 'Score: 0';
+
+  // Clear and respawn flowers
+  flowers.forEach(f => f && f.remove());
+  flowers.length = 0;
+  spawnFlowers();
+
+  // Hide messages
+  gameOverBox.hidden = true;
+  pauseBox.hidden = true;
+
+  // Begin game loop
+  requestAnimationFrame(gameLoop);
+}
 
 function restartGame() {
-  points = 0;
-  lives = 3;
-  level = 1;
-  butterfly.hidden = false;
-  gameOverDisplay.hidden = true;
-  resetButterflyPosition();
-  updateLivesDisplay();
-  updateLevelDisplay();
-  updatePointsDisplay();
   startGame();
 }
-
-// Initialize positions at game start
-resetButterflyPosition();
-for (let net of nets) {
-  net.style.left = `${window.innerWidth + Math.random() * 500}px`;
-  net.style.top = `${Math.random() * (window.innerHeight - 100)}px`;
-}
-
-// Begin game loop automatically
-startGame();
-
-// Initially pause game until Enter is pressed
-gameRunning = false;
-clearInterval(gameInterval);
-
-// Listen specifically for Enter key to begin the game
-document.addEventListener('keydown', function startOnEnter(e) {
-  if (e.key === 'Enter' && !gameRunning) {
-    gameOverDisplay.hidden = true; // hide game over message just in case
-    butterfly.hidden = false;      // ensure butterfly is visible
-    resetButterflyPosition();      // reset initial position
-    startGame();                   // start the main game loop
-  }
-});

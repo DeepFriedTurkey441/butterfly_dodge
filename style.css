@@ -6,60 +6,6 @@ body {
   color: black;
 }
 
-#butterfly {
-  position: absolute;
-  font-size: 24px;
-  left: 0;
-  top: 50%;
-}
-
-.net {
-  position: absolute;
-  width: 80px;
-  height: 80px;
-  font-size: 32px;
-}
-
-.flower {
-  position: absolute;
-  font-size: 24px;       /* base size */
-  transform: scale(1.5); /* visually enlarges emoji */
-}
-
-#score {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  font-size: 20px;
-}
-
-#pause-message,
-#game-over {
-  position: absolute;
-  top: 40%;
-  width: 100%;
-  text-align: center;
-  font-size: 24px;
-}
-
-#lives {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  font-size: 20px;
-  font-family: monospace;
-  color: darkgreen;
-}
-
-#level {
-  position: absolute;
-  top: 40px;
-  right: 10px;
-  font-size: 20px;
-  font-family: monospace;
-  color: darkblue;
-}
-
 #instructions {
   position: absolute;
   top: 0;
@@ -68,13 +14,74 @@ body {
   height: 100vh;
   background-color: skyblue;
   color: black;
+  font-family: monospace;
   font-size: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   padding: 40px;
   box-sizing: border-box;
-  overflow-y: auto;
-  z-index: 100;
+  text-align: left;
+  line-height: 1.5;
 }
 
-#instructions h2 {
+#game-area {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+#butterfly {
+  position: absolute;
+  font-size: 24px;
+  left: 0;
+  top: 50%;
+}
+
+.flower {
+  position: absolute;
+  font-size: 30px;
+  pointer-events: none;
+}
+
+.net {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  font-size: 32px;
+  color: red;
+  content: 'X';
+}
+
+#score, #lives, #level {
+  position: absolute;
+  top: 10px;
+  font-size: 20px;
+}
+
+#score { left: 10px; }
+#lives { left: 140px; }
+#level { left: 260px; }
+
+#game-over {
+  position: absolute;
+  top: 40%;
+  width: 100%;
   text-align: center;
+  font-size: 24px;
+}
+
+#pause-message {
+  position: absolute;
+  top: 45%;
+  width: 100%;
+  text-align: center;
+  font-size: 24px;
+  color: black;
+}
+
+/* ✅ New rule to force-hide instructions when hidden */
+#instructions[hidden] {
+  display: none !important;
 }

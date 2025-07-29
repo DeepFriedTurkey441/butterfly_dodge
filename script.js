@@ -1,6 +1,8 @@
 // DOM refs
 const butterfly = document.getElementById('butterfly');
 const scoreBox = document.getElementById('score');
+const livesBox = document.getElementById('lives');
+const levelBox = document.getElementById('level');
 const gameOverBox = document.getElementById('game-over');
 const pauseBox = document.getElementById('pause-message');
 const instructionsBox = document.getElementById('instructions');
@@ -25,12 +27,14 @@ const svgMarkup = `
   </svg>
 `;
 
-// Nets array (will be populated later)
+// Nets array
 const nets = [];
 
 // Flowers
 const flowers = [];
 let score = 0;
+let lives = 3;
+let level = 1;
 
 // Butterfly state & physics
 const SPEED_LEVELS = [1, 3, 6];
@@ -42,7 +46,7 @@ let dy = 0;
 let paused = false;
 let gameOver = false;
 let spacePressed = false;
-const GRAVITY = 0.2;
+const GRAVITY = 0.215;
 const MAX_FALL_SPEED = 5;
 const MAX_RISE_SPEED = -5;
 
@@ -59,10 +63,9 @@ function stopFlap() {
 
 // Input handlers
 document.addEventListener('keydown', e => {
-  // Instructions screen startup
   if (!gameStarted && e.key === 'Enter') {
     instructionsBox.hidden = true;
-    instructionsBox.style.display = 'none'; // Safety net
+    instructionsBox.style.display = 'none';
     gameArea.hidden = false;
     gameStarted = true;
     startGame();
@@ -155,10 +158,25 @@ function checkFlowers() {
   flowers.forEach((f, i) => {
     if (f && isColliding(butterfly, f)) {
       score++;
+
+      if (score >= 10) {
+        score = 0;
+        lives++;
+
+        if (lives >= 5) {
+          level++;
+          levelBox.innerText = `Level: ${level}`;
+          lives = 3;
+        }
+      }
+
       scoreBox.innerText = `Score: ${score}`;
+      livesBox.innerText = `Lives: ${lives}`;
+
       f.remove();
       flowers[i] = null;
 
+      // Respawn a new flower
       const w = window.innerWidth * 0.75;
       const h = window.innerHeight * 0.75;
       const x0 = (window.innerWidth - w) / 2;
@@ -206,24 +224,33 @@ function gameLoop() {
       const dx = cx - nx;
       const dy2 = cy - ny;
       if (dx * dx + dy2 * dy2 < r * r && !gameOver) {
-        running = false;
-        gameOver = true;
-        gameOverBox.hidden = false;
-        pauseBox.hidden = true;
-        stopFlap();
+        lives--;
+        livesBox.innerText = `Lives: ${lives}`;
+
+        if (lives <= 0) {
+          running = false;
+          gameOver = true;
+          gameOverBox.hidden = false;
+          pauseBox.hidden = true;
+          stopFlap();
+        } else {
+          bx = 0;
+          by = window.innerHeight / 2;
+          dy = 0;
+          butterfly.style.left = bx + 'px';
+          butterfly.style.top = by + 'px';
+        }
       }
     });
   }
   requestAnimationFrame(gameLoop);
 }
 
-// Game start logic (includes net creation now)
+// Game start logic
 function startGame() {
-  // Clear old nets
   nets.forEach(n => n.el.remove());
   nets.length = 0;
 
-  // Create fresh nets
   for (let i = 0; i < NUM_NETS; i++) {
     const div = document.createElement('div');
     div.className = 'net';
@@ -238,7 +265,6 @@ function startGame() {
     nets.push({ el: div, y: window.innerHeight * 0.25, dir: 1, speedY });
   }
 
-  // Reset butterfly physics
   bx = 0;
   by = window.innerHeight / 2;
   dy = 0;
@@ -250,26 +276,27 @@ function startGame() {
   spacePressed = false;
   gameStarted = true;
 
-  // Reset butterfly state
   butterfly.style.left = bx + 'px';
   butterfly.style.top = by + 'px';
   butterfly.textContent = '\\/';
   wingsUp = false;
 
-  // Reset score
   score = 0;
   scoreBox.innerText = 'Score: 0';
 
-  // Clear and respawn flowers
+  lives = 3;
+  livesBox.innerText = `Lives: ${lives}`;
+
+  // Do NOT reset level — just display current value
+  levelBox.innerText = `Level: ${level}`;
+
   flowers.forEach(f => f && f.remove());
   flowers.length = 0;
   spawnFlowers();
 
-  // Hide messages
   gameOverBox.hidden = true;
   pauseBox.hidden = true;
 
-  // Begin game loop
   requestAnimationFrame(gameLoop);
 }
 

@@ -1,7 +1,7 @@
 body {
   margin: 0;
   overflow: hidden;
-  background-color: skyblue;
+  background-color: rgb(13, 116, 157);
   font-family: monospace;
   color: black;
 }
@@ -34,7 +34,7 @@ body {
 
 #butterfly {
   position: absolute;
-  font-size: 24px;
+  font-size: 18px;
   left: 0;
   top: 50%;
 }
@@ -50,7 +50,7 @@ body {
   width: 80px;
   height: 80px;
   font-size: 32px;
-  color: red;
+  color: rgb(174, 255, 0);
   content: 'X';
 }
 

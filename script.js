@@ -1,6 +1,11 @@
 // DOM refs
 const butterfly = document.getElementById('butterfly');
 const scoreBox = document.getElementById('score');
+<<<<<<< HEAD
+=======
+const livesBox = document.getElementById('lives');
+const levelBox = document.getElementById('level');
+>>>>>>> 9f1daf9 (Initial commit from bd_game_project)
 const gameOverBox = document.getElementById('game-over');
 const pauseBox = document.getElementById('pause-message');
 const instructionsBox = document.getElementById('instructions');
@@ -25,12 +30,21 @@ const svgMarkup = `
   </svg>
 `;
 
+<<<<<<< HEAD
 // Nets array (will be populated later)
+=======
+// Nets array
+>>>>>>> 9f1daf9 (Initial commit from bd_game_project)
 const nets = [];
 
 // Flowers
 const flowers = [];
 let score = 0;
+<<<<<<< HEAD
+=======
+let lives = 3;
+let level = 1;
+>>>>>>> 9f1daf9 (Initial commit from bd_game_project)
 
 // Butterfly state & physics
 const SPEED_LEVELS = [1, 3, 6];
@@ -42,7 +56,11 @@ let dy = 0;
 let paused = false;
 let gameOver = false;
 let spacePressed = false;
+<<<<<<< HEAD
 const GRAVITY = 0.2;
+=======
+const GRAVITY = 0.215;
+>>>>>>> 9f1daf9 (Initial commit from bd_game_project)
 const MAX_FALL_SPEED = 5;
 const MAX_RISE_SPEED = -5;
 
@@ -59,10 +77,16 @@ function stopFlap() {
 
 // Input handlers
 document.addEventListener('keydown', e => {
+<<<<<<< HEAD
   // Instructions screen startup
   if (!gameStarted && e.key === 'Enter') {
     instructionsBox.hidden = true;
     instructionsBox.style.display = 'none'; // Safety net
+=======
+  if (!gameStarted && e.key === 'Enter') {
+    instructionsBox.hidden = true;
+    instructionsBox.style.display = 'none';
+>>>>>>> 9f1daf9 (Initial commit from bd_game_project)
     gameArea.hidden = false;
     gameStarted = true;
     startGame();
@@ -155,10 +179,32 @@ function checkFlowers() {
   flowers.forEach((f, i) => {
     if (f && isColliding(butterfly, f)) {
       score++;
+<<<<<<< HEAD
       scoreBox.innerText = `Score: ${score}`;
       f.remove();
       flowers[i] = null;
 
+=======
+
+      if (score >= 10) {
+        score = 0;
+        lives++;
+
+        if (lives >= 5) {
+          level++;
+          levelBox.innerText = `Level: ${level}`;
+          lives = 3;
+        }
+      }
+
+      scoreBox.innerText = `Score: ${score}`;
+      livesBox.innerText = `Lives: ${lives}`;
+
+      f.remove();
+      flowers[i] = null;
+
+      // Respawn a new flower
+>>>>>>> 9f1daf9 (Initial commit from bd_game_project)
       const w = window.innerWidth * 0.75;
       const h = window.innerHeight * 0.75;
       const x0 = (window.innerWidth - w) / 2;
@@ -206,17 +252,37 @@ function gameLoop() {
       const dx = cx - nx;
       const dy2 = cy - ny;
       if (dx * dx + dy2 * dy2 < r * r && !gameOver) {
+<<<<<<< HEAD
         running = false;
         gameOver = true;
         gameOverBox.hidden = false;
         pauseBox.hidden = true;
         stopFlap();
+=======
+        lives--;
+        livesBox.innerText = `Lives: ${lives}`;
+
+        if (lives <= 0) {
+          running = false;
+          gameOver = true;
+          gameOverBox.hidden = false;
+          pauseBox.hidden = true;
+          stopFlap();
+        } else {
+          bx = 0;
+          by = window.innerHeight / 2;
+          dy = 0;
+          butterfly.style.left = bx + 'px';
+          butterfly.style.top = by + 'px';
+        }
+>>>>>>> 9f1daf9 (Initial commit from bd_game_project)
       }
     });
   }
   requestAnimationFrame(gameLoop);
 }
 
+<<<<<<< HEAD
 // Game start logic (includes net creation now)
 function startGame() {
   // Clear old nets
@@ -224,6 +290,13 @@ function startGame() {
   nets.length = 0;
 
   // Create fresh nets
+=======
+// Game start logic
+function startGame() {
+  nets.forEach(n => n.el.remove());
+  nets.length = 0;
+
+>>>>>>> 9f1daf9 (Initial commit from bd_game_project)
   for (let i = 0; i < NUM_NETS; i++) {
     const div = document.createElement('div');
     div.className = 'net';
@@ -238,7 +311,10 @@ function startGame() {
     nets.push({ el: div, y: window.innerHeight * 0.25, dir: 1, speedY });
   }
 
+<<<<<<< HEAD
   // Reset butterfly physics
+=======
+>>>>>>> 9f1daf9 (Initial commit from bd_game_project)
   bx = 0;
   by = window.innerHeight / 2;
   dy = 0;
@@ -250,26 +326,47 @@ function startGame() {
   spacePressed = false;
   gameStarted = true;
 
+<<<<<<< HEAD
   // Reset butterfly state
+=======
+>>>>>>> 9f1daf9 (Initial commit from bd_game_project)
   butterfly.style.left = bx + 'px';
   butterfly.style.top = by + 'px';
   butterfly.textContent = '\\/';
   wingsUp = false;
 
+<<<<<<< HEAD
   // Reset score
   score = 0;
   scoreBox.innerText = 'Score: 0';
 
   // Clear and respawn flowers
+=======
+  score = 0;
+  scoreBox.innerText = 'Score: 0';
+
+  lives = 3;
+  livesBox.innerText = `Lives: ${lives}`;
+
+  // Do NOT reset level — just display current value
+  levelBox.innerText = `Level: ${level}`;
+
+>>>>>>> 9f1daf9 (Initial commit from bd_game_project)
   flowers.forEach(f => f && f.remove());
   flowers.length = 0;
   spawnFlowers();
 
+<<<<<<< HEAD
   // Hide messages
   gameOverBox.hidden = true;
   pauseBox.hidden = true;
 
   // Begin game loop
+=======
+  gameOverBox.hidden = true;
+  pauseBox.hidden = true;
+
+>>>>>>> 9f1daf9 (Initial commit from bd_game_project)
   requestAnimationFrame(gameLoop);
 }
 

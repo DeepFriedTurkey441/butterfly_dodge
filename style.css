@@ -1,7 +1,11 @@
 body {
   margin: 0;
   overflow: hidden;
+<<<<<<< HEAD
   background-color: skyblue;
+=======
+  background-color: rgb(13, 116, 157);
+>>>>>>> 9f1daf9 (Initial commit from bd_game_project)
   font-family: monospace;
   color: black;
 }
@@ -34,7 +38,11 @@ body {
 
 #butterfly {
   position: absolute;
+<<<<<<< HEAD
   font-size: 24px;
+=======
+  font-size: 18px;
+>>>>>>> 9f1daf9 (Initial commit from bd_game_project)
   left: 0;
   top: 50%;
 }
@@ -50,7 +58,11 @@ body {
   width: 80px;
   height: 80px;
   font-size: 32px;
+<<<<<<< HEAD
   color: red;
+=======
+  color: rgb(174, 255, 0);
+>>>>>>> 9f1daf9 (Initial commit from bd_game_project)
   content: 'X';
 }
 

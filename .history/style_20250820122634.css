@@ -152,23 +152,23 @@ body {
 }
 .cloud-chicken {
   background:
-    radial-gradient(ellipse at 25% 60%, rgba(255,255,255,0.97) 0 56%, transparent 57%), /* body */
-    radial-gradient(ellipse at 45% 40%, rgba(255,255,255,0.97) 0 48%, transparent 49%), /* head */
-    radial-gradient(ellipse at 65% 35%, rgba(255,255,255,0.97) 0 33%, transparent 34%), /* comb */
-    radial-gradient(ellipse at 18% 75%, rgba(255,255,255,0.97) 0 35%, transparent 36%); /* tail */
+    radial-gradient(ellipse at 25% 60%, rgba(255,255,255,0.97) 0 50%, rgba(255,255,255,0) 51%), /* body */
+    radial-gradient(ellipse at 45% 40%, rgba(255,255,255,0.97) 0 42%, rgba(255,255,255,0) 43%), /* head */
+    radial-gradient(ellipse at 65% 35%, rgba(255,255,255,0.97) 0 26%, rgba(255,255,255,0) 27%), /* comb */
+    radial-gradient(ellipse at 18% 75%, rgba(255,255,255,0.97) 0 28%, rgba(255,255,255,0) 29%); /* tail */
 }
 .cloud-dino {
   background:
-    radial-gradient(ellipse at 30% 55%, rgba(255,255,255,0.97) 0 60%, transparent 61%), /* body */
-    radial-gradient(ellipse at 55% 35%, rgba(255,255,255,0.97) 0 36%, transparent 37%), /* head */
-    radial-gradient(ellipse at 60% 20%, rgba(255,255,255,0.97) 0 20%, transparent 21%), /* crest */
-    radial-gradient(ellipse at 15% 70%, rgba(255,255,255,0.97) 0 26%, transparent 27%); /* tail */
+    radial-gradient(ellipse at 30% 55%, rgba(255,255,255,0.97) 0 55%, rgba(255,255,255,0) 56%), /* body */
+    radial-gradient(ellipse at 55% 35%, rgba(255,255,255,0.97) 0 30%, rgba(255,255,255,0) 31%), /* head */
+    radial-gradient(ellipse at 60% 20%, rgba(255,255,255,0.97) 0 14%, rgba(255,255,255,0) 15%), /* crest */
+    radial-gradient(ellipse at 15% 70%, rgba(255,255,255,0.97) 0 20%, rgba(255,255,255,0) 21%); /* tail */
 }
 .cloud-eggplant {
   background:
-    radial-gradient(ellipse at 35% 60%, rgba(255,255,255,0.97) 0 60%, transparent 61%), /* body */
-    radial-gradient(ellipse at 60% 35%, rgba(255,255,255,0.97) 0 28%, transparent 29%), /* cap */
-    radial-gradient(ellipse at 75% 45%, rgba(255,255,255,0.97) 0 22%, transparent 23%); /* tip */
+    radial-gradient(ellipse at 35% 60%, rgba(255,255,255,0.97) 0 55%, rgba(255,255,255,0) 56%), /* body */
+    radial-gradient(ellipse at 60% 35%, rgba(255,255,255,0.97) 0 22%, rgba(255,255,255,0) 23%), /* cap */
+    radial-gradient(ellipse at 75% 45%, rgba(255,255,255,0.97) 0 18%, rgba(255,255,255,0) 19%); /* tip */
 }
 @keyframes drift {
   from { transform: translateX(0); }

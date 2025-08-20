@@ -167,10 +167,9 @@ function checkFlowers() {
     if (f && isColliding(butterfly, f)) {
       // Flowers add to score
       score++;
-      // When score hits 11 exactly: +1 life and reset score to 0
-      if (score >= 11) {
+      // Every 11 flowers (score multiple of 11) award +1 life
+      if (score % 11 === 0) {
         lives += 1;
-        score = 0;
         if (lives >= MAX_LIVES_BEFORE_LEVEL) {
           level++;
           lives = 3;

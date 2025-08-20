@@ -490,25 +490,6 @@ function gameLoop() {
         }
       }
     });
-
-    // Level 2 special rule: clouds bump to random position if collided
-    if (level >= 2) {
-      const b = butterfly.getBoundingClientRect();
-      const clouds = document.querySelectorAll('.cloud');
-      for (const c of clouds) {
-        const r2 = c.getBoundingClientRect();
-        const overlap = !(b.right < r2.left || b.left > r2.right || b.bottom < r2.top || b.top > r2.bottom);
-        if (overlap) {
-          // Random respawn anywhere on screen
-          bx = Math.random() * (window.innerWidth - 40);
-          by = Math.random() * (window.innerHeight - 40);
-          dy = 0;
-          butterfly.style.left = bx + 'px';
-          butterfly.style.top = by + 'px';
-          break;
-        }
-      }
-    }
   }
   requestAnimationFrame(gameLoop);
 }

@@ -163,12 +163,6 @@ document.addEventListener('keydown', e => {
     return;
   }
 
-  // Resume from level-up overlay with Enter
-  if (levelupBox && !levelupBox.hidden && e.key === 'Enter') {
-    levelupBox.hidden = true;
-    paused = false;
-  }
-
   switch (e.key) {
     case 'ArrowRight':
       speedIndex = Math.min(SPEED_LEVELS.length - 1, speedIndex + 1);
@@ -305,13 +299,6 @@ function updateHUD() {
   scoreBox.innerText = `Score: ${score}`;
   livesBox.innerText = `Lives: ${lives}`;
   levelBox.innerText = `Level: ${level}`;
-}
-
-function showLevelUp(newLevel) {
-  paused = true;
-  pauseBox.hidden = true;
-  if (levelupNum) levelupNum.textContent = String(newLevel);
-  if (levelupBox) levelupBox.hidden = false;
 }
 
 // --- Background Music (simple looping melody) ---
@@ -467,7 +454,6 @@ function gameLoop() {
             // Future-proof: if lives were increased elsewhere and reached threshold
             level++;
             lives = 3;
-            showLevelUp(level);
           }
           if (!muted) sfxHit();
           if (lives <= 0) {
@@ -490,25 +476,6 @@ function gameLoop() {
         }
       }
     });
-
-    // Level 2 special rule: clouds bump to random position if collided
-    if (level >= 2) {
-      const b = butterfly.getBoundingClientRect();
-      const clouds = document.querySelectorAll('.cloud');
-      for (const c of clouds) {
-        const r2 = c.getBoundingClientRect();
-        const overlap = !(b.right < r2.left || b.left > r2.right || b.bottom < r2.top || b.top > r2.bottom);
-        if (overlap) {
-          // Random respawn anywhere on screen
-          bx = Math.random() * (window.innerWidth - 40);
-          by = Math.random() * (window.innerHeight - 40);
-          dy = 0;
-          butterfly.style.left = bx + 'px';
-          butterfly.style.top = by + 'px';
-          break;
-        }
-      }
-    }
   }
   requestAnimationFrame(gameLoop);
 }

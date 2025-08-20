@@ -274,8 +274,8 @@ function checkFlowers() {
       // pop animation
       f.classList.add('pop');
       if (!muted) sfxFlower();
-      // When score hits 10 exactly: +1 life and reset score to 0
-      if (score >= 10) {
+      // When score hits 11 exactly: +1 life and reset score to 0
+      if (score >= 11) {
         lives += 1;
         score = 0;
         if (lives >= MAX_LIVES_BEFORE_LEVEL) {

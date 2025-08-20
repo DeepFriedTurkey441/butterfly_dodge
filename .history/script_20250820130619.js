@@ -434,35 +434,6 @@ function setCloudsPaused(isPaused) {
   clouds.forEach(c => { c.style.animationPlayState = isPaused ? 'paused' : 'running'; });
 }
 
-// --- Level 3 winds helpers ---
-let windSpawnAt = 0;
-function spawnAndMoveWinds() {
-  const now = performance.now();
-  if (now > windSpawnAt) {
-    // Spawn a wind puff on the right edge 20% of the time
-    if (Math.random() < 0.2) {
-      const el = document.createElement('div');
-      el.className = 'wind';
-      el.style.top = `${Math.random() * (window.innerHeight - 80) + 20}px`;
-      el.style.left = `${window.innerWidth + 50}px`;
-      document.body.appendChild(el);
-      // Animate leftward using dataset speed
-      el.dataset.vx = String(3 + Math.random() * 3);
-      setTimeout(() => el.remove(), 8000);
-    }
-    windSpawnAt = now + 700; // try spawn every ~0.7s
-  }
-  document.querySelectorAll('.wind').forEach(w => {
-    const vx = Number(w.dataset.vx || '4');
-    const x = (w._x ?? w.getBoundingClientRect().left);
-    const nx = x - vx;
-    w._x = nx;
-    w.style.transform = `translateX(${nx - x}px)`; // incremental move
-    // If far off-screen left, remove
-    if (nx < -200) w.remove();
-  });
-}
-
 // Hook music volume slider
 if (musicVolumeSlider) {
   musicVolumeSlider.addEventListener('input', () => {

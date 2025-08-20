@@ -184,11 +184,9 @@ document.addEventListener('keydown', e => {
       if (paused) {
         document.body.classList.add('paused');
         stopMusic();
-        setCloudsPaused(true);
       } else {
         document.body.classList.remove('paused');
         startMusic();
-        setCloudsPaused(false);
       }
       break;
     case 'q':

@@ -439,16 +439,15 @@ let windSpawnAt = 0;
 function spawnAndMoveWinds() {
   const now = performance.now();
   if (now > windSpawnAt) {
-    // Spawn a wind puff on the right edge ~25% of the time (about half as many)
-    if (Math.random() < 0.25) {
+    // Spawn a wind puff on the right edge 50% of the time
+    if (Math.random() < 0.5) {
       const el = document.createElement('div');
       el.className = 'wind';
       el.style.top = `${Math.random() * (window.innerHeight - 80) + 20}px`;
       el.style.left = `${window.innerWidth + 50}px`;
       document.body.appendChild(el);
       // Animate leftward using dataset speed
-      // Reduce speed by ~15% (from 4–8 to ~3.4–6.8)
-      el.dataset.vx = String(3.4 + Math.random() * 3.4);
+      el.dataset.vx = String(4 + Math.random() * 4);
       setTimeout(() => el.remove(), 10000);
     }
     windSpawnAt = now + 500; // try spawn every ~0.5s

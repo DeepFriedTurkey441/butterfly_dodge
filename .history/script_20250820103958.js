@@ -135,7 +135,6 @@ document.addEventListener('keydown', e => {
     instructionsBox.style.display = 'none'; // Safety net
     gameArea.hidden = false;
     gameStarted = true;
-    startMusic();
     startGame();
     return;
   }

@@ -195,7 +195,11 @@ body {
   position: absolute;
   width: 120px;
   height: 60px;
-  filter: blur(0.2px);
+  background:
+    radial-gradient(ellipse at 20% 60%, rgba(220,220,220,0.85) 0 62%, transparent 64%),
+    radial-gradient(ellipse at 50% 40%, rgba(220,220,220,0.75) 0 64%, transparent 66%),
+    radial-gradient(ellipse at 80% 55%, rgba(220,220,220,0.65) 0 60%, transparent 62%);
+  filter: blur(0.8px);
   z-index: 0;
 }
 @keyframes drift {

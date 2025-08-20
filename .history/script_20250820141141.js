@@ -49,15 +49,6 @@ const svgMarkup = `
 // Hooped area in the SVG viewBox (used for precise collision; ignore handle)
 const NET_HOOP = { cx: 62, cy: 38, r: 28, view: 100 };
 
-// Wind SVG (three curved strokes)
-const WIND_SVG = `
-  <svg viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg">
-    <path d="M10 45 C30 45 50 42 70 36" stroke="#cfd3d6" stroke-width="6" stroke-linecap="round" fill="none"/>
-    <path d="M10 30 C35 30 60 28 85 22" stroke="#d7dbde" stroke-width="6" stroke-linecap="round" fill="none"/>
-    <path d="M10 15 C40 15 70 12 100 8" stroke="#e0e4e7" stroke-width="6" stroke-linecap="round" fill="none"/>
-  </svg>
-`;
-
 // Nets array (will be populated later)
 const nets = [];
 
@@ -454,7 +445,6 @@ function spawnAndMoveWinds() {
       el.className = 'wind';
       el.style.top = `${Math.random() * (window.innerHeight - 80) + 20}px`;
       el.style.left = `${window.innerWidth + 50}px`;
-      el.innerHTML = WIND_SVG;
       document.body.appendChild(el);
       // Animate leftward using dataset speed
       // Reduce speed by ~15% (from 4–8 to ~3.4–6.8)

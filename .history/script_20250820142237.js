@@ -454,7 +454,6 @@ function spawnAndMoveWinds() {
       el.className = 'wind';
       el.style.top = `${Math.random() * (window.innerHeight - 80) + 20}px`;
       el.style.left = `${window.innerWidth + 50}px`;
-      el.innerHTML = WIND_SVG;
       document.body.appendChild(el);
       // Animate leftward using dataset speed
       // Reduce speed by ~15% (from 4–8 to ~3.4–6.8)

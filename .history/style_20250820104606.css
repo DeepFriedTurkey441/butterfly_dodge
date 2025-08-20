@@ -135,8 +135,6 @@ body {
   filter: blur(0.5px);
   animation: drift linear infinite;
 }
-/* Pause cloud animation when game is paused */
-.paused .cloud { animation-play-state: paused !important; }
 @keyframes drift {
   from { transform: translateX(0); }
   to   { transform: translateX(160vw); }

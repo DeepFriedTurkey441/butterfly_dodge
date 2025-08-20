@@ -78,23 +78,6 @@ body {
 }
  #mute-btn:focus { outline: 2px solid rgba(0,0,0,0.3); }
 
-#mute-sfx, #mute-music {
-  margin-left: 8px;
-  font-size: 18px;
-  padding: 2px 8px;
-  border: none;
-  background: rgba(255,255,255,0.5);
-  border-radius: 6px;
-  cursor: pointer;
-}
-#mute-sfx:focus, #mute-music:focus { outline: 2px solid rgba(0,0,0,0.3); }
-
-#music-volume {
-  vertical-align: middle;
-  width: 120px;
-  margin-left: 8px;
-}
-
 #game-over {
   position: absolute;
   top: 40%;
@@ -135,8 +118,6 @@ body {
   filter: blur(0.5px);
   animation: drift linear infinite;
 }
-/* Pause cloud animation when game is paused */
-.paused .cloud { animation-play-state: paused !important; }
 @keyframes drift {
   from { transform: translateX(0); }
   to   { transform: translateX(160vw); }

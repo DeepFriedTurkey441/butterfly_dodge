@@ -10,7 +10,6 @@ const gameArea = document.getElementById('game-area');
 const muteBtn = document.getElementById('mute-btn');
 const muteSfxBtn = document.getElementById('mute-sfx');
 const muteMusicBtn = document.getElementById('mute-music');
-const musicVolumeSlider = document.getElementById('music-volume');
 
 // Game control flags
 let gameStarted = false;
@@ -22,29 +21,14 @@ const BASE_NET_SPEED = 1;
 const MAX_NET_SPEED = 8;
 const SPEED_INCREMENT = (MAX_NET_SPEED - BASE_NET_SPEED) / (NUM_NETS - 1);
 
-// Net SVG (butterfly net: hoop + mesh + handle). Preserves size and red color
+// Net SVG
 const svgMarkup = `
   <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <clipPath id="netHoop">
-        <circle cx="62" cy="38" r="28" />
-      </clipPath>
-    </defs>
-    <!-- Hoop -->
-    <circle cx="62" cy="38" r="28" fill="none" stroke="red" stroke-width="4"/>
-    <!-- Mesh (simple grid clipped to hoop) -->
-    <g clip-path="url(#netHoop)" stroke="red" stroke-width="1.5" opacity="0.9">
-      <path d="M34 22 H90 M34 30 H90 M34 38 H90 M34 46 H90 M34 54 H90 M34 62 H90"/>
-      <path d="M38 10 V66 M46 10 V66 M54 10 V66 M62 10 V66 M70 10 V66 M78 10 V66"/>
-    </g>
-    <!-- Handle -->
-    <path d="M20 85 L55 55" stroke="red" stroke-width="6" stroke-linecap="round"/>
-    <circle cx="18" cy="87" r="3" fill="red"/>
+    <path d="M50 25 L50 75 M25 50 L75 50" stroke="red" stroke-width="4"/>
+    <path d="M32.5 32.5 L67.5 67.5 M67.5 32.5 L32.5 67.5" stroke="red" stroke-width="4"/>
+    <circle cx="50" cy="50" r="25" stroke="red" stroke-width="4" fill="none"/>
   </svg>
 `;
-
-// Hooped area in the SVG viewBox (used for precise collision; ignore handle)
-const NET_HOOP = { cx: 62, cy: 38, r: 28, view: 100 };
 
 // Nets array (will be populated later)
 const nets = [];
@@ -151,7 +135,6 @@ document.addEventListener('keydown', e => {
     instructionsBox.style.display = 'none'; // Safety net
     gameArea.hidden = false;
     gameStarted = true;
-    startMusic();
     startGame();
     return;
   }
@@ -195,16 +178,6 @@ document.addEventListener('keydown', e => {
     case 'p':
       paused = !paused;
       pauseBox.hidden = !paused;
-      // Pause/resume clouds and music
-      if (paused) {
-        document.body.classList.add('paused');
-        stopMusic();
-        setCloudsPaused(true);
-      } else {
-        document.body.classList.remove('paused');
-        startMusic();
-        setCloudsPaused(false);
-      }
       break;
     case 'q':
       running = false;
@@ -305,107 +278,40 @@ function startMusic() {
   ensureAudioContext();
   if (musicMuted || !audioCtx || musicNodes) return;
   const master = audioCtx.createGain();
-  master.gain.value = musicVolumeSlider ? (Number(musicVolumeSlider.value) / 100) * 0.4 : 0.08;
+  master.gain.value = 0.08;
   master.connect(audioCtx.destination);
 
-  // Helper to convert MIDI to Hz
-  const midiToFreq = (m) => 440 * Math.pow(2, (m - 69) / 12);
+  const notes = [440, 494, 523, 587, 523, 494, 440, 392]; // A B C D C B A G
+  const types = ['sine', 'triangle'];
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = types[1];
+  gain.gain.value = 0.0001;
+  osc.connect(gain).connect(master);
+  osc.start();
 
-  // Cheerful progression (A section twice, then B, then A):
-  // A: C  Am  F  G   |  C  Am  F  G
-  // B: Dm G  C  C
-  const PROG = [
-    { root: 60, min: false }, { root: 57, min: true }, { root: 65, min: false }, { root: 67, min: false },
-    { root: 60, min: false }, { root: 57, min: true }, { root: 65, min: false }, { root: 67, min: false },
-    { root: 62, min: true },  { root: 67, min: false }, { root: 60, min: false }, { root: 60, min: false }
-  ];
-  const stepsPerBar = 8;          // 8th notes
-  const stepMs = 300;             // ~100 BPM (600ms per beat)
-
-  // Lead voice
-  const leadOsc = audioCtx.createOscillator();
-  leadOsc.type = 'triangle';
-  const leadGain = audioCtx.createGain();
-  leadGain.gain.value = 0.0001;
-  leadOsc.connect(leadGain).connect(master);
-  leadOsc.start();
-
-  // Bass voice
-  const bassOsc = audioCtx.createOscillator();
-  bassOsc.type = 'sine';
-  const bassGain = audioCtx.createGain();
-  bassGain.gain.value = 0.0001;
-  bassOsc.connect(bassGain).connect(master);
-  bassOsc.start();
-
-  // Scales
-  const majorPent = [0, 2, 4, 7, 9];
-  const minorPent = [0, 3, 5, 7, 10];
-
-  let step = 0;
+  let idx = 0;
+  const stepMs = 420; // tempo
   const interval = setInterval(() => {
     if (musicMuted) return;
     const now = audioCtx.currentTime;
-    const bar = Math.floor(step / stepsPerBar) % PROG.length;
-    const beatInBar = step % stepsPerBar;
-    const chord = PROG[bar];
-    const scale = chord.min ? minorPent : majorPent;
-
-    // Bass: root every beat, octave down
-    if (beatInBar % 2 === 0) {
-      const bassMidi = chord.root - 12;
-      bassOsc.frequency.setValueAtTime(midiToFreq(bassMidi), now);
-      bassGain.gain.cancelScheduledValues(now);
-      bassGain.gain.setValueAtTime(0.0001, now);
-      bassGain.gain.exponentialRampToValueAtTime(0.10, now + 0.01);
-      bassGain.gain.exponentialRampToValueAtTime(0.0001, now + stepMs / 1000 * 0.9);
-    }
-
-    // Lead: phrase patterns with gentle variations
-    let degreeIdx;
-    const phrasePos = bar % 4; // repeat motifs across sections
-    if (phrasePos === 0) degreeIdx = [0,1,2,1,3,2,1,0][beatInBar];
-    else if (phrasePos === 1) degreeIdx = [2,3,4,3,2,1,0,1][beatInBar];
-    else if (phrasePos === 2) degreeIdx = [1,2,3,4,3,2,1,0][beatInBar];
-    else degreeIdx = [4,3,2,1,0,1,2,3][beatInBar];
-
-    // Occasional passing note for variety
-    if (Math.random() < 0.12) degreeIdx = Math.max(0, Math.min(scale.length - 1, degreeIdx + (Math.random() < 0.5 ? -1 : 1)));
-
-    const deg = scale[degreeIdx % scale.length];
-    const leadMidi = chord.root + deg + 12; // one octave up
-    leadOsc.frequency.setValueAtTime(midiToFreq(leadMidi), now);
-    leadGain.gain.cancelScheduledValues(now);
-    leadGain.gain.setValueAtTime(0.0001, now);
-    leadGain.gain.exponentialRampToValueAtTime(0.12, now + 0.01);
-    leadGain.gain.exponentialRampToValueAtTime(0.0001, now + stepMs / 1000 * 0.8);
-
-    step++;
+    const f = notes[idx % notes.length];
+    idx++;
+    osc.frequency.setValueAtTime(f, now);
+    gain.gain.cancelScheduledValues(now);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.12, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + stepMs / 1000 * 0.9);
   }, stepMs);
 
-  musicNodes = { master, interval, leadOsc, leadGain, bassOsc, bassGain };
+  musicNodes = { osc, gain, master, interval };
 }
 
 function stopMusic() {
   if (!musicNodes) return;
   clearInterval(musicNodes.interval);
-  try { musicNodes.leadOsc.stop(); } catch (_) {}
-  try { musicNodes.bassOsc.stop(); } catch (_) {}
+  try { musicNodes.osc.stop(); } catch (_) {}
   musicNodes = null;
-}
-
-function setCloudsPaused(isPaused) {
-  const clouds = document.querySelectorAll('.cloud');
-  clouds.forEach(c => { c.style.animationPlayState = isPaused ? 'paused' : 'running'; });
-}
-
-// Hook music volume slider
-if (musicVolumeSlider) {
-  musicVolumeSlider.addEventListener('input', () => {
-    if (musicNodes) {
-      musicNodes.master.gain.value = (Number(musicVolumeSlider.value) / 100) * 0.4;
-    }
-  });
 }
 
 // Main loop
@@ -432,18 +338,14 @@ function gameLoop() {
 
       const b = butterfly.getBoundingClientRect();
       const m = n.el.getBoundingClientRect();
-      // Compute collision only against the hoop (ignore the handle)
-      const scaleX = m.width / NET_HOOP.view;
-      const scaleY = m.height / NET_HOOP.view;
-      const hoopX = m.left + NET_HOOP.cx * scaleX;
-      const hoopY = m.top + NET_HOOP.cy * scaleY;
-      const hoopR = NET_HOOP.r * ((scaleX + scaleY) / 2) * 0.95;
-
       const cx = b.left + b.width / 2;
       const cy = b.top + b.height / 2;
-      const dx = cx - hoopX;
-      const dy2 = cy - hoopY;
-      if ((dx * dx + dy2 * dy2) < (hoopR * hoopR) && !gameOver) {
+      const nx = m.left + m.width / 2;
+      const ny = m.top + m.height / 2;
+      const r = m.width / 2 * 0.9;
+      const dx = cx - nx;
+      const dy2 = cy - ny;
+      if (dx * dx + dy2 * dy2 < r * r && !gameOver) {
         const now = Date.now();
         if (now - lastHitAt > HIT_COOLDOWN_MS) {
           lastHitAt = now;

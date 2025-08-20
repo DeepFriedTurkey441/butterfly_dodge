@@ -22,29 +22,14 @@ const BASE_NET_SPEED = 1;
 const MAX_NET_SPEED = 8;
 const SPEED_INCREMENT = (MAX_NET_SPEED - BASE_NET_SPEED) / (NUM_NETS - 1);
 
-// Net SVG (butterfly net: hoop + mesh + handle). Preserves size and red color
+// Net SVG
 const svgMarkup = `
   <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <clipPath id="netHoop">
-        <circle cx="62" cy="38" r="28" />
-      </clipPath>
-    </defs>
-    <!-- Hoop -->
-    <circle cx="62" cy="38" r="28" fill="none" stroke="red" stroke-width="4"/>
-    <!-- Mesh (simple grid clipped to hoop) -->
-    <g clip-path="url(#netHoop)" stroke="red" stroke-width="1.5" opacity="0.9">
-      <path d="M34 22 H90 M34 30 H90 M34 38 H90 M34 46 H90 M34 54 H90 M34 62 H90"/>
-      <path d="M38 10 V66 M46 10 V66 M54 10 V66 M62 10 V66 M70 10 V66 M78 10 V66"/>
-    </g>
-    <!-- Handle -->
-    <path d="M20 85 L55 55" stroke="red" stroke-width="6" stroke-linecap="round"/>
-    <circle cx="18" cy="87" r="3" fill="red"/>
+    <path d="M50 25 L50 75 M25 50 L75 50" stroke="red" stroke-width="4"/>
+    <path d="M32.5 32.5 L67.5 67.5 M67.5 32.5 L32.5 67.5" stroke="red" stroke-width="4"/>
+    <circle cx="50" cy="50" r="25" stroke="red" stroke-width="4" fill="none"/>
   </svg>
 `;
-
-// Hooped area in the SVG viewBox (used for precise collision; ignore handle)
-const NET_HOOP = { cx: 62, cy: 38, r: 28, view: 100 };
 
 // Nets array (will be populated later)
 const nets = [];
@@ -432,18 +417,14 @@ function gameLoop() {
 
       const b = butterfly.getBoundingClientRect();
       const m = n.el.getBoundingClientRect();
-      // Compute collision only against the hoop (ignore the handle)
-      const scaleX = m.width / NET_HOOP.view;
-      const scaleY = m.height / NET_HOOP.view;
-      const hoopX = m.left + NET_HOOP.cx * scaleX;
-      const hoopY = m.top + NET_HOOP.cy * scaleY;
-      const hoopR = NET_HOOP.r * ((scaleX + scaleY) / 2) * 0.95;
-
       const cx = b.left + b.width / 2;
       const cy = b.top + b.height / 2;
-      const dx = cx - hoopX;
-      const dy2 = cy - hoopY;
-      if ((dx * dx + dy2 * dy2) < (hoopR * hoopR) && !gameOver) {
+      const nx = m.left + m.width / 2;
+      const ny = m.top + m.height / 2;
+      const r = m.width / 2 * 0.9;
+      const dx = cx - nx;
+      const dy2 = cy - ny;
+      if (dx * dx + dy2 * dy2 < r * r && !gameOver) {
         const now = Date.now();
         if (now - lastHitAt > HIT_COOLDOWN_MS) {
           lastHitAt = now;

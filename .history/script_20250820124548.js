@@ -169,8 +169,6 @@ document.addEventListener('keydown', e => {
   if (levelupBox && !levelupBox.hidden && e.key === 'Enter') {
     levelupBox.hidden = true;
     paused = false;
-    updateHUD();
-    return;
   }
 
   switch (e.key) {
@@ -312,8 +310,6 @@ function updateHUD() {
 }
 
 function showLevelUp(newLevel) {
-  if (announcedLevels.has(newLevel)) return;
-  announcedLevels.add(newLevel);
   paused = true;
   pauseBox.hidden = true;
   if (levelupNum) levelupNum.textContent = String(newLevel);
@@ -498,7 +494,7 @@ function gameLoop() {
     });
 
     // Level 2 special rule: clouds bump to random position if collided
-    if (level >= 2 && (!levelupBox || levelupBox.hidden)) {
+    if (level >= 2) {
       const b = butterfly.getBoundingClientRect();
       const clouds = document.querySelectorAll('.cloud');
       for (const c of clouds) {

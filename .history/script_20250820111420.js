@@ -432,18 +432,14 @@ function gameLoop() {
 
       const b = butterfly.getBoundingClientRect();
       const m = n.el.getBoundingClientRect();
-      // Compute collision only against the hoop (ignore the handle)
-      const scaleX = m.width / NET_HOOP.view;
-      const scaleY = m.height / NET_HOOP.view;
-      const hoopX = m.left + NET_HOOP.cx * scaleX;
-      const hoopY = m.top + NET_HOOP.cy * scaleY;
-      const hoopR = NET_HOOP.r * ((scaleX + scaleY) / 2) * 0.95;
-
       const cx = b.left + b.width / 2;
       const cy = b.top + b.height / 2;
-      const dx = cx - hoopX;
-      const dy2 = cy - hoopY;
-      if ((dx * dx + dy2 * dy2) < (hoopR * hoopR) && !gameOver) {
+      const nx = m.left + m.width / 2;
+      const ny = m.top + m.height / 2;
+      const r = m.width / 2 * 0.9;
+      const dx = cx - nx;
+      const dy2 = cy - ny;
+      if (dx * dx + dy2 * dy2 < r * r && !gameOver) {
         const now = Date.now();
         if (now - lastHitAt > HIT_COOLDOWN_MS) {
           lastHitAt = now;

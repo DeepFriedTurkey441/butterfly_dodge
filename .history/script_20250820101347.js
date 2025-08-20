@@ -225,7 +225,7 @@ function checkFlowers() {
         if (lives >= MAX_LIVES_BEFORE_LEVEL) {
           level++;
           lives = 3;
-          if (!muted) sfxLevel();
+          if (!muted) sfx.level.play();
         }
       }
       updateHUD();

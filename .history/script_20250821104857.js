@@ -297,7 +297,6 @@ function checkFlowers() {
           if (!muted) sfxLevel();
           updateHUD();
           showLevelUp(level);
-          updateNetScales();
         }
       }
       updateHUD();
@@ -550,7 +549,6 @@ function gameLoop() {
             level++;
             lives = 3;
             showLevelUp(level);
-            updateNetScales();
           }
           if (!muted) sfxHit();
           if (lives <= 0) {
@@ -664,7 +662,6 @@ function startGame() {
   lives = 3;
   level = 1;
   updateHUD();
-  updateNetScales();
 
   // Clear and respawn flowers
   flowers.forEach(f => f && f.remove());

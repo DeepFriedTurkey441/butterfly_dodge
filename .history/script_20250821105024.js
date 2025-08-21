@@ -664,7 +664,6 @@ function startGame() {
   lives = 3;
   level = 1;
   updateHUD();
-  updateNetScales();
 
   // Clear and respawn flowers
   flowers.forEach(f => f && f.remove());

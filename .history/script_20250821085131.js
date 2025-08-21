@@ -517,7 +517,7 @@ function gameLoop() {
       // Use the actual rendered <circle> position if available
       let hoopX, hoopY, hoopR;
       if (n.svg) {
-        const circle = n.svg.querySelector('#hoop') || n.svg.querySelector('circle');
+        const circle = n.svg.querySelector('circle');
         const cb = circle.getBoundingClientRect();
         hoopX = cb.left + cb.width / 2;
         hoopY = cb.top + cb.height / 2;

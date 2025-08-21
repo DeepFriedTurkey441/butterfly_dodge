@@ -34,7 +34,7 @@ const svgMarkup = `
       </clipPath>
     </defs>
     <!-- Hoop -->
-    <circle id="hoop" cx="62" cy="38" r="28" fill="none" stroke="red" stroke-width="4"/>
+    <circle cx="62" cy="38" r="28" fill="none" stroke="red" stroke-width="4"/>
     <!-- Mesh (simple grid clipped to hoop) -->
     <g clip-path="url(#netHoop)" stroke="red" stroke-width="1.5" opacity="0.9">
       <path d="M34 22 H90 M34 30 H90 M34 38 H90 M34 46 H90 M34 54 H90 M34 62 H90"/>
@@ -517,7 +517,7 @@ function gameLoop() {
       // Use the actual rendered <circle> position if available
       let hoopX, hoopY, hoopR;
       if (n.svg) {
-        const circle = n.svg.querySelector('#hoop') || n.svg.querySelector('circle');
+        const circle = n.svg.querySelector('circle');
         const cb = circle.getBoundingClientRect();
         hoopX = cb.left + cb.width / 2;
         hoopY = cb.top + cb.height / 2;

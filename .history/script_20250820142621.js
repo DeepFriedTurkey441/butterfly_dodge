@@ -52,10 +52,9 @@ const NET_HOOP = { cx: 62, cy: 38, r: 28, view: 100 };
 // Wind SVG (three curved strokes)
 const WIND_SVG = `
   <svg viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg">
-    <!-- three thinner gust lines with a small curl on the right (leading) edge -->
-    <path d="M10 45 C30 45 50 42 74 36 q 10 -6 18 0 q -8 6 -16 0" stroke="#cfd3d6" stroke-width="4" stroke-linecap="round" fill="none"/>
-    <path d="M10 30 C35 30 60 28 89 22 q 10 -6 18 0 q -8 6 -16 0" stroke="#d7dbde" stroke-width="4" stroke-linecap="round" fill="none"/>
-    <path d="M10 15 C40 15 70 12 104 8 q 10 -6 18 0 q -8 6 -16 0" stroke="#e0e4e7" stroke-width="4" stroke-linecap="round" fill="none"/>
+    <path d="M10 45 C30 45 50 42 70 36" stroke="#cfd3d6" stroke-width="6" stroke-linecap="round" fill="none"/>
+    <path d="M10 30 C35 30 60 28 85 22" stroke="#d7dbde" stroke-width="6" stroke-linecap="round" fill="none"/>
+    <path d="M10 15 C40 15 70 12 100 8" stroke="#e0e4e7" stroke-width="6" stroke-linecap="round" fill="none"/>
   </svg>
 `;
 

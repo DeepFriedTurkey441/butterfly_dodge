@@ -70,7 +70,6 @@ let level = 1;
 
 // Progression rules
 const MAX_LIVES_BEFORE_LEVEL = 5; // when lives reaches 5 → level up, lives reset to 3
-const NET_SCALE_PER_LEVEL = 0.08; // nets grow 8% per level beyond 1
 
 // Butterfly state & physics
 const SPEED_LEVELS = [1, 3, 6];
@@ -330,7 +329,7 @@ function updateHUD() {
 }
 
 function updateNetScales() {
-  const scale = 1 + Math.max(0, level - 1) * NET_SCALE_PER_LEVEL;
+  const scale = 1 + Math.max(0, level - 1) * 0.03;
   nets.forEach(n => n && n.el && (n.el.style.transform = `scale(${scale})`));
 }
 
@@ -630,8 +629,8 @@ function startGame() {
     div.style.left = `${cx - 40}px`;
     div.style.top = `${window.innerHeight * 0.25}px`;
     div.innerHTML = svgMarkup;
-    // Scale nets by level
-    const scale = 1 + Math.max(0, level - 1) * NET_SCALE_PER_LEVEL;
+    // Scale nets by level: base 1.0, +3% per level beyond 1
+    const scale = 1 + Math.max(0, level - 1) * 0.03;
     div.style.transform = `scale(${scale})`;
     document.body.appendChild(div);
 

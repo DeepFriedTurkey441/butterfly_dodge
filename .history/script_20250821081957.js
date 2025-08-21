@@ -234,9 +234,6 @@ document.addEventListener('keydown', e => {
       gameOver = true;
       gameOverBox.hidden = false;
       pauseBox.hidden = true;
-      lives = 0;
-      updateHUD();
-      stopMusic();
       stopFlap();
       break;
   }

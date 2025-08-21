@@ -20,13 +20,22 @@
   <!-- Instructions screen (visible on first load only) -->
   <div id="instructions">
     <h2>Welcome to Butterfly Dodge</h2>
-    <p>Your butterfly can fly at one of three speeds from left to right. Increase the speed by pressing the right arrow key, and decrease the speed by pressing the left arrow key.</p>
-    <p>Your butterfly loses altitude if you do nothing. To gain altitude, press the space bar. A quick tap will flick up briefly, or hold it to keep gaining altitude.</p>
-    <p>Press P to pause the game.</p>
-    <p>You start with three lives. Hitting a red net costs one life. At 0 lives: Game Over.</p>
-    <p>Each flower adds +1 to your score. When your score reaches 10, you gain +1 life and your score resets to 0.</p>
-    <p>When Lives reaches 5, your Level increases by 1 and Lives reset to 3.</p>
-    <p><strong>Skill score</strong>: Your end-of-run score combines highest Level reached, total flowers collected, and remaining lives. Fewer hits and faster progress improve it.</p>
+    <ul class="intro-bullets">
+      <li>Avoid <span class="icon-net" aria-label="net" title="Avoid nets"></span> or lose one life</li>
+      <li>Drink nectar from <span class="icon-flower" aria-label="flower" title="Collect flowers"></span> to get one point per flower</li>
+      <li>10 points adds one life</li>
+      <li>0 lives = game over</li>
+    </ul>
+
+    <p><strong>Butterfly control — use keyboard</strong></p>
+    <ul class="intro-bullets">
+      <li>Press Left Arrow = slow down</li>
+      <li>Press Right Arrow = speed up</li>
+      <li>Press Spacebar = flap wings to fly up</li>
+      <li>Release Spacebar = butterfly descends</li>
+    </ul>
+
+    <p>Touch as many flowers on each pass of the screen from left to right as possible to increase your <strong>Skill</strong> score (average flowers touched per pass).</p>
     <p><em>Press Enter to begin…</em></p>
   </div>
 

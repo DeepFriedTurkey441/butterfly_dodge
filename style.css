@@ -28,6 +28,25 @@ body {
   line-height: 1.5;
 }
 
+.intro-bullets { margin: 8px 0 10px 22px; }
+.icon-net {
+  display: inline-block;
+  width: 1.2em; height: 1.2em;
+  vertical-align: -0.2em;
+  background: none;
+  position: relative;
+}
+.icon-net::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="62" cy="38" r="28" fill="none" stroke="red" stroke-width="10"/><path d="M20 85 L55 55" stroke="red" stroke-width="12" stroke-linecap="round"/></svg>');
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+.icon-flower { display:inline-block; width:1.2em; height:1.2em; vertical-align:-0.2em; }
+.icon-flower::before { content:'🌸'; display:block; line-height:1.2; }
+
 #game-area {
   position: relative;
   width: 100vw;

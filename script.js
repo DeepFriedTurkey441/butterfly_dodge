@@ -314,21 +314,38 @@ function checkFlowers() {
       // Chance to trigger Super Butterfly on L4+ when touching a flower
       if (!isSuper && level >= 4) {
         const shouldTrigger = (!superShownFirst) || (Math.random() < 0.10);
-        if (shouldTrigger) {
-          activateSuper(15000); // 15 seconds
-        }
+        if (shouldTrigger) activateSuper(15000); // 15 seconds
       }
 
-      // While super: slide this flower to the left edge and restart pass
+      // While super: handle this collision specially and exit early
       if (isSuper) {
+        if (!muted) sfxFlower();
+        // Slide this flower to the left edge and then replace it to maintain count
         f.style.transition = 'transform 450ms ease, opacity 450ms ease';
         const fx = f.getBoundingClientRect().left;
-        const dx = - (fx + 40);
+        const dx = - (fx + 50);
         f.style.transform = `translateX(${dx}px)`;
         setTimeout(() => { try { f.remove(); } catch(_){} }, 500);
-        // Restart pass by snapping x slightly left so the pass continues
+
+        // Spawn a replacement flower at a new random location
+        const w = window.innerWidth * 0.75;
+        const h = window.innerHeight * 0.75;
+        const x0 = (window.innerWidth - w) / 2;
+        const y0 = (window.innerHeight - h) / 2;
+        const newFlower = document.createElement('div');
+        newFlower.className = 'flower';
+        newFlower.innerText = '🌸';
+        newFlower.style.left = `${x0 + Math.random() * w}px`;
+        newFlower.style.top = `${y0 + Math.random() * h}px`;
+        document.body.appendChild(newFlower);
+        flowers[i] = newFlower;
+
+        // Restart pass by nudging the butterfly left so the pass continues
         bx = Math.max(0, bx - 30);
         butterfly.style.left = bx + 'px';
+
+        updateHUD();
+        return; // prevent normal pop/remove logic
       }
       // pop animation
       f.classList.add('pop');

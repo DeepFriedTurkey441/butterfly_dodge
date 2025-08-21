@@ -14,6 +14,7 @@ const musicVolumeSlider = document.getElementById('music-volume');
 const levelupBox = document.getElementById('levelup');
 const levelupNum = document.getElementById('levelup-num');
 const levelupDetails = document.getElementById('levelup-details');
+const skillBox = document.getElementById('skill');
 
 // Game control flags
 let gameStarted = false;
@@ -67,6 +68,11 @@ const flowers = [];
 let score = 0;
 let lives = 3;
 let level = 1;
+
+// Skill score: running average of flowers collected per left→right pass
+let skillPassCount = 0;
+let skillFlowersThisPass = 0;
+let skillAvgFlowersPerPass = 0; // displayed as 0.000
 
 // Progression rules
 const MAX_LIVES_BEFORE_LEVEL = 5; // when lives reaches 5 → level up, lives reset to 3
@@ -285,6 +291,8 @@ function checkFlowers() {
     if (f && isColliding(butterfly, f)) {
       // Flowers add to score
       score++;
+      // Track for skill metric (flowers per pass)
+      skillFlowersThisPass += 1;
       // pop animation
       f.classList.add('pop');
       if (!muted) sfxFlower();
@@ -327,6 +335,7 @@ function updateHUD() {
   scoreBox.innerText = `Score: ${score}`;
   livesBox.innerText = `Lives: ${lives}`;
   levelBox.innerText = `Level: ${level}`;
+  if (skillBox) skillBox.innerText = `Skill: ${skillAvgFlowersPerPass.toFixed(3)}`;
 }
 
 function updateNetScales() {
@@ -501,7 +510,15 @@ function gameLoop() {
   if (!running) return;
   if (!paused) {
     bx += speed;
-    if (bx > window.innerWidth) bx = -50;
+    if (bx > window.innerWidth) {
+      // Completed a left→right pass; update running average and reset counter
+      skillPassCount += 1;
+      const totalPrev = skillAvgFlowersPerPass * (skillPassCount - 1);
+      skillAvgFlowersPerPass = (totalPrev + skillFlowersThisPass) / skillPassCount;
+      skillFlowersThisPass = 0;
+      if (skillBox) skillBox.innerText = `Skill: ${skillAvgFlowersPerPass.toFixed(3)}`;
+      bx = -50;
+    }
 
     dy = spacePressed
       ? Math.max(MAX_RISE_SPEED, dy - 0.5)
@@ -664,6 +681,10 @@ function startGame() {
   score = 0;
   lives = 3;
   level = 1;
+  // Reset skill metric
+  skillPassCount = 0;
+  skillFlowersThisPass = 0;
+  skillAvgFlowersPerPass = 0;
   updateHUD();
   updateNetScales();
 

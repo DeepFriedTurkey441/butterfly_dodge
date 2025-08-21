@@ -62,12 +62,20 @@ body {
 /* HUD container to keep all labels on one line with fixed spaces */
 #hud {
   position: absolute;
-  top: 10px;
+  top: 6px;
   left: 10px;
   right: 10px;
   font-size: calc(var(--u) * 3);
   white-space: pre; /* preserve spaces between spans */
   text-shadow: 0 1px 0 rgba(255,255,255,0.5), 0 2px 4px rgba(0,0,0,0.25);
+}
+
+/* Place Skill at the top-right corner */
+#skill {
+  position: absolute;
+  top: 0;
+  right: 10px;
+  margin-right: 8px; /* ensure it does not hug the edge */
 }
 
 #mute-btn {

@@ -14,6 +14,8 @@ const musicVolumeSlider = document.getElementById('music-volume');
 const levelupBox = document.getElementById('levelup');
 const levelupNum = document.getElementById('levelup-num');
 const levelupDetails = document.getElementById('levelup-details');
+const superMsg = document.getElementById('supermsg');
+const superMsgText = document.getElementById('supermsg-text');
 const skillBox = document.getElementById('skill');
 
 // Game control flags
@@ -73,6 +75,11 @@ let level = 1;
 let skillPassCount = 0;
 let skillFlowersThisPass = 0;
 let skillAvgFlowersPerPass = 0; // displayed as 0.000
+
+// Super Butterfly state
+let isSuper = false;
+let superUntil = 0; // timestamp ms
+let superShownFirst = false; // whether the first-time message has been shown
 
 // Progression rules
 const MAX_LIVES_BEFORE_LEVEL = 5; // when lives reaches 5 → level up, lives reset to 3
@@ -193,6 +200,13 @@ document.addEventListener('keydown', e => {
     updateHUD();
     return;
   }
+  // Resume from super message overlay with Enter
+  if (superMsg && !superMsg.hidden && e.key === 'Enter') {
+    superMsg.hidden = true;
+    paused = false;
+    updateHUD();
+    return;
+  }
 
   switch (e.key) {
     case 'ArrowRight':
@@ -296,6 +310,26 @@ function checkFlowers() {
       score++;
       // Track for skill metric (flowers per pass)
       skillFlowersThisPass += 1;
+
+      // Chance to trigger Super Butterfly on L4+ when touching a flower
+      if (!isSuper && level >= 4) {
+        const shouldTrigger = (!superShownFirst) || (Math.random() < 0.10);
+        if (shouldTrigger) {
+          activateSuper(15000); // 15 seconds
+        }
+      }
+
+      // While super: slide this flower to the left edge and restart pass
+      if (isSuper) {
+        f.style.transition = 'transform 450ms ease, opacity 450ms ease';
+        const fx = f.getBoundingClientRect().left;
+        const dx = - (fx + 40);
+        f.style.transform = `translateX(${dx}px)`;
+        setTimeout(() => { try { f.remove(); } catch(_){} }, 500);
+        // Restart pass by snapping x slightly left so the pass continues
+        bx = Math.max(0, bx - 30);
+        butterfly.style.left = bx + 'px';
+      }
       // pop animation
       f.classList.add('pop');
       if (!muted) sfxFlower();
@@ -512,6 +546,11 @@ if (musicVolumeSlider) {
 function gameLoop() {
   if (!running) return;
   if (!paused) {
+    // Expire Super state
+    if (isSuper && performance.now() > superUntil) {
+      isSuper = false;
+      document.body.classList.remove('super');
+    }
     bx += speed;
     if (bx > window.innerWidth) {
       // Completed a left→right pass; update running average and reset counter
@@ -688,6 +727,10 @@ function startGame() {
   skillPassCount = 0;
   skillFlowersThisPass = 0;
   skillAvgFlowersPerPass = 0;
+  // Reset super
+  isSuper = false;
+  superUntil = 0;
+  // Note: keep superShownFirst false so first time can occur at L4
   updateHUD();
   updateNetScales();
 
@@ -709,4 +752,18 @@ function startGame() {
 
 function restartGame() {
   startGame();
+}
+
+function activateSuper(durationMs) {
+  isSuper = true;
+  superUntil = performance.now() + durationMs;
+  document.body.classList.add('super');
+  if (!superShownFirst) {
+    superShownFirst = true;
+    if (superMsg && superMsgText) {
+      superMsgText.textContent = "Congrats! You're now a super butterfly for the next 15 seconds.";
+      paused = true;
+      superMsg.hidden = false;
+    }
+  }
 }

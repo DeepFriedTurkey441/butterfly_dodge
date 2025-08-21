@@ -17,7 +17,7 @@ body {
   background-color: skyblue;
   color: black;
   font-family: monospace;
-  font-size: calc(var(--u) * 2.5);
+  font-size: clamp(16px, calc(var(--u) * 2.5), 28px);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -26,6 +26,7 @@ body {
   box-sizing: border-box;
   text-align: left;
   line-height: 1.5;
+  overflow: auto; /* allow scroll at extreme zoom */
 }
 
 .intro-bullets { margin: 8px 0 10px 22px; }
@@ -63,23 +64,24 @@ body {
   transform-origin: center center;
 }
 
-/* HUD container to keep all labels on one line with fixed spaces */
+/* HUD container - responsive row with wrapping */
 #hud {
   position: absolute;
   top: 6px;
   left: 10px;
   right: 10px;
-  font-size: calc(var(--u) * 3);
-  white-space: pre; /* preserve spaces between spans */
+  font-size: clamp(12px, calc(var(--u) * 3), 24px);
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 12px;
+  row-gap: 4px;
   text-shadow: 0 1px 0 rgba(255,255,255,0.5), 0 2px 4px rgba(0,0,0,0.25);
 }
 
-/* Place Skill at the top-right corner */
+/* Place Skill at the end of the row; it will wrap if space is tight */
 #skill {
-  position: absolute;
-  top: 0;
-  right: 10px;
-  margin-right: 8px; /* ensure it does not hug the edge */
+  margin-left: auto;
+  padding-left: 12px;
 }
 
 #mute-btn {

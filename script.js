@@ -146,6 +146,9 @@ if (muteBtn) {
   });
 }
 if (muteSfxBtn) {
+  // Prevent space/enter from toggling the button when it accidentally has focus
+  muteSfxBtn.addEventListener('mousedown', (e) => { e.preventDefault(); });
+  muteSfxBtn.addEventListener('keydown', (e) => { e.preventDefault(); });
   muteSfxBtn.addEventListener('click', () => {
     muted = !muted;
     muteSfxBtn.textContent = muted ? '🔇' : '🔊';

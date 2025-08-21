@@ -391,10 +391,10 @@ function startMusic() {
   const minorPent = [0, 3, 5, 7, 10];
 
   let step = 0;
-  const tick = () => {
+  const interval = setInterval(() => {
     if (musicMuted) return;
     // Speed up at level 3+
-    const effectiveStepMs = level >= 3 ? 240 : 300; // recompute each tick so tempo responds to level changes
+    if (level >= 3) stepMs = 240; // ~125 BPM
     const now = audioCtx.currentTime;
     const bar = Math.floor(step / stepsPerBar) % PROG.length;
     const beatInBar = step % stepsPerBar;
@@ -431,16 +431,14 @@ function startMusic() {
     leadGain.gain.exponentialRampToValueAtTime(0.0001, now + stepMs / 1000 * 0.8);
 
     step++;
-    // Schedule next tick using setTimeout so tempo can vary at runtime
-    musicNodes.interval = setTimeout(tick, effectiveStepMs);
-  };
-  musicNodes = { master, leadOsc, leadGain, bassOsc, bassGain, interval: null };
-  tick();
+  }, stepMs);
+
+  musicNodes = { master, interval, leadOsc, leadGain, bassOsc, bassGain };
 }
 
 function stopMusic() {
   if (!musicNodes) return;
-  clearTimeout(musicNodes.interval);
+  clearInterval(musicNodes.interval);
   try { musicNodes.leadOsc.stop(); } catch (_) {}
   try { musicNodes.bassOsc.stop(); } catch (_) {}
   musicNodes = null;

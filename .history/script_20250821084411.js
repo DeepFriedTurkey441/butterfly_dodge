@@ -514,21 +514,11 @@ function gameLoop() {
       const b = butterfly.getBoundingClientRect();
       const m = n.el.getBoundingClientRect();
       // Compute collision only against the hoop (ignore the handle)
-      // Use the actual rendered <circle> position if available
-      let hoopX, hoopY, hoopR;
-      if (n.svg) {
-        const circle = n.svg.querySelector('circle');
-        const cb = circle.getBoundingClientRect();
-        hoopX = cb.left + cb.width / 2;
-        hoopY = cb.top + cb.height / 2;
-        hoopR = (cb.width / 2) * 0.95;
-      } else {
-        const scaleX = m.width / NET_HOOP.view;
-        const scaleY = m.height / NET_HOOP.view;
-        hoopX = m.left + NET_HOOP.cx * scaleX;
-        hoopY = m.top + NET_HOOP.cy * scaleY;
-        hoopR = NET_HOOP.r * ((scaleX + scaleY) / 2) * 0.95;
-      }
+      const scaleX = m.width / NET_HOOP.view;
+      const scaleY = m.height / NET_HOOP.view;
+      const hoopX = m.left + NET_HOOP.cx * scaleX;
+      const hoopY = m.top + NET_HOOP.cy * scaleY;
+      const hoopR = NET_HOOP.r * ((scaleX + scaleY) / 2) * 0.95;
 
       const cx = b.left + b.width / 2;
       const cy = b.top + b.height / 2;
@@ -627,11 +617,9 @@ function startGame() {
     div.style.transform = `scale(${scale})`;
     document.body.appendChild(div);
 
-    const svgEl = div.querySelector('svg');
-
     let speedY = BASE_NET_SPEED + i * SPEED_INCREMENT;
     if (i >= NUM_NETS - 3) speedY *= 0.7;
-    nets.push({ el: div, svg: svgEl, y: window.innerHeight * 0.25, dir: 1, speedY });
+    nets.push({ el: div, y: window.innerHeight * 0.25, dir: 1, speedY });
   }
 
   // Reset butterfly physics

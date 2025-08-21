@@ -52,10 +52,10 @@ const NET_HOOP = { cx: 62, cy: 38, r: 28, view: 100 };
 // Wind SVG (three curved strokes)
 const WIND_SVG = `
   <svg viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg">
-    <!-- Leading-edge micro-curl (hook), no loop; thinner strokes -->
-    <path d="M22 45 q -4 -3 -3 -6 q 3 -3 8 -2 C 42 41 80 38 118 35" stroke="#cfd3d6" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-    <path d="M22 30 q -4 -3 -3 -6 q 3 -3 8 -2 C 48 28 86 25 118 21" stroke="#d7dbde" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-    <path d="M22 15 q -4 -3 -3 -6 q 3 -3 8 -2 C 54 13 94 10 118 8" stroke="#e0e4e7" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <!-- Leading-edge curl: a small hook at the LEFT, no loop; then smooth sweep right -->
+    <path d="M24 45 c -6 -4 -6 -8 0 -10 c 8 -2 16 -1 22 0 C 56 42 92 39 118 36" stroke="#cfd3d6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <path d="M24 30 c -6 -4 -6 -8 0 -10 c 8 -2 16 -1 22 0 C 61 29 96 26 118 22" stroke="#d7dbde" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <path d="M24 15 c -6 -4 -6 -8 0 -10 c 8 -2 16 -1 22 0 C 66 14 102 11 118 8" stroke="#e0e4e7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
   </svg>
 `;
 

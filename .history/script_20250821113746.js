@@ -70,7 +70,7 @@ let level = 1;
 
 // Progression rules
 const MAX_LIVES_BEFORE_LEVEL = 5; // when lives reaches 5 → level up, lives reset to 3
-const NET_SCALE_PER_LEVEL = 0.15; // nets grow 15% per level beyond 1
+const NET_SCALE_PER_LEVEL = 0.08; // nets grow 8% per level beyond 1
 
 // Butterfly state & physics
 const SPEED_LEVELS = [1, 3, 6];

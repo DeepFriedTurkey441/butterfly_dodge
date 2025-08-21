@@ -24,7 +24,17 @@
       <li>Avoid 
         <span class="ico" aria-hidden="true">
           <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <!-- Hoop -->
             <circle cx="62" cy="38" r="24" fill="none" stroke="red" stroke-width="8"/>
+            <!-- Mesh inside the hoop (simple grid clipped to circle) -->
+            <defs>
+              <clipPath id="introNetClip"><circle cx="62" cy="38" r="24"/></clipPath>
+            </defs>
+            <g clip-path="url(#introNetClip)" stroke="red" stroke-width="3" opacity="0.9">
+              <path d="M38 22 H86 M38 30 H86 M38 38 H86 M38 46 H86 M38 54 H86"/>
+              <path d="M46 14 V62 M54 14 V62 M62 14 V62 M70 14 V62 M78 14 V62"/>
+            </g>
+            <!-- Handle -->
             <path d="M24 84 L55 55" stroke="red" stroke-width="10" stroke-linecap="round"/>
           </svg>
         </span>

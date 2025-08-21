@@ -610,9 +610,6 @@ function startGame() {
     div.style.left = `${cx - 40}px`;
     div.style.top = `${window.innerHeight * 0.25}px`;
     div.innerHTML = svgMarkup;
-    // Scale nets by level: base 1.0, +3% per level beyond 1
-    const scale = 1 + Math.max(0, level - 1) * 0.03;
-    div.style.transform = `scale(${scale})`;
     document.body.appendChild(div);
 
     let speedY = BASE_NET_SPEED + i * SPEED_INCREMENT;

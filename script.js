@@ -766,7 +766,7 @@ function gameLoop() {
     if (isSuper) {
       const msLeft = Math.max(0, superUntil - performance.now());
       const secsLeft = Math.ceil(msLeft / 1000);
-      superTimer.textContent = `Super: ${secsLeft}s`;
+      superTimer.textContent = String(secsLeft);
       superTimer.hidden = false;
     } else {
       superTimer.hidden = true;

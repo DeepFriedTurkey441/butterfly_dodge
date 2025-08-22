@@ -659,17 +659,6 @@ function gameLoop() {
     butterfly.style.left = bx + 'px';
     butterfly.style.top = by + 'px';
 
-    // Position/update super timer if active
-    if (isSuper && superTimer) {
-      const msLeft = Math.max(0, superUntil - performance.now());
-      const secsLeft = Math.ceil(msLeft / 1000);
-      superTimer.textContent = String(secsLeft);
-      superTimer.hidden = false;
-      // Position to the right of butterfly
-      positionSuperTimer();
-    } else if (superTimer) {
-      superTimer.hidden = true;
-    }
 
     checkFlowers();
 
@@ -771,6 +760,18 @@ function gameLoop() {
           break;
         }
       }
+    }
+  }
+  // Always update/show super timer every frame (even when paused)
+  if (superTimer) {
+    if (isSuper) {
+      const msLeft = Math.max(0, superUntil - performance.now());
+      const secsLeft = Math.ceil(msLeft / 1000);
+      superTimer.textContent = String(secsLeft);
+      superTimer.hidden = false;
+      positionSuperTimer();
+    } else {
+      superTimer.hidden = true;
     }
   }
   requestAnimationFrame(gameLoop);

@@ -80,6 +80,17 @@ let skillAvgFlowersPerPass = 0; // displayed as 0.000
 let isSuper = false;
 let superUntil = 0; // timestamp ms
 let superShownFirst = false; // whether the first-time message has been shown
+// Super slide state: move butterfly and collided flower together to the left edge
+const superSlide = {
+  active: false,
+  flower: null,
+  flowerIndex: -1,
+  startX: 0,
+  targetX: 0,
+  relOffset: 0,
+  startAt: 0,
+  duration: 420
+};
 
 // Progression rules
 const MAX_LIVES_BEFORE_LEVEL = 5; // when lives reaches 5 → level up, lives reset to 3
@@ -304,6 +315,8 @@ function spawnFlowers() {
 }
 
 function checkFlowers() {
+  // If we are mid super slide, skip new flower handling this frame
+  if (superSlide.active) return;
   flowers.forEach((f, i) => {
     if (f && isColliding(butterfly, f)) {
       // Flowers add to score
@@ -320,30 +333,18 @@ function checkFlowers() {
       // While super: handle this collision specially and exit early
       if (isSuper) {
         if (!muted) sfxFlower();
-        // Slide this flower to the left edge and then replace it to maintain count
-        f.style.transition = 'transform 450ms ease, opacity 450ms ease';
-        const fx = f.getBoundingClientRect().left;
-        const dx = - (fx + 50);
-        f.style.transform = `translateX(${dx}px)`;
-        setTimeout(() => { try { f.remove(); } catch(_){} }, 500);
-
-        // Spawn a replacement flower at a new random location
-        const w = window.innerWidth * 0.75;
-        const h = window.innerHeight * 0.75;
-        const x0 = (window.innerWidth - w) / 2;
-        const y0 = (window.innerHeight - h) / 2;
-        const newFlower = document.createElement('div');
-        newFlower.className = 'flower';
-        newFlower.innerText = '🌸';
-        newFlower.style.left = `${x0 + Math.random() * w}px`;
-        newFlower.style.top = `${y0 + Math.random() * h}px`;
-        document.body.appendChild(newFlower);
-        flowers[i] = newFlower;
-
-        // Restart pass by nudging the butterfly left so the pass continues
-        bx = Math.max(0, bx - 30);
-        butterfly.style.left = bx + 'px';
-
+        // Begin a slide of butterfly + this flower to the left edge
+        const rect = f.getBoundingClientRect();
+        const flowerLeft = rect.left;
+        superSlide.active = true;
+        superSlide.flower = f;
+        superSlide.flowerIndex = i;
+        superSlide.startX = bx;
+        superSlide.targetX = 0;
+        superSlide.relOffset = flowerLeft - bx; // keep current spacing
+        superSlide.startAt = performance.now();
+        f.style.position = 'absolute';
+        f.style.zIndex = '2';
         updateHUD();
         return; // prevent normal pop/remove logic
       }
@@ -568,15 +569,48 @@ function gameLoop() {
       isSuper = false;
       document.body.classList.remove('super');
     }
-    bx += speed;
-    if (bx > window.innerWidth) {
-      // Completed a left→right pass; update running average and reset counter
-      skillPassCount += 1;
-      const totalPrev = skillAvgFlowersPerPass * (skillPassCount - 1);
-      skillAvgFlowersPerPass = (totalPrev + skillFlowersThisPass) / skillPassCount;
-      skillFlowersThisPass = 0;
-      if (skillBox) skillBox.innerText = `Skill: ${skillAvgFlowersPerPass.toFixed(3)}`;
-      bx = -50;
+    // Handle super slide tween
+    if (superSlide.active) {
+      const now = performance.now();
+      const t = Math.min(1, (now - superSlide.startAt) / superSlide.duration);
+      bx = superSlide.startX + (superSlide.targetX - superSlide.startX) * t;
+      butterfly.style.left = bx + 'px';
+      if (superSlide.flower) {
+        const fX = bx + superSlide.relOffset;
+        superSlide.flower.style.left = fX + 'px';
+      }
+      if (t >= 1) {
+        // Slide finished: remove slid flower and spawn a replacement
+        const idx = superSlide.flowerIndex;
+        try { superSlide.flower && superSlide.flower.remove(); } catch(_) {}
+        if (idx >= 0) {
+          const w = window.innerWidth * 0.75;
+          const h = window.innerHeight * 0.75;
+          const x0 = (window.innerWidth - w) / 2;
+          const y0 = (window.innerHeight - h) / 2;
+          const nf = document.createElement('div');
+          nf.className = 'flower';
+          nf.innerText = '🌸';
+          nf.style.left = `${x0 + Math.random() * w}px`;
+          nf.style.top = `${y0 + Math.random() * h}px`;
+          document.body.appendChild(nf);
+          flowers[idx] = nf;
+        }
+        superSlide.active = false;
+        superSlide.flower = null;
+        superSlide.flowerIndex = -1;
+      }
+    } else {
+      bx += speed;
+      if (bx > window.innerWidth) {
+        // Completed a left→right pass; update running average and reset counter
+        skillPassCount += 1;
+        const totalPrev = skillAvgFlowersPerPass * (skillPassCount - 1);
+        skillAvgFlowersPerPass = (totalPrev + skillFlowersThisPass) / skillPassCount;
+        skillFlowersThisPass = 0;
+        if (skillBox) skillBox.innerText = `Skill: ${skillAvgFlowersPerPass.toFixed(3)}`;
+        bx = -50;
+      }
     }
 
     dy = spacePressed

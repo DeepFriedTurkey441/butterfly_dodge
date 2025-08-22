@@ -19,8 +19,10 @@ const superMsgText = document.getElementById('supermsg-text');
 const skillBox = document.getElementById('skill');
 const superTimer = document.getElementById('super-timer');
 function positionSuperTimer() {
-  // Fixed position on the left under the HUD so it is always visible
-  // Styles are handled in CSS; this is a no-op kept for compatibility
+  if (!superTimer) return;
+  // Place just to the left of the butterfly
+  superTimer.style.left = (bx - 28) + 'px';
+  superTimer.style.top = (by - 8) + 'px';
 }
 
 
@@ -768,6 +770,7 @@ function gameLoop() {
       const secsLeft = Math.ceil(msLeft / 1000);
       superTimer.textContent = String(secsLeft);
       superTimer.hidden = false;
+      positionSuperTimer();
     } else {
       superTimer.hidden = true;
     }

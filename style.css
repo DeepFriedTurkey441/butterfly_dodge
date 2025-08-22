@@ -51,8 +51,6 @@ body {
 /* Super timer badge next to butterfly */
 #super-timer {
   position: absolute;
-  top: 36px; /* below HUD */
-  left: 10px;
   font-size: calc(var(--u) * 3);
   color: #000;
   background: transparent;

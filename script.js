@@ -690,7 +690,8 @@ function gameLoop() {
       const cy = b.top + b.height / 2;
       const dx = cx - hoopX;
       const dy2 = cy - hoopY;
-      if ((dx * dx + dy2 * dy2) < (hoopR * hoopR) && !gameOver) {
+      // Ignore net collisions while super slide is actively pushing left
+      if ((dx * dx + dy2 * dy2) < (hoopR * hoopR) && !gameOver && !superSlide.active) {
         const now = Date.now();
         if (now - lastHitAt > HIT_COOLDOWN_MS) {
           lastHitAt = now;

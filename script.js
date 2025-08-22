@@ -347,10 +347,9 @@ function checkFlowers() {
       // Track for skill metric (flowers per pass)
       skillFlowersThisPass += 1;
 
-      // Chance to trigger Super Butterfly on L4+ when touching a flower
-      if (!isSuper && level >= 4) {
-        const shouldTrigger = (!superShownFirst) || (Math.random() < 0.10);
-        if (shouldTrigger) activateSuper(15000); // 15 seconds
+      // Trigger Super Butterfly on L4+ when Skill average exceeds threshold
+      if (!isSuper && level >= 4 && skillAvgFlowersPerPass > 6) {
+        activateSuper(15000); // 15 seconds
       }
 
       // While super: handle this collision specially and exit early

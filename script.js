@@ -17,6 +17,7 @@ const levelupDetails = document.getElementById('levelup-details');
 const superMsg = document.getElementById('supermsg');
 const superMsgText = document.getElementById('supermsg-text');
 const skillBox = document.getElementById('skill');
+const superTimer = document.getElementById('super-timer');
 
 // Game control flags
 let gameStarted = false;
@@ -334,8 +335,8 @@ function checkFlowers() {
   if (superSlide.active) return;
   flowers.forEach((f, i) => {
     if (f && isColliding(butterfly, f)) {
-      // Flowers add to score
-      score++;
+      // Flowers add to score (2 points if super; 1 otherwise)
+      score += isSuper ? 2 : 1;
       // Track for skill metric (flowers per pass)
       skillFlowersThisPass += 1;
 
@@ -596,6 +597,7 @@ function gameLoop() {
     if (isSuper && performance.now() > superUntil) {
       isSuper = false;
       document.body.classList.remove('super');
+      if (superTimer) superTimer.hidden = true;
     }
     // Handle super slide tween
     if (superSlide.active) {
@@ -648,6 +650,15 @@ function gameLoop() {
     by = Math.max(0, Math.min(window.innerHeight - 30, by + dy));
     butterfly.style.left = bx + 'px';
     butterfly.style.top = by + 'px';
+
+    // Position/update super timer if active
+    if (isSuper && superTimer) {
+      const secsLeft = Math.max(0, Math.ceil((superUntil - performance.now()) / 1000));
+      superTimer.textContent = String(secsLeft);
+      superTimer.hidden = false;
+      superTimer.style.left = (bx + 28) + 'px';
+      superTimer.style.top = (by - 8) + 'px';
+    }
 
     checkFlowers();
 
@@ -837,6 +848,7 @@ function activateSuper(durationMs) {
   isSuper = true;
   superUntil = performance.now() + durationMs;
   document.body.classList.add('super');
+  if (superTimer) superTimer.hidden = false;
   if (!superShownFirst) {
     superShownFirst = true;
     if (superMsg && superMsgText) {

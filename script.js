@@ -556,8 +556,8 @@ let windSpawnAt = 0;
 function spawnAndMoveWinds() {
   const now = performance.now();
   if (now > windSpawnAt) {
-    // Spawn a wind puff on the right edge ~25% of the time (about half as many)
-    if (Math.random() < 0.25) {
+    // Spawn a wind puff on the right edge ~12.5% of the time (half as many)
+    if (Math.random() < 0.125) {
       const el = document.createElement('div');
       el.className = 'wind';
       el.style.top = `${Math.random() * (window.innerHeight - 80) + 20}px`;
@@ -565,8 +565,8 @@ function spawnAndMoveWinds() {
       el.innerHTML = WIND_SVG;
       document.body.appendChild(el);
       // Animate leftward using dataset speed
-      // Reduce speed by ~15% (from 4–8 to ~3.4–6.8)
-      el.dataset.vx = String(3.4 + Math.random() * 3.4);
+      // Reduce speed by ~25% (from 4–8 to ~3.0–6.0)
+      el.dataset.vx = String(3.0 + Math.random() * 3.0);
       setTimeout(() => el.remove(), 10000);
     }
     windSpawnAt = now + 500; // try spawn every ~0.5s
@@ -653,11 +653,15 @@ function gameLoop() {
 
     // Position/update super timer if active
     if (isSuper && superTimer) {
-      const secsLeft = Math.max(0, Math.ceil((superUntil - performance.now()) / 1000));
+      const msLeft = Math.max(0, superUntil - performance.now());
+      const secsLeft = Math.ceil(msLeft / 1000);
       superTimer.textContent = String(secsLeft);
       superTimer.hidden = false;
-      superTimer.style.left = (bx + 28) + 'px';
-      superTimer.style.top = (by - 8) + 'px';
+      // Position to the right of butterfly
+      superTimer.style.left = (bx + 40) + 'px';
+      superTimer.style.top = (by - 10) + 'px';
+    } else if (superTimer) {
+      superTimer.hidden = true;
     }
 
     checkFlowers();

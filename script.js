@@ -14,7 +14,17 @@ const musicVolumeSlider = document.getElementById('music-volume');
 const levelupBox = document.getElementById('levelup');
 const levelupNum = document.getElementById('levelup-num');
 const levelupDetails = document.getElementById('levelup-details');
+const superMsg = document.getElementById('supermsg');
+const superMsgText = document.getElementById('supermsg-text');
 const skillBox = document.getElementById('skill');
+const superTimer = document.getElementById('super-timer');
+function positionSuperTimer() {
+  if (!superTimer) return;
+  // Place just to the left of the butterfly
+  superTimer.style.left = (bx - 28) + 'px';
+  superTimer.style.top = (by - 8) + 'px';
+}
+
 
 // Game control flags
 let gameStarted = false;
@@ -73,6 +83,25 @@ let level = 1;
 let skillPassCount = 0;
 let skillFlowersThisPass = 0;
 let skillAvgFlowersPerPass = 0; // displayed as 0.000
+
+// Super Butterfly state
+let isSuper = false;
+let superUntil = 0; // timestamp ms
+let superShownFirst = false; // whether the first-time message has been shown
+// Super slide state: move butterfly and collided flower together to the left edge
+const superSlide = {
+  active: false,
+  flower: null,
+  flowerIndex: -1,
+  startX: 0,
+  targetX: 0,
+  relOffset: 0,
+  startAt: 0,
+  duration: 420
+};
+
+// Developer easter egg: allow starting at any level from instructions screen
+let devStartLevel = null; // when set, startGame will use this level instead of 1
 
 // Progression rules
 const MAX_LIVES_BEFORE_LEVEL = 5; // when lives reaches 5 → level up, lives reset to 3
@@ -181,6 +210,18 @@ document.addEventListener('keydown', e => {
     return;
   }
 
+  // Developer easter egg: SHIFT + M on instructions screen sets starting level
+  if (!gameStarted && (e.code === 'KeyM' || (e.key && e.key.toLowerCase() === 'm')) && e.shiftKey) {
+    const input = prompt('Developer mode: Start at level (1-99)?', String(level));
+    if (input !== null) {
+      const n = Math.max(1, Math.min(99, Math.floor(Number(input)) || 1));
+      devStartLevel = n;
+      // Provide quick visual feedback
+      try { alert(`Will start at level ${n}. Press Enter to begin.`); } catch (_) {}
+    }
+    return;
+  }
+
   if (gameOver) {
     if (e.key.toLowerCase() === 'y') restartGame();
     return;
@@ -189,6 +230,13 @@ document.addEventListener('keydown', e => {
   // Resume from level-up overlay with Enter
   if (levelupBox && !levelupBox.hidden && e.key === 'Enter') {
     levelupBox.hidden = true;
+    paused = false;
+    updateHUD();
+    return;
+  }
+  // Resume from super message overlay with Enter
+  if (superMsg && !superMsg.hidden && e.key === 'Enter') {
+    superMsg.hidden = true;
     paused = false;
     updateHUD();
     return;
@@ -290,16 +338,55 @@ function spawnFlowers() {
 }
 
 function checkFlowers() {
+  // If we are mid super slide, skip new flower handling this frame
+  if (superSlide.active) return;
   flowers.forEach((f, i) => {
     if (f && isColliding(butterfly, f)) {
-      // Flowers add to score
-      score++;
+      // Flowers add to score (2 points if super; 1 otherwise)
+      score += isSuper ? 2 : 1;
       // Track for skill metric (flowers per pass)
       skillFlowersThisPass += 1;
+
+      // Trigger Super Butterfly on L4+ when Skill average exceeds threshold
+      if (!isSuper && level >= 4 && skillAvgFlowersPerPass > 6) {
+        activateSuper(15000); // 15 seconds
+      }
+
+      // While super: handle this collision specially and exit early
+      if (isSuper) {
+        if (!muted) sfxFlower();
+        // Apply score→life rollover while in super mode as well
+        if (score >= 10) {
+          lives += 1;
+          score = 0;
+          if (lives >= MAX_LIVES_BEFORE_LEVEL) {
+            level++;
+            lives = 3;
+            if (!muted) sfxLevel();
+            updateHUD();
+            showLevelUp(level);
+            updateNetScales();
+          }
+        }
+        // Begin a slide of butterfly + this flower to the left edge
+        const rect = f.getBoundingClientRect();
+        const flowerLeft = rect.left;
+        superSlide.active = true;
+        superSlide.flower = f;
+        superSlide.flowerIndex = i;
+        superSlide.startX = bx;
+        superSlide.targetX = 0;
+        superSlide.relOffset = flowerLeft - bx; // keep current spacing
+        superSlide.startAt = performance.now();
+        f.style.position = 'absolute';
+        f.style.zIndex = '2';
+        updateHUD();
+        return; // prevent normal pop/remove logic
+      }
       // pop animation
       f.classList.add('pop');
       if (!muted) sfxFlower();
-      // When score hits 10 exactly: +1 life and reset score to 0
+      // When score reaches 10 or more: +1 life and reset score to 0
       if (score >= 10) {
         lives += 1;
         score = 0;
@@ -342,7 +429,9 @@ function updateHUD() {
 }
 
 function updateNetScales() {
-  const scale = 1 + Math.max(0, level - 1) * NET_SCALE_PER_LEVEL;
+  // From level 4 up, keep nets at level-3 size (no further growth)
+  const effectiveLevel = Math.min(level, 3);
+  const scale = 1 + Math.max(0, effectiveLevel - 1) * NET_SCALE_PER_LEVEL;
   nets.forEach(n => n && n.el && (n.el.style.transform = `scale(${scale})`));
 }
 
@@ -475,8 +564,8 @@ let windSpawnAt = 0;
 function spawnAndMoveWinds() {
   const now = performance.now();
   if (now > windSpawnAt) {
-    // Spawn a wind puff on the right edge ~25% of the time (about half as many)
-    if (Math.random() < 0.25) {
+    // Spawn a wind puff on the right edge ~12.5% of the time (half as many)
+    if (Math.random() < 0.125) {
       const el = document.createElement('div');
       el.className = 'wind';
       el.style.top = `${Math.random() * (window.innerHeight - 80) + 20}px`;
@@ -484,8 +573,8 @@ function spawnAndMoveWinds() {
       el.innerHTML = WIND_SVG;
       document.body.appendChild(el);
       // Animate leftward using dataset speed
-      // Reduce speed by ~15% (from 4–8 to ~3.4–6.8)
-      el.dataset.vx = String(3.4 + Math.random() * 3.4);
+      // Reduce speed by ~25% (from 4–8 to ~3.0–6.0)
+      el.dataset.vx = String(3.0 + Math.random() * 3.0);
       setTimeout(() => el.remove(), 10000);
     }
     windSpawnAt = now + 500; // try spawn every ~0.5s
@@ -512,15 +601,54 @@ if (musicVolumeSlider) {
 function gameLoop() {
   if (!running) return;
   if (!paused) {
-    bx += speed;
-    if (bx > window.innerWidth) {
-      // Completed a left→right pass; update running average and reset counter
-      skillPassCount += 1;
-      const totalPrev = skillAvgFlowersPerPass * (skillPassCount - 1);
-      skillAvgFlowersPerPass = (totalPrev + skillFlowersThisPass) / skillPassCount;
-      skillFlowersThisPass = 0;
-      if (skillBox) skillBox.innerText = `Skill: ${skillAvgFlowersPerPass.toFixed(3)}`;
-      bx = -50;
+    // Expire Super state
+    if (isSuper && performance.now() > superUntil) {
+      isSuper = false;
+      document.body.classList.remove('super');
+      if (superTimer) superTimer.hidden = true;
+    }
+    // Handle super slide tween
+    if (superSlide.active) {
+      const now = performance.now();
+      const t = Math.min(1, (now - superSlide.startAt) / superSlide.duration);
+      bx = superSlide.startX + (superSlide.targetX - superSlide.startX) * t;
+      butterfly.style.left = bx + 'px';
+      if (superSlide.flower) {
+        const fX = bx + superSlide.relOffset;
+        superSlide.flower.style.left = fX + 'px';
+      }
+      if (t >= 1) {
+        // Slide finished: remove slid flower and spawn a replacement
+        const idx = superSlide.flowerIndex;
+        try { superSlide.flower && superSlide.flower.remove(); } catch(_) {}
+        if (idx >= 0) {
+          const w = window.innerWidth * 0.75;
+          const h = window.innerHeight * 0.75;
+          const x0 = (window.innerWidth - w) / 2;
+          const y0 = (window.innerHeight - h) / 2;
+          const nf = document.createElement('div');
+          nf.className = 'flower';
+          nf.innerText = '🌸';
+          nf.style.left = `${x0 + Math.random() * w}px`;
+          nf.style.top = `${y0 + Math.random() * h}px`;
+          document.body.appendChild(nf);
+          flowers[idx] = nf;
+        }
+        superSlide.active = false;
+        superSlide.flower = null;
+        superSlide.flowerIndex = -1;
+      }
+    } else {
+      bx += speed;
+      if (bx > window.innerWidth) {
+        // Completed a left→right pass; update running average and reset counter
+        skillPassCount += 1;
+        const totalPrev = skillAvgFlowersPerPass * (skillPassCount - 1);
+        skillAvgFlowersPerPass = (totalPrev + skillFlowersThisPass) / skillPassCount;
+        skillFlowersThisPass = 0;
+        if (skillBox) skillBox.innerText = `Skill: ${skillAvgFlowersPerPass.toFixed(3)}`;
+        bx = -50;
+      }
     }
 
     dy = spacePressed
@@ -530,6 +658,7 @@ function gameLoop() {
     by = Math.max(0, Math.min(window.innerHeight - 30, by + dy));
     butterfly.style.left = bx + 'px';
     butterfly.style.top = by + 'px';
+
 
     checkFlowers();
 
@@ -561,7 +690,8 @@ function gameLoop() {
       const cy = b.top + b.height / 2;
       const dx = cx - hoopX;
       const dy2 = cy - hoopY;
-      if ((dx * dx + dy2 * dy2) < (hoopR * hoopR) && !gameOver) {
+      // Ignore net collisions while super slide is actively pushing left
+      if ((dx * dx + dy2 * dy2) < (hoopR * hoopR) && !gameOver && !superSlide.active) {
         const now = Date.now();
         if (now - lastHitAt > HIT_COOLDOWN_MS) {
           lastHitAt = now;
@@ -633,6 +763,18 @@ function gameLoop() {
       }
     }
   }
+  // Always update/show super timer every frame (even when paused)
+  if (superTimer) {
+    if (isSuper) {
+      const msLeft = Math.max(0, superUntil - performance.now());
+      const secsLeft = Math.ceil(msLeft / 1000);
+      superTimer.textContent = String(secsLeft);
+      superTimer.hidden = false;
+      positionSuperTimer();
+    } else {
+      superTimer.hidden = true;
+    }
+  }
   requestAnimationFrame(gameLoop);
 }
 
@@ -650,8 +792,9 @@ function startGame() {
     div.style.left = `${cx - 40}px`;
     div.style.top = `${window.innerHeight * 0.25}px`;
     div.innerHTML = svgMarkup;
-    // Scale nets by level
-    const scale = 1 + Math.max(0, level - 1) * NET_SCALE_PER_LEVEL;
+    // Scale nets by current level (capped at level 3 size)
+    const effectiveLevel = Math.min(level, 3);
+    const scale = 1 + Math.max(0, effectiveLevel - 1) * NET_SCALE_PER_LEVEL;
     div.style.transform = `scale(${scale})`;
     document.body.appendChild(div);
 
@@ -683,11 +826,16 @@ function startGame() {
   // Reset score
   score = 0;
   lives = 3;
-  level = 1;
+  level = devStartLevel != null ? devStartLevel : 1;
   // Reset skill metric
   skillPassCount = 0;
   skillFlowersThisPass = 0;
   skillAvgFlowersPerPass = 0;
+  // Reset super
+  isSuper = false;
+  superUntil = 0;
+  if (superTimer) superTimer.hidden = true;
+  // Note: keep superShownFirst false so first time can occur at L4
   updateHUD();
   updateNetScales();
 
@@ -709,4 +857,22 @@ function startGame() {
 
 function restartGame() {
   startGame();
+}
+
+function activateSuper(durationMs) {
+  isSuper = true;
+  superUntil = performance.now() + durationMs;
+  document.body.classList.add('super');
+  if (superTimer) {
+    superTimer.hidden = false;
+    positionSuperTimer();
+  }
+  if (!superShownFirst) {
+    superShownFirst = true;
+    if (superMsg && superMsgText) {
+      superMsgText.textContent = "Congrats! You're now a super butterfly for the next 15 seconds.";
+      paused = true;
+      superMsg.hidden = false;
+    }
+  }
 }

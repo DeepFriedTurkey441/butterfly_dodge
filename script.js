@@ -92,6 +92,9 @@ const superSlide = {
   duration: 420
 };
 
+// Developer easter egg: allow starting at any level from instructions screen
+let devStartLevel = null; // when set, startGame will use this level instead of 1
+
 // Progression rules
 const MAX_LIVES_BEFORE_LEVEL = 5; // when lives reaches 5 → level up, lives reset to 3
 const NET_SCALE_PER_LEVEL = 0.15; // nets grow 15% per level beyond 1
@@ -196,6 +199,18 @@ document.addEventListener('keydown', e => {
     gameStarted = true;
     startMusic();
     startGame();
+    return;
+  }
+
+  // Developer easter egg: SHIFT + M on instructions screen sets starting level
+  if (!gameStarted && e.key.toLowerCase() === 'm' && e.shiftKey) {
+    const input = prompt('Developer mode: Start at level (1-99)?', String(level));
+    if (input !== null) {
+      const n = Math.max(1, Math.min(99, Math.floor(Number(input)) || 1));
+      devStartLevel = n;
+      // Provide quick visual feedback
+      try { alert(`Will start at level ${n}. Press Enter to begin.`); } catch (_) {}
+    }
     return;
   }
 
@@ -740,7 +755,7 @@ function startGame() {
     div.style.left = `${cx - 40}px`;
     div.style.top = `${window.innerHeight * 0.25}px`;
     div.innerHTML = svgMarkup;
-    // Scale nets by level
+    // Scale nets by current level (supports devStartLevel)
     const scale = 1 + Math.max(0, level - 1) * NET_SCALE_PER_LEVEL;
     div.style.transform = `scale(${scale})`;
     document.body.appendChild(div);
@@ -773,7 +788,7 @@ function startGame() {
   // Reset score
   score = 0;
   lives = 3;
-  level = 1;
+  level = devStartLevel != null ? devStartLevel : 1;
   // Reset skill metric
   skillPassCount = 0;
   skillFlowersThisPass = 0;

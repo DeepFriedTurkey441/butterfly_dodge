@@ -19,9 +19,8 @@ const superMsgText = document.getElementById('supermsg-text');
 const skillBox = document.getElementById('skill');
 const superTimer = document.getElementById('super-timer');
 function positionSuperTimer() {
-  if (!superTimer) return;
-  superTimer.style.left = (bx + 40) + 'px';
-  superTimer.style.top = (by - 10) + 'px';
+  // Fixed position on the left under the HUD so it is always visible
+  // Styles are handled in CSS; this is a no-op kept for compatibility
 }
 
 
@@ -767,9 +766,8 @@ function gameLoop() {
     if (isSuper) {
       const msLeft = Math.max(0, superUntil - performance.now());
       const secsLeft = Math.ceil(msLeft / 1000);
-      superTimer.textContent = String(secsLeft);
+      superTimer.textContent = `Super: ${secsLeft}s`;
       superTimer.hidden = false;
-      positionSuperTimer();
     } else {
       superTimer.hidden = true;
     }

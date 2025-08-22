@@ -51,12 +51,11 @@ body {
 /* Super timer badge next to butterfly */
 #super-timer {
   position: absolute;
-  padding: 2px 6px;
-  font-size: calc(var(--u) * 2.4);
-  background: rgba(255,255,0,0.9);
-  color: #0c2340;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  top: 36px; /* below HUD */
+  left: 10px;
+  font-size: calc(var(--u) * 3);
+  color: #000;
+  background: transparent;
   z-index: 9000;
 }
 #super-timer[hidden] { display: none !important; }

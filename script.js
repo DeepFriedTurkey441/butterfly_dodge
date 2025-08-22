@@ -203,7 +203,7 @@ document.addEventListener('keydown', e => {
   }
 
   // Developer easter egg: SHIFT + M on instructions screen sets starting level
-  if (!gameStarted && e.key.toLowerCase() === 'm' && e.shiftKey) {
+  if (!gameStarted && (e.code === 'KeyM' || (e.key && e.key.toLowerCase() === 'm')) && e.shiftKey) {
     const input = prompt('Developer mode: Start at level (1-99)?', String(level));
     if (input !== null) {
       const n = Math.max(1, Math.min(99, Math.floor(Number(input)) || 1));

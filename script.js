@@ -348,6 +348,19 @@ function checkFlowers() {
       // While super: handle this collision specially and exit early
       if (isSuper) {
         if (!muted) sfxFlower();
+        // Apply score→life rollover while in super mode as well
+        if (score >= 10) {
+          lives += 1;
+          score = 0;
+          if (lives >= MAX_LIVES_BEFORE_LEVEL) {
+            level++;
+            lives = 3;
+            if (!muted) sfxLevel();
+            updateHUD();
+            showLevelUp(level);
+            updateNetScales();
+          }
+        }
         // Begin a slide of butterfly + this flower to the left edge
         const rect = f.getBoundingClientRect();
         const flowerLeft = rect.left;
@@ -366,7 +379,7 @@ function checkFlowers() {
       // pop animation
       f.classList.add('pop');
       if (!muted) sfxFlower();
-      // When score hits 10 exactly: +1 life and reset score to 0
+      // When score reaches 10 or more: +1 life and reset score to 0
       if (score >= 10) {
         lives += 1;
         score = 0;

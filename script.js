@@ -18,6 +18,12 @@ const superMsg = document.getElementById('supermsg');
 const superMsgText = document.getElementById('supermsg-text');
 const skillBox = document.getElementById('skill');
 const superTimer = document.getElementById('super-timer');
+function positionSuperTimer() {
+  if (!superTimer) return;
+  superTimer.style.left = (bx + 40) + 'px';
+  superTimer.style.top = (by - 10) + 'px';
+}
+
 
 // Game control flags
 let gameStarted = false;
@@ -423,7 +429,9 @@ function updateHUD() {
 }
 
 function updateNetScales() {
-  const scale = 1 + Math.max(0, level - 1) * NET_SCALE_PER_LEVEL;
+  // From level 4 up, keep nets at level-3 size (no further growth)
+  const effectiveLevel = Math.min(level, 3);
+  const scale = 1 + Math.max(0, effectiveLevel - 1) * NET_SCALE_PER_LEVEL;
   nets.forEach(n => n && n.el && (n.el.style.transform = `scale(${scale})`));
 }
 
@@ -658,8 +666,7 @@ function gameLoop() {
       superTimer.textContent = String(secsLeft);
       superTimer.hidden = false;
       // Position to the right of butterfly
-      superTimer.style.left = (bx + 40) + 'px';
-      superTimer.style.top = (by - 10) + 'px';
+      positionSuperTimer();
     } else if (superTimer) {
       superTimer.hidden = true;
     }
@@ -783,8 +790,9 @@ function startGame() {
     div.style.left = `${cx - 40}px`;
     div.style.top = `${window.innerHeight * 0.25}px`;
     div.innerHTML = svgMarkup;
-    // Scale nets by current level (supports devStartLevel)
-    const scale = 1 + Math.max(0, level - 1) * NET_SCALE_PER_LEVEL;
+    // Scale nets by current level (capped at level 3 size)
+    const effectiveLevel = Math.min(level, 3);
+    const scale = 1 + Math.max(0, effectiveLevel - 1) * NET_SCALE_PER_LEVEL;
     div.style.transform = `scale(${scale})`;
     document.body.appendChild(div);
 
@@ -824,6 +832,7 @@ function startGame() {
   // Reset super
   isSuper = false;
   superUntil = 0;
+  if (superTimer) superTimer.hidden = true;
   // Note: keep superShownFirst false so first time can occur at L4
   updateHUD();
   updateNetScales();
@@ -852,7 +861,10 @@ function activateSuper(durationMs) {
   isSuper = true;
   superUntil = performance.now() + durationMs;
   document.body.classList.add('super');
-  if (superTimer) superTimer.hidden = false;
+  if (superTimer) {
+    superTimer.hidden = false;
+    positionSuperTimer();
+  }
   if (!superShownFirst) {
     superShownFirst = true;
     if (superMsg && superMsgText) {

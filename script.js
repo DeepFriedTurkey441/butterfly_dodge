@@ -8,7 +8,8 @@ const pauseBox = document.getElementById('pause-message');
 const instructionsBox = document.getElementById('instructions');
 const gameArea = document.getElementById('game-area');
 const muteBtn = document.getElementById('mute-btn');
-const muteSfxBtn = document.getElementById('mute-sfx');
+// SFX volume slider
+const sfxVolumeSlider = document.getElementById('sfx-volume');
 const muteMusicBtn = document.getElementById('mute-music');
 const musicVolumeSlider = document.getElementById('music-volume');
 const levelupBox = document.getElementById('levelup');
@@ -133,7 +134,7 @@ let wingsUp = false;
 const announcedLevels = new Set();
 
 // Audio (WebAudio beeps)
-let muted = false; // SFX
+let muted = false; // SFX mute state (derived from volume == 0)
 let musicMuted = false;
 let audioCtx = null;
 function ensureAudioContext() {
@@ -152,8 +153,10 @@ function playTone({ frequency = 880, duration = 0.12, type = 'sine', volume = 0.
   const gain = audioCtx.createGain();
   osc.type = type;
   osc.frequency.setValueAtTime(frequency, now);
+  const sfxLevel = sfxVolumeSlider ? Number(sfxVolumeSlider.value) / 100 : 0.8;
+  const level = Math.max(0.0001, Math.min(1, sfxLevel)) * volume;
   gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.exponentialRampToValueAtTime(volume, now + 0.01);
+  gain.gain.exponentialRampToValueAtTime(level, now + 0.01);
   gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
   osc.connect(gain).connect(audioCtx.destination);
   osc.start(now);
@@ -168,19 +171,11 @@ function sfxLevel()  {
   setTimeout(() => playTone({ frequency: 1000, duration: 0.14, type: 'square', volume: 0.16 }), 220);
 }
 
-if (muteBtn) {
-  muteBtn.addEventListener('click', () => {
-    muted = !muted;
-    muteBtn.textContent = muted ? '🔇' : '🔊';
-  });
-}
-if (muteSfxBtn) {
-  // Prevent space/enter from toggling the button when it accidentally has focus
-  muteSfxBtn.addEventListener('mousedown', (e) => { e.preventDefault(); });
-  muteSfxBtn.addEventListener('keydown', (e) => { e.preventDefault(); });
-  muteSfxBtn.addEventListener('click', () => {
-    muted = !muted;
-    muteSfxBtn.textContent = muted ? '🔇' : '🔊';
+// Hook SFX volume; treat 0 as muted
+if (sfxVolumeSlider) {
+  sfxVolumeSlider.addEventListener('input', () => {
+    const v = Number(sfxVolumeSlider.value) || 0;
+    muted = v <= 0;
   });
 }
 if (muteMusicBtn) {

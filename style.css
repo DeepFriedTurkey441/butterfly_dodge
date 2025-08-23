@@ -121,6 +121,12 @@ body {
   width: 120px;
   margin-left: 8px;
 }
+/* Match styling for SFX slider */
+#sfx-volume {
+  vertical-align: middle;
+  width: 120px;
+  margin-left: 8px;
+}
 
 #game-over {
   position: absolute;

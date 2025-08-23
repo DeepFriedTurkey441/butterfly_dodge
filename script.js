@@ -245,6 +245,15 @@ document.addEventListener('keydown', e => {
     updateHUD();
     return;
   }
+  // Resume from net message overlay with Enter
+  if (netMsg && !netMsg.hidden && e.key === 'Enter') {
+    netMsg.hidden = true;
+    netMsg.style.display = 'none';
+    paused = false;
+    setCloudsPaused(false);
+    updateHUD();
+    return;
+  }
 
   switch (e.key) {
     case 'ArrowRight':
@@ -710,6 +719,7 @@ function gameLoop() {
           if (!netMsgShown && netMsg) {
             paused = true;
             netMsg.hidden = false;
+            netMsg.style.display = 'grid';
             netMsgShown = true;
             // Also hide the plain pause text and pause clouds/music for clarity
             if (pauseBox) pauseBox.hidden = true;
@@ -730,8 +740,8 @@ function gameLoop() {
             updateHUD();
             document.body.classList.add('shake');
             setTimeout(() => document.body.classList.remove('shake'), 160);
-            // Teleport slightly away from the colliding net to avoid sticking
-            bx = Math.max(0, b.left - 60);
+            // Teleport to just left of the net hoop to avoid sticking
+            bx = Math.max(0, hoopX - hoopR - 100);
             by = Math.min(window.innerHeight - 30, Math.max(0, by));
             dy = 0;
             butterfly.style.left = bx + 'px';

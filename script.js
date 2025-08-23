@@ -344,6 +344,24 @@ document.addEventListener('keyup', e => {
   }
 });
 
+// Ensure keyboard events are captured even when a slider has focus
+window.addEventListener('keydown', (e) => {
+  const active = document.activeElement;
+  if (active && active.tagName === 'INPUT') {
+    // Prevent sliders from consuming arrows/space fully
+    e.preventDefault();
+  }
+  // Re-dispatch to document so our main handler runs
+  const ev = new KeyboardEvent('keydown', { key: e.key, code: e.code });
+  document.dispatchEvent(ev);
+}, true);
+
+// Click/tap anywhere to release focus from sliders so keys control the game
+document.addEventListener('pointerdown', () => {
+  const active = document.activeElement;
+  if (active && active.blur) active.blur();
+}, true);
+
 // Collision detection
 function isColliding(a, b) {
   const r1 = a.getBoundingClientRect();

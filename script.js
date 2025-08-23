@@ -865,6 +865,11 @@ function activateSuper(durationMs) {
     superTimer.hidden = false;
     positionSuperTimer();
   }
+  // Reset Skill immediately upon entering super mode so it must be re-earned
+  skillPassCount = 0;
+  skillFlowersThisPass = 0;
+  skillAvgFlowersPerPass = 0;
+  if (skillBox) skillBox.innerText = `Skill: ${skillAvgFlowersPerPass.toFixed(3)}`;
   if (!superShownFirst) {
     superShownFirst = true;
     if (superMsg && superMsgText) {

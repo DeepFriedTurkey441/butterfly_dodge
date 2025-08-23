@@ -129,6 +129,10 @@ body {
   text-align: center;
   font-size: calc(var(--u) * 3.3);
 }
+#leaderboard {
+  margin-top: 12px;
+  font-size: calc(var(--u) * 2.4);
+}
 
 #pause-message {
   position: absolute;

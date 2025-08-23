@@ -18,6 +18,7 @@ const superMsg = document.getElementById('supermsg');
 const superMsgText = document.getElementById('supermsg-text');
 const skillBox = document.getElementById('skill');
 const superTimer = document.getElementById('super-timer');
+const leaderboardBox = document.getElementById('leaderboard');
 const netMsg = document.getElementById('netmsg');
 const flowerMsg = document.getElementById('flowermsg');
 function positionSuperTimer() {
@@ -746,6 +747,17 @@ function gameLoop() {
             // Submit best level to leaderboard
             ensurePlayerName();
             if (playerName) postLeaderboard(playerName, highestLevelAchieved);
+            // Fetch and display leaderboard Top 10
+            if (leaderboardBox) {
+              leaderboardBox.textContent = 'Loading Top 10 scores…';
+              fetchLeaderboard().then(data => {
+                const entries = (data && data.entries) ? data.entries.slice(0, 10) : [];
+                const lines = entries.map((e, i) => `${i+1}. ${e.name} — Level ${e.level}`);
+                leaderboardBox.innerHTML = `<p><strong>Top 10 Scores of all time</strong></p><pre style="text-align:left; display:inline-block;">${lines.join('\n') || 'No scores yet.'}</pre>`;
+              }).catch(() => {
+                leaderboardBox.textContent = 'Unable to load leaderboard.';
+              });
+            }
           } else {
             // Update HUD and give the player a fresh position to avoid immediate re-collision
             updateHUD();

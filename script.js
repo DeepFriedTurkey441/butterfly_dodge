@@ -17,6 +17,7 @@ const levelupNum = document.getElementById('levelup-num');
 const levelupDetails = document.getElementById('levelup-details');
 const superMsg = document.getElementById('supermsg');
 const superMsgText = document.getElementById('supermsg-text');
+const superMsgWhy = document.getElementById('supermsg-why');
 const skillBox = document.getElementById('skill');
 const superTimer = document.getElementById('super-timer');
 let superDeferredMs = 0; // if >0, start countdown after overlay dismissal
@@ -880,6 +881,9 @@ function activateSuper(durationMs) {
     superShownFirst = true;
     if (superMsg && superMsgText) {
       superMsgText.textContent = "Congrats! You're now a super butterfly for the next 15 seconds.";
+      if (superMsgWhy) {
+        superMsgWhy.textContent = 'You earned this by achieving a Skill average above 8 on Level 4+';
+      }
       paused = true;
       superMsg.hidden = false;
       // Defer countdown until the player presses Enter to resume

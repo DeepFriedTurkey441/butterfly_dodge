@@ -711,6 +711,9 @@ function gameLoop() {
             paused = true;
             netMsg.hidden = false;
             netMsgShown = true;
+            // Also hide the plain pause text and pause clouds/music for clarity
+            if (pauseBox) pauseBox.hidden = true;
+            setCloudsPaused(true);
           }
           if (!muted) sfxHit();
           if (lives <= 0) {
@@ -727,8 +730,9 @@ function gameLoop() {
             updateHUD();
             document.body.classList.add('shake');
             setTimeout(() => document.body.classList.remove('shake'), 160);
-            bx = 0;
-            by = window.innerHeight / 2;
+            // Teleport slightly away from the colliding net to avoid sticking
+            bx = Math.max(0, b.left - 60);
+            by = Math.min(window.innerHeight - 30, Math.max(0, by));
             dy = 0;
             butterfly.style.left = bx + 'px';
             butterfly.style.top = by + 'px';
@@ -844,6 +848,8 @@ function startGame() {
   isSuper = false;
   superUntil = 0;
   if (superTimer) superTimer.hidden = true;
+  // Reset net tutorial flag
+  netMsgShown = false;
   // Note: keep superShownFirst false so first time can occur at L4
   updateHUD();
   updateNetScales();

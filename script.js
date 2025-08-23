@@ -702,12 +702,15 @@ function gameLoop() {
         if (now - lastHitAt > HIT_COOLDOWN_MS) {
           lastHitAt = now;
           lives -= 1;
-          if (lives >= MAX_LIVES_BEFORE_LEVEL) {
-            // Future-proof: if lives were increased elsewhere and reached threshold
-            level++;
-            lives = 3;
-            showLevelUp(level);
-            updateNetScales();
+          // Drop one level (not below 1) and apply scaled settings
+          const previousLevel = level;
+          level = Math.max(1, level - 1);
+          updateNetScales();
+          // One-time tutorial popup about nets
+          if (!netMsgShown && netMsg) {
+            paused = true;
+            netMsg.hidden = false;
+            netMsgShown = true;
           }
           if (!muted) sfxHit();
           if (lives <= 0) {

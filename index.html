@@ -68,6 +68,15 @@
     <div id="hud">
       <span id="score">Score: 0</span>   <span id="lives">Lives: 3</span>   <span id="level">Level: 1</span>   <span>   Mute sound:</span> <button id="mute-sfx" aria-label="Toggle sound effects" title="Toggle sound effects" tabindex="-1">🔊</button>   <span>   Music volume:</span> <input id="music-volume" type="range" min="0" max="100" value="30" />   <span id="skill">Skill: 0.000</span>
     </div>
+    <!-- First-flower tutorial overlay -->
+    <div id="flowermsg" hidden>
+      <div class="levelup-wrap">
+        <h2>Nice!</h2>
+        <p>Congratulations! Your butterfly just drank some nectar from a flower.</p>
+        <p>You get 1 point. 10 points = 1 extra life. 5 lives = jump up a level.</p>
+        <p>Press Enter to continue…</p>
+      </div>
+    </div>
     <!-- Super timer badge (shown only during super mode) -->
     <div id="super-timer" hidden>15</div>
     <!-- Level-up announcement overlay -->
@@ -85,6 +94,15 @@
         <h2>Super Butterfly!</h2>
         <p id="supermsg-text">Congrats! You're now a super butterfly for the next 15 seconds.</p>
         <p>While super, touching a flower slides it left to the edge and your pass restarts.</p>
+        <p>Press Enter to continue…</p>
+      </div>
+    </div>
+    <!-- First-net tutorial overlay -->
+    <div id="netmsg" hidden>
+      <div class="levelup-wrap">
+        <h2>Oh no!</h2>
+        <p>Your butterfly just got caught in a net.</p>
+        <p>You lose 1 life. Out of lives = game over. 5 lives = jump up to a new level and start with 3 lives.</p>
         <p>Press Enter to continue…</p>
       </div>
     </div>

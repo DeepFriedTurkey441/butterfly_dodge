@@ -18,6 +18,8 @@ const superMsg = document.getElementById('supermsg');
 const superMsgText = document.getElementById('supermsg-text');
 const skillBox = document.getElementById('skill');
 const superTimer = document.getElementById('super-timer');
+const netMsg = document.getElementById('netmsg');
+const flowerMsg = document.getElementById('flowermsg');
 function positionSuperTimer() {
   if (!superTimer) return;
   // Place just to the left of the butterfly
@@ -88,6 +90,8 @@ let skillAvgFlowersPerPass = 0; // displayed as 0.000
 let isSuper = false;
 let superUntil = 0; // timestamp ms
 let superShownFirst = false; // whether the first-time message has been shown
+let netMsgShown = false; // whether net tutorial has been shown
+let flowerMsgShown = false; // whether flower tutorial has been shown
 // Super slide state: move butterfly and collided flower together to the left edge
 const superSlide = {
   active: false,
@@ -241,6 +245,22 @@ document.addEventListener('keydown', e => {
     updateHUD();
     return;
   }
+  // Resume from flower message overlay with Enter
+  if (flowerMsg && !flowerMsg.hidden && e.key === 'Enter') {
+    flowerMsg.hidden = true;
+    paused = false;
+    setCloudsPaused(false);
+    updateHUD();
+    return;
+  }
+  // Resume from net message overlay with Enter
+  if (netMsg && !netMsg.hidden && e.key === 'Enter') {
+    netMsg.hidden = true;
+    paused = false;
+    setCloudsPaused(false);
+    updateHUD();
+    return;
+  }
 
   switch (e.key) {
     case 'ArrowRight':
@@ -346,6 +366,13 @@ function checkFlowers() {
       score += isSuper ? 2 : 1;
       // Track for skill metric (flowers per pass)
       skillFlowersThisPass += 1;
+      // First-flower tutorial popup (one-time)
+      if (!flowerMsgShown && flowerMsg) {
+        paused = true;
+        flowerMsg.hidden = false;
+        setCloudsPaused(true);
+        flowerMsgShown = true;
+      }
 
       // Trigger Super Butterfly on L4+ when Skill average exceeds threshold
       if (!isSuper && level >= 4 && skillAvgFlowersPerPass > 6) {
@@ -696,12 +723,12 @@ function gameLoop() {
         if (now - lastHitAt > HIT_COOLDOWN_MS) {
           lastHitAt = now;
           lives -= 1;
-          if (lives >= MAX_LIVES_BEFORE_LEVEL) {
-            // Future-proof: if lives were increased elsewhere and reached threshold
-            level++;
-            lives = 3;
-            showLevelUp(level);
-            updateNetScales();
+          // Show net tutorial once
+          if (!netMsgShown && netMsg) {
+            paused = true;
+            netMsg.hidden = false;
+            setCloudsPaused(true);
+            netMsgShown = true;
           }
           if (!muted) sfxHit();
           if (lives <= 0) {

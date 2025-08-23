@@ -84,6 +84,7 @@ let level = 1;
 let skillPassCount = 0;
 let skillFlowersThisPass = 0;
 let skillAvgFlowersPerPass = 0; // displayed as 0.000
+let superTriggeredThisPass = false; // prevents multiple supers in one pass
 
 // Super Butterfly state
 let isSuper = false;
@@ -343,8 +344,9 @@ function checkFlowers() {
       skillFlowersThisPass += 1;
 
       // Trigger Super Butterfly on L4+ when Skill average exceeds threshold
-      if (!isSuper && level >= 4 && skillAvgFlowersPerPass > 6) {
+      if (!isSuper && level >= 4 && !superTriggeredThisPass && skillAvgFlowersPerPass > 8) {
         activateSuper(15000); // 15 seconds
+        superTriggeredThisPass = true;
       }
 
       // While super: handle this collision specially and exit early
@@ -643,6 +645,7 @@ function gameLoop() {
         skillFlowersThisPass = 0;
         if (skillBox) skillBox.innerText = `Skill: ${skillAvgFlowersPerPass.toFixed(3)}`;
         bx = -50;
+        superTriggeredThisPass = false; // allow super again next pass
       }
     }
 

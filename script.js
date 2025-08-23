@@ -218,6 +218,17 @@ document.addEventListener('keydown', e => {
     }
   }
 
+  // Hard reset: ESC closes any overlay and resumes
+  if (e.key === 'Escape') {
+    if (levelupBox) levelupBox.hidden = true;
+    if (superMsg) superMsg.hidden = true;
+    if (netMsg) { netMsg.hidden = true; netMsg.style.display = 'none'; }
+    paused = false;
+    setCloudsPaused(false);
+    updateHUD();
+    return;
+  }
+
   // Developer easter egg: SHIFT + M on instructions screen sets starting level
   if (!gameStarted && (e.code === 'KeyM' || (e.key && e.key.toLowerCase() === 'm')) && e.shiftKey) {
     const input = prompt('Developer mode: Start at level (1-99)?', String(level));

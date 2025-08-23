@@ -166,6 +166,11 @@ body {
 /* Super message shares same overlay style */
 #supermsg { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,0.35); z-index: 10000; }
 #supermsg[hidden] { display: none !important; }
+/* Flower and net overlays share style */
+#flowermsg { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,0.35); z-index: 10000; }
+#flowermsg[hidden] { display: none !important; }
+#netmsg { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,0.35); z-index: 10000; }
+#netmsg[hidden] { display: none !important; }
 
 /* Parallax sky */
 #sky {

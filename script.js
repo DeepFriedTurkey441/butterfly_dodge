@@ -80,6 +80,8 @@ const flowers = [];
 let score = 0;
 let lives = 3;
 let level = 1;
+let highestLevelAchieved = 1;
+let playerName = null;
 
 // Skill score: running average of flowers collected per left→right pass
 let skillPassCount = 0;
@@ -467,6 +469,7 @@ function showLevelUp(newLevel) {
   announcedLevels.add(newLevel);
   paused = true;
   pauseBox.hidden = true;
+  highestLevelAchieved = Math.max(highestLevelAchieved, newLevel);
   if (levelupNum) levelupNum.textContent = String(newLevel);
   if (levelupDetails) {
     if (newLevel === 2) {
@@ -740,6 +743,9 @@ function gameLoop() {
             updateHUD();
             stopMusic();
             stopFlap();
+            // Submit best level to leaderboard
+            ensurePlayerName();
+            if (playerName) postLeaderboard(playerName, highestLevelAchieved);
           } else {
             // Update HUD and give the player a fresh position to avoid immediate re-collision
             updateHUD();
@@ -854,6 +860,7 @@ function startGame() {
   score = 0;
   lives = 3;
   level = devStartLevel != null ? devStartLevel : 1;
+  highestLevelAchieved = Math.max(highestLevelAchieved, level);
   // Reset skill metric
   skillPassCount = 0;
   skillFlowersThisPass = 0;
@@ -884,6 +891,32 @@ function startGame() {
 
 function restartGame() {
   startGame();
+}
+
+// --- Leaderboard client helpers ---
+async function postLeaderboard(name, level) {
+  try {
+    const res = await fetch('http://localhost:3000/api/leaderboard', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, level })
+    });
+    return await res.json();
+  } catch (_) { return null; }
+}
+async function fetchLeaderboard() {
+  try {
+    const res = await fetch('http://localhost:3000/api/leaderboard');
+    return await res.json();
+  } catch (_) { return { entries: [] }; }
+}
+
+// Prompt name once
+function ensurePlayerName() {
+  if (!playerName) {
+    const n = prompt('Enter a player name (to save your best level):', playerName || '');
+    if (n && n.trim()) playerName = n.trim().slice(0, 40);
+  }
 }
 
 function activateSuper(durationMs) {

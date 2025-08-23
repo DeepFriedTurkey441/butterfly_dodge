@@ -19,6 +19,7 @@ const superMsg = document.getElementById('supermsg');
 const superMsgText = document.getElementById('supermsg-text');
 const skillBox = document.getElementById('skill');
 const superTimer = document.getElementById('super-timer');
+let superDeferredMs = 0; // if >0, start countdown after overlay dismissal
 function positionSuperTimer() {
   if (!superTimer) return;
   // Place just to the left of the butterfly
@@ -234,6 +235,12 @@ document.addEventListener('keydown', e => {
   if (superMsg && !superMsg.hidden && e.key === 'Enter') {
     superMsg.hidden = true;
     paused = false;
+    // Start a precise 15s countdown now if it was deferred
+    if (superDeferredMs > 0) {
+      superUntil = performance.now() + superDeferredMs;
+      superDeferredMs = 0;
+      if (superTimer) { superTimer.hidden = false; positionSuperTimer(); }
+    }
     updateHUD();
     return;
   }
@@ -763,7 +770,7 @@ function gameLoop() {
   }
   // Always update/show super timer every frame (even when paused)
   if (superTimer) {
-    if (isSuper) {
+    if (isSuper && superUntil > 0) {
       const msLeft = Math.max(0, superUntil - performance.now());
       const secsLeft = Math.ceil(msLeft / 1000);
       superTimer.textContent = String(secsLeft);
@@ -859,11 +866,10 @@ function restartGame() {
 
 function activateSuper(durationMs) {
   isSuper = true;
-  superUntil = performance.now() + durationMs;
   document.body.classList.add('super');
   if (superTimer) {
-    superTimer.hidden = false;
-    positionSuperTimer();
+    // Will reveal when countdown actually starts
+    superTimer.hidden = true;
   }
   // Reset Skill immediately upon entering super mode so it must be re-earned
   skillPassCount = 0;
@@ -876,6 +882,13 @@ function activateSuper(durationMs) {
       superMsgText.textContent = "Congrats! You're now a super butterfly for the next 15 seconds.";
       paused = true;
       superMsg.hidden = false;
+      // Defer countdown until the player presses Enter to resume
+      superDeferredMs = durationMs;
+      superUntil = 0;
+      return;
     }
   }
+  // No overlay path → start immediately
+  superUntil = performance.now() + durationMs;
+  if (superTimer) { superTimer.hidden = false; positionSuperTimer(); }
 }

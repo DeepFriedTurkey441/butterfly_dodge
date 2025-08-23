@@ -253,6 +253,14 @@ document.addEventListener('keydown', e => {
     updateHUD();
     return;
   }
+  // Resume from net message overlay with Enter
+  if (netMsg && !netMsg.hidden && e.key === 'Enter') {
+    netMsg.hidden = true;
+    paused = false;
+    setCloudsPaused(false);
+    updateHUD();
+    return;
+  }
 
   switch (e.key) {
     case 'ArrowRight':
@@ -715,12 +723,12 @@ function gameLoop() {
         if (now - lastHitAt > HIT_COOLDOWN_MS) {
           lastHitAt = now;
           lives -= 1;
-          if (lives >= MAX_LIVES_BEFORE_LEVEL) {
-            // Future-proof: if lives were increased elsewhere and reached threshold
-            level++;
-            lives = 3;
-            showLevelUp(level);
-            updateNetScales();
+          // Show net tutorial once
+          if (!netMsgShown && netMsg) {
+            paused = true;
+            netMsg.hidden = false;
+            setCloudsPaused(true);
+            netMsgShown = true;
           }
           if (!muted) sfxHit();
           if (lives <= 0) {

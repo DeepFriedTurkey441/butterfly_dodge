@@ -1,5 +1,6 @@
 Butterfly Dodge Game 🦋
-A fun and engaging web-based game where players control a character to dodge falling butterflies while collecting points. Built with pure HTML5, CSS3, and JavaScript for smooth gameplay across all devices.
+
+A fun and engaging web-based game where players control a butterfly character to dodge falling and rising nets while collecting points by drinking nectar from flowers. Built with pure HTML5, CSS3, and JavaScript for smooth gameplay across all devices.
 
 🎮 Game Overview
 

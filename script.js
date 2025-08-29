@@ -459,8 +459,8 @@ function updateHUD() {
 }
 
 function updateNetScales() {
-  // From level 4 up, keep nets at level-3 size (no further growth)
-  const effectiveLevel = Math.min(level, 3);
+  // From level 11 up, keep nets at level-10 size (no further growth)
+  const effectiveLevel = Math.min(level, 10);
   const scale = 1 + Math.max(0, effectiveLevel - 1) * NET_SCALE_PER_LEVEL;
   nets.forEach(n => n && n.el && (n.el.style.transform = `scale(${scale})`));
 }
@@ -837,8 +837,8 @@ function startGame() {
     div.style.left = `${cx - 40}px`;
     div.style.top = `${window.innerHeight * 0.25}px`;
     div.innerHTML = svgMarkup;
-    // Scale nets by current level (capped at level 3 size)
-    const effectiveLevel = Math.min(level, 3);
+    // Scale nets by current level (capped at level 10 size)
+    const effectiveLevel = Math.min(level, 10);
     const scale = 1 + Math.max(0, effectiveLevel - 1) * NET_SCALE_PER_LEVEL;
     div.style.transform = `scale(${scale})`;
     document.body.appendChild(div);

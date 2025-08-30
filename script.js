@@ -112,6 +112,7 @@ const superSlide = {
 
 // Developer easter egg: allow starting at any level from instructions screen
 let devStartLevel = null; // when set, startGame will use this level instead of 1
+let devStartSkill = null; // when set, preserve this skill score instead of resetting to 0
 
 // Progression rules
 const MAX_LIVES_BEFORE_LEVEL = 5; // when lives reaches 5 → level up, lives reset to 3
@@ -231,11 +232,12 @@ document.addEventListener('keydown', e => {
       const skillInput = prompt('Set skill score for testing (0.000-15.000)?', '8.000');
       if (skillInput !== null) {
         const skillValue = Math.max(0, Math.min(15, parseFloat(skillInput) || 0));
-        skillAvgFlowersPerPass = skillValue;
+        devStartSkill = skillValue; // Store for use in startGame
       }
       
       // Provide quick visual feedback
-      try { alert(`Will start at level ${n} with skill ${skillAvgFlowersPerPass.toFixed(3)}. Press Enter to begin.`); } catch (_) {}
+      const displaySkill = devStartSkill !== null ? devStartSkill : 0;
+      try { alert(`Will start at level ${n} with skill ${displaySkill.toFixed(3)}. Press Enter to begin.`); } catch (_) {}
     }
     return;
   }
@@ -917,10 +919,10 @@ function startGame() {
   lives = 3;
   level = devStartLevel != null ? devStartLevel : 1;
   highestLevelAchieved = Math.max(highestLevelAchieved, level);
-  // Reset skill metric
+  // Reset skill metric (preserve developer-set skill for testing)
   skillPassCount = 0;
   skillFlowersThisPass = 0;
-  skillAvgFlowersPerPass = 0;
+  skillAvgFlowersPerPass = devStartSkill !== null ? devStartSkill : 0;
   // Reset super butterfly state for new level
   isSuper = false;
   superUntil = 0;
@@ -929,6 +931,10 @@ function startGame() {
   document.body.classList.remove('super'); // ensure super styling is removed
   // Note: keep superShownFirst false so first time can occur at L4
   updateHUD();
+  // Update skill display if developer set a custom skill
+  if (devStartSkill !== null && skillBox) {
+    skillBox.innerText = `Skill: ${skillAvgFlowersPerPass.toFixed(3)}`;
+  }
   updateNetScales();
 
   // Clear and respawn flowers

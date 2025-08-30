@@ -15,11 +15,7 @@
     "backup": "cp server.js server.js.backup.$(date +%Y%m%d_%H%M%S)"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "express-fileupload": "^1.5.2",
-    "express-rate-limit": "^8.0.1",
-    "helmet": "^8.1.0",
-    "nodemailer": "^7.0.5"
+    "express": "^4.18.2"
   },
   "keywords": [
     "game",

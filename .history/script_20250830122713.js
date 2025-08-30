@@ -1054,9 +1054,7 @@ function gameLoop() {
         const now = Date.now();
         if (now - lastHitAt > HIT_COOLDOWN_MS) {
           lastHitAt = now;
-          if (!infiniteLives) {
-            lives -= 1;
-          }
+          lives -= 1;
           // Show net tutorial once
           if (!netMsgShown && netMsg) {
             paused = true;
@@ -1166,13 +1164,6 @@ function gameLoop() {
       superTimer.hidden = true;
     }
   }
-  
-  // Update developer mode (if active)
-  updateDeveloperMode();
-  if (showCollisionBounds) {
-    updateCollisionBounds();
-  }
-  
   requestAnimationFrame(gameLoop);
 }
 

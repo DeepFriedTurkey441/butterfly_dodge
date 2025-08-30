@@ -1049,14 +1049,12 @@ function gameLoop() {
       const cy = b.top + b.height / 2;
       const dx = cx - hoopX;
       const dy2 = cy - hoopY;
-      // Ignore net collisions while super slide is actively pushing left or in invincibility mode
-      if ((dx * dx + dy2 * dy2) < (hoopR * hoopR) && !gameOver && !superSlide.active && !invincibilityMode) {
+      // Ignore net collisions while super slide is actively pushing left
+      if ((dx * dx + dy2 * dy2) < (hoopR * hoopR) && !gameOver && !superSlide.active) {
         const now = Date.now();
         if (now - lastHitAt > HIT_COOLDOWN_MS) {
           lastHitAt = now;
-          if (!infiniteLives) {
-            lives -= 1;
-          }
+          lives -= 1;
           // Show net tutorial once
           if (!netMsgShown && netMsg) {
             paused = true;
@@ -1166,13 +1164,6 @@ function gameLoop() {
       superTimer.hidden = true;
     }
   }
-  
-  // Update developer mode (if active)
-  updateDeveloperMode();
-  if (showCollisionBounds) {
-    updateCollisionBounds();
-  }
-  
   requestAnimationFrame(gameLoop);
 }
 

@@ -1166,13 +1166,6 @@ function gameLoop() {
       superTimer.hidden = true;
     }
   }
-  
-  // Update developer mode (if active)
-  updateDeveloperMode();
-  if (showCollisionBounds) {
-    updateCollisionBounds();
-  }
-  
   requestAnimationFrame(gameLoop);
 }
 

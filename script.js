@@ -21,6 +21,7 @@ const superTimer = document.getElementById('super-timer');
 const leaderboardBox = document.getElementById('leaderboard');
 const netMsg = document.getElementById('netmsg');
 const flowerMsg = document.getElementById('flowermsg');
+const skillMsg = document.getElementById('skillmsg');
 function positionSuperTimer() {
   if (!superTimer) return;
   // Place just to the left of the butterfly
@@ -96,6 +97,7 @@ let superShownFirst = false; // whether the first-time message has been shown
 let superActivatedThisLevel = false; // prevent multiple super activations per level
 let netMsgShown = false; // whether net tutorial has been shown
 let flowerMsgShown = false; // whether flower tutorial has been shown
+let skillMsgShown = false; // whether skill score tutorial has been shown
 // Super slide state: move butterfly and collided flower together to the left edge
 const superSlide = {
   active: false,
@@ -265,6 +267,14 @@ document.addEventListener('keydown', e => {
     updateHUD();
     return;
   }
+  // Resume from skill message overlay with Enter
+  if (skillMsg && !skillMsg.hidden && e.key === 'Enter') {
+    skillMsg.hidden = true;
+    paused = false;
+    setCloudsPaused(false);
+    updateHUD();
+    return;
+  }
 
   switch (e.key) {
     case 'ArrowRight':
@@ -376,6 +386,14 @@ function checkFlowers() {
         flowerMsg.hidden = false;
         setCloudsPaused(true);
         flowerMsgShown = true;
+      }
+
+      // Show skill score tutorial once (level 4+ only)
+      if (!skillMsgShown && level >= 4 && skillMsg) {
+        paused = true;
+        skillMsg.hidden = false;
+        setCloudsPaused(true);
+        skillMsgShown = true;
       }
 
       // Trigger Super Butterfly on L4+ when Skill average reaches exactly 8.000 (once per level)
@@ -962,7 +980,7 @@ function activateSuper(durationMs) {
   if (!superShownFirst) {
     superShownFirst = true;
     if (superMsg && superMsgText) {
-      superMsgText.textContent = "Congrats! You're now a super butterfly for the next 15 seconds.";
+      superMsgText.textContent = "Congrats! You achieved a skill score of 8+ and unlocked Super Butterfly! For the next 15 seconds, you get double points and can slide flowers to safety. This can only happen once per level.";
       paused = true;
       superMsg.hidden = false;
     }

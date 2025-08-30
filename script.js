@@ -122,9 +122,8 @@ let showCollisionBounds = false;
 let invincibilityMode = false;
 let infiniteLives = false;
 
-// Konami Code sequence: ↑↑↓↓←→←→BA
-const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA'];
-let konamiProgress = 0;
+// Simple developer mode activation: Shift + M
+let devModeActivationPressed = false;
 
 // Progression rules
 const MAX_LIVES_BEFORE_LEVEL = 5; // when lives reaches 5 → level up, lives reset to 3
@@ -221,16 +220,13 @@ function stopFlap() {
 }
 
 // Developer Mode Functions
-function checkKonamiCode(keyCode) {
-  if (keyCode === konamiCode[konamiProgress]) {
-    konamiProgress++;
-    if (konamiProgress === konamiCode.length) {
-      activateDeveloperMode();
-      konamiProgress = 0;
-    }
-  } else {
-    konamiProgress = 0;
+function checkDeveloperModeActivation(event) {
+  // Shift + M activates developer mode
+  if (event.shiftKey && (event.code === 'KeyM' || (event.key && event.key.toLowerCase() === 'm'))) {
+    activateDeveloperMode();
+    return true;
   }
+  return false;
 }
 
 function activateDeveloperMode() {
@@ -506,8 +502,10 @@ function createBoundingBox(rect, color, id) {
 
 // Input handlers
 document.addEventListener('keydown', e => {
-  // Check Konami code first (works everywhere)
-  checkKonamiCode(e.code);
+  // Check for developer mode activation first (works everywhere)
+  if (checkDeveloperModeActivation(e)) {
+    return; // Don't process other keys if dev mode was just activated
+  }
   // Instructions screen startup
   if (!gameStarted && e.key === 'Enter') {
     instructionsBox.hidden = true;
@@ -519,26 +517,7 @@ document.addEventListener('keydown', e => {
     return;
   }
 
-  // Developer easter egg: SHIFT + M on instructions screen sets starting level and skill
-  if (!gameStarted && (e.code === 'KeyM' || (e.key && e.key.toLowerCase() === 'm')) && e.shiftKey) {
-    const levelInput = prompt('Developer mode: Start at level (1-99)?', String(level));
-    if (levelInput !== null) {
-      const n = Math.max(1, Math.min(99, Math.floor(Number(levelInput)) || 1));
-      devStartLevel = n;
-      
-      // Also allow setting skill score for super butterfly testing
-      const skillInput = prompt('Set skill score for testing (0.000-15.000)?', '8.000');
-      if (skillInput !== null) {
-        const skillValue = Math.max(0, Math.min(15, parseFloat(skillInput) || 0));
-        devStartSkill = skillValue; // Store for use in startGame
-      }
-      
-      // Provide quick visual feedback
-      const displaySkill = devStartSkill !== null ? devStartSkill : 0;
-      try { alert(`Will start at level ${n} with skill ${displaySkill.toFixed(3)}. Press Enter to begin.`); } catch (_) {}
-    }
-    return;
-  }
+
 
   if (gameOver) {
     if (e.key.toLowerCase() === 'y') restartGame();

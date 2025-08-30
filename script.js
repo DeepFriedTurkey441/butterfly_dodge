@@ -908,7 +908,7 @@ function restartGame() {
 // --- Leaderboard client helpers ---
 async function postLeaderboard(name, level) {
   try {
-    const res = await fetch('http://localhost:3000/api/leaderboard', {
+    const res = await fetch('https://web-production-0b27.up.railway.app/api/leaderboard', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, level })
@@ -918,7 +918,7 @@ async function postLeaderboard(name, level) {
 }
 async function fetchLeaderboard() {
   try {
-    const res = await fetch('http://localhost:3000/api/leaderboard');
+    const res = await fetch('https://web-production-0b27.up.railway.app/api/leaderboard');
     return await res.json();
   } catch (_) { return { entries: [] }; }
 }

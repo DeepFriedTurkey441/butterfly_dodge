@@ -93,6 +93,7 @@ let skillAvgFlowersPerPass = 0; // displayed as 0.000
 let isSuper = false;
 let superUntil = 0; // timestamp ms
 let superShownFirst = false; // whether the first-time message has been shown
+let superActivatedThisLevel = false; // prevent multiple super activations per level
 let netMsgShown = false; // whether net tutorial has been shown
 let flowerMsgShown = false; // whether flower tutorial has been shown
 // Super slide state: move butterfly and collided flower together to the left edge
@@ -377,9 +378,10 @@ function checkFlowers() {
         flowerMsgShown = true;
       }
 
-      // Trigger Super Butterfly on L4+ when Skill average exceeds threshold
-      if (!isSuper && level >= 4 && skillAvgFlowersPerPass > 6) {
+      // Trigger Super Butterfly on L4+ when Skill average reaches exactly 8.000 (once per level)
+      if (!isSuper && !superActivatedThisLevel && level >= 4 && skillAvgFlowersPerPass >= 8.000) {
         activateSuper(15000); // 15 seconds
+        superActivatedThisLevel = true; // prevent multiple activations this level
       }
 
       // While super: handle this collision specially and exit early
@@ -893,10 +895,12 @@ function startGame() {
   skillPassCount = 0;
   skillFlowersThisPass = 0;
   skillAvgFlowersPerPass = 0;
-  // Reset super
+  // Reset super butterfly state for new level
   isSuper = false;
   superUntil = 0;
+  superActivatedThisLevel = false; // allow super activation on new level
   if (superTimer) superTimer.hidden = true;
+  document.body.classList.remove('super'); // ensure super styling is removed
   // Note: keep superShownFirst false so first time can occur at L4
   updateHUD();
   updateNetScales();

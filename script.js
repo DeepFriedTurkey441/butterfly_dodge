@@ -746,17 +746,33 @@ function gameLoop() {
             stopFlap();
             // Submit best level to leaderboard
             ensurePlayerName();
-            if (playerName) postLeaderboard(playerName, highestLevelAchieved);
-            // Fetch and display leaderboard Top 10
             if (leaderboardBox) {
               leaderboardBox.textContent = 'Loading Top 10 scores…';
-              fetchLeaderboard().then(data => {
-                const entries = (data && data.entries) ? data.entries.slice(0, 10) : [];
-                const lines = entries.map((e, i) => `${i+1}. ${e.name} — Level ${e.level}`);
-                leaderboardBox.innerHTML = `<p><strong>Top 10 Scores of all time</strong></p><pre style="text-align:left; display:inline-block;">${lines.join('\n') || 'No scores yet.'}</pre>`;
-              }).catch(() => {
-                leaderboardBox.textContent = 'Unable to load leaderboard.';
+            }
+            if (playerName) {
+              // Wait for score submission to complete, then fetch updated leaderboard
+              postLeaderboard(playerName, highestLevelAchieved).then(() => {
+                if (leaderboardBox) {
+                  fetchLeaderboard().then(data => {
+                    const entries = (data && data.entries) ? data.entries.slice(0, 10) : [];
+                    const lines = entries.map((e, i) => `${i+1}. ${e.name} — Level ${e.level}`);
+                    leaderboardBox.innerHTML = `<p><strong>Top 10 Scores of all time</strong></p><pre style="text-align:left; display:inline-block;">${lines.join('\n') || 'No scores yet.'}</pre>`;
+                  }).catch(() => {
+                    leaderboardBox.textContent = 'Unable to load leaderboard.';
+                  });
+                }
               });
+            } else {
+              // No player name, just fetch current leaderboard
+              if (leaderboardBox) {
+                fetchLeaderboard().then(data => {
+                  const entries = (data && data.entries) ? data.entries.slice(0, 10) : [];
+                  const lines = entries.map((e, i) => `${i+1}. ${e.name} — Level ${e.level}`);
+                  leaderboardBox.innerHTML = `<p><strong>Top 10 Scores of all time</strong></p><pre style="text-align:left; display:inline-block;">${lines.join('\n') || 'No scores yet.'}</pre>`;
+                }).catch(() => {
+                  leaderboardBox.textContent = 'Unable to load leaderboard.';
+                });
+              }
             }
           } else {
             // Update HUD and give the player a fresh position to avoid immediate re-collision

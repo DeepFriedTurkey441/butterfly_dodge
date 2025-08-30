@@ -390,16 +390,16 @@ function checkFlowers() {
       score += isSuper ? 2 : 1;
       // Track for skill metric (flowers per pass)
       skillFlowersThisPass += 1;
-      // First-flower tutorial popup (one-time)
-      if (!flowerMsgShown && flowerMsg) {
+      // First-flower tutorial popup (one-time, skip if developer debug mode)
+      if (!flowerMsgShown && flowerMsg && devStartSkill === null) {
         paused = true;
         flowerMsg.hidden = false;
         setCloudsPaused(true);
         flowerMsgShown = true;
       }
 
-      // Show skill score tutorial once (level 4+ only)
-      if (!skillMsgShown && level >= 4 && skillMsg) {
+      // Show skill score tutorial once (level 4+ only, skip if developer debug mode)
+      if (!skillMsgShown && level >= 4 && skillMsg && devStartSkill === null) {
         paused = true;
         skillMsg.hidden = false;
         setCloudsPaused(true);

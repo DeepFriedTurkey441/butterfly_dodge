@@ -220,14 +220,22 @@ document.addEventListener('keydown', e => {
     return;
   }
 
-  // Developer easter egg: SHIFT + M on instructions screen sets starting level
+  // Developer easter egg: SHIFT + M on instructions screen sets starting level and skill
   if (!gameStarted && (e.code === 'KeyM' || (e.key && e.key.toLowerCase() === 'm')) && e.shiftKey) {
-    const input = prompt('Developer mode: Start at level (1-99)?', String(level));
-    if (input !== null) {
-      const n = Math.max(1, Math.min(99, Math.floor(Number(input)) || 1));
+    const levelInput = prompt('Developer mode: Start at level (1-99)?', String(level));
+    if (levelInput !== null) {
+      const n = Math.max(1, Math.min(99, Math.floor(Number(levelInput)) || 1));
       devStartLevel = n;
+      
+      // Also allow setting skill score for super butterfly testing
+      const skillInput = prompt('Set skill score for testing (0.000-15.000)?', '8.000');
+      if (skillInput !== null) {
+        const skillValue = Math.max(0, Math.min(15, parseFloat(skillInput) || 0));
+        skillAvgFlowersPerPass = skillValue;
+      }
+      
       // Provide quick visual feedback
-      try { alert(`Will start at level ${n}. Press Enter to begin.`); } catch (_) {}
+      try { alert(`Will start at level ${n} with skill ${skillAvgFlowersPerPass.toFixed(3)}. Press Enter to begin.`); } catch (_) {}
     }
     return;
   }

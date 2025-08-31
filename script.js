@@ -462,9 +462,51 @@ function setupDeveloperPanelEvents() {
     const targetLevel = parseInt(document.getElementById('level-jump').value);
     if (targetLevel >= 1 && targetLevel <= 99) {
       level = targetLevel;
+      
+      // Recreate nets with new level properties (important for Level 5+ pendulum nets)
+      nets.forEach(n => n.el.remove());
+      nets.length = 0;
+      
+      // Create fresh nets for the new level
+      for (let i = 0; i < NUM_NETS; i++) {
+        const div = document.createElement('div');
+        div.className = 'net';
+        const cx = (i + 1) * window.innerWidth / (NUM_NETS + 1);
+        div.style.left = `${cx - 40}px`;
+        div.style.top = `${window.innerHeight * 0.25}px`;
+        div.innerHTML = svgMarkup;
+        
+        // Scale nets by current level (capped at level 10 size)
+        const effectiveLevel = Math.min(level, 10);
+        const scale = 1.15 + Math.max(0, effectiveLevel - 1) * NET_SCALE_PER_LEVEL;
+        div.style.transform = `scale(${scale})`;
+        document.body.appendChild(div);
+
+        const svgEl = div.querySelector('svg');
+
+        let speedY = BASE_NET_SPEED + i * SPEED_INCREMENT;
+        if (i >= NUM_NETS - 3) speedY *= 0.7;
+        
+        // Level 5+ oscillating pendulum properties
+        const pendulumProps = level >= 5 ? {
+          baseX: cx - 40,                           // Center point for pendulum swing
+          pendulumAngle: Math.random() * Math.PI * 2, // Random starting angle
+          pendulumSpeed: 0.03 + Math.random() * 0.02, // Angular velocity (0.03-0.05)
+          pendulumRadius: 60 + Math.random() * 40      // Swing radius (60-100px)
+        } : {};
+        
+        nets.push({ 
+          el: div, 
+          svg: svgEl, 
+          y: window.innerHeight * 0.25, 
+          dir: 1, 
+          speedY,
+          ...pendulumProps
+        });
+      }
+      
       updateHUD();
-      updateNetScales();
-      console.log(`Jumped to level ${targetLevel}`);
+      console.log(`Jumped to level ${targetLevel} - nets recreated with ${level >= 5 ? 'pendulum' : 'normal'} properties`);
     }
   });
   
@@ -759,8 +801,8 @@ function checkFlowers() {
         flowerMsgShown = true;
       }
 
-      // Show skill score tutorial once (level 4+ only, skip if developer debug mode)
-      if (!skillMsgShown && level >= 4 && skillMsg && devStartSkill === null) {
+      // Show skill score tutorial once (level 4+ only, skip if developer debug mode or level jumping)
+      if (!skillMsgShown && level >= 4 && skillMsg && devStartSkill === null && !developerMode) {
         paused = true;
         skillMsg.hidden = false;
         setCloudsPaused(true);
@@ -1107,6 +1149,11 @@ function gameLoop() {
         
         // Apply the pendulum position
         n.el.style.left = `${newX}px`;
+        
+        // Debug logging (developer mode only)
+        if (developerMode && Math.random() < 0.01) { // Log occasionally to avoid spam
+          console.log(`Pendulum: angle=${n.pendulumAngle.toFixed(2)}, offset=${horizontalOffset.toFixed(1)}, newX=${newX.toFixed(1)}`);
+        }
       }
 
       const b = butterfly.getBoundingClientRect();

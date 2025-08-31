@@ -487,12 +487,13 @@ function setupDeveloperPanelEvents() {
         let speedY = BASE_NET_SPEED + i * SPEED_INCREMENT;
         if (i >= NUM_NETS - 3) speedY *= 0.7;
         
-        // Level 5+ oscillating pendulum properties
+        // Level 5+ oscillating pendulum properties (initially disabled)
         const pendulumProps = level >= 5 ? {
           baseX: cx - 40,                           // Center point for pendulum swing
           pendulumAngle: Math.random() * Math.PI * 2, // Random starting angle
           pendulumSpeed: 0.03 + Math.random() * 0.02, // Angular velocity (0.03-0.05)
-          pendulumRadius: 60 + Math.random() * 40      // Swing radius (60-100px)
+          pendulumRadius: 60 + Math.random() * 40,     // Swing radius (60-100px)
+          isPendulumActive: false                     // Start inactive, activate randomly per pass
         } : {};
         
         nets.push({ 
@@ -575,6 +576,7 @@ function updateDeveloperMode() {
       Super: ${isSuper ? 'YES' : 'NO'} | Skill: ${skillAvgFlowersPerPass.toFixed(3)}<br>
       Nets: ${nets.length} | Flowers: ${flowers.length}<br>
       Pendulum Mode: ${level >= 5 ? 'ACTIVE' : 'inactive'}<br>
+      Active Pendulum Net: ${level >= 5 ? (nets.findIndex(n => n.isPendulumActive) + 1 || 'none') : 'N/A'}<br>
       Screen: ${window.innerWidth}x${window.innerHeight}<br>
       Scale Factor: ${getScreenScaleFactor().toFixed(2)}x<br>
       Scaled Speed: ${getScaledSpeed().toFixed(1)}<br>
@@ -1113,6 +1115,31 @@ function gameLoop() {
         skillAvgFlowersPerPass = (totalPrev + skillFlowersThisPass) / skillPassCount;
         skillFlowersThisPass = 0;
         if (skillBox) skillBox.innerText = `Skill: ${skillAvgFlowersPerPass.toFixed(3)}`;
+        
+        // Level 5+: Randomly select one net to oscillate for this pass
+        if (level >= 5) {
+          // First, deactivate all pendulums and reset positions
+          nets.forEach(net => {
+            if (net.pendulumAngle !== undefined) {
+              net.isPendulumActive = false;
+              // Reset to center position
+              net.el.style.left = `${net.baseX}px`;
+            }
+          });
+          
+          // Then randomly activate one net's pendulum
+          const netsWithPendulum = nets.filter(net => net.pendulumAngle !== undefined);
+          if (netsWithPendulum.length > 0) {
+            const randomIndex = Math.floor(Math.random() * netsWithPendulum.length);
+            netsWithPendulum[randomIndex].isPendulumActive = true;
+            
+            // Debug logging
+            if (developerMode) {
+              console.log(`Pass ${skillPassCount}: Activated pendulum on net ${nets.indexOf(netsWithPendulum[randomIndex]) + 1}`);
+            }
+          }
+        }
+        
         bx = -50;
       }
     }
@@ -1138,8 +1165,8 @@ function gameLoop() {
       if (n.y < 50 || n.y > window.innerHeight - 130) n.dir *= -1;
       n.el.style.top = `${n.y}px`;
       
-      // Level 5+: Add pendulum horizontal oscillation
-      if (level >= 5 && n.pendulumAngle !== undefined) {
+      // Level 5+: Add pendulum horizontal oscillation (only if this net is active)
+      if (level >= 5 && n.pendulumAngle !== undefined && n.isPendulumActive) {
         // Update pendulum angle
         n.pendulumAngle += n.pendulumSpeed;
         
@@ -1339,12 +1366,13 @@ function startGame() {
     let speedY = BASE_NET_SPEED + i * SPEED_INCREMENT;
     if (i >= NUM_NETS - 3) speedY *= 0.7;
     
-    // Level 5+ oscillating pendulum properties
+    // Level 5+ oscillating pendulum properties (initially disabled)
     const pendulumProps = level >= 5 ? {
       baseX: cx - 40,                           // Center point for pendulum swing
       pendulumAngle: Math.random() * Math.PI * 2, // Random starting angle
       pendulumSpeed: 0.03 + Math.random() * 0.02, // Angular velocity (0.03-0.05)
-      pendulumRadius: 60 + Math.random() * 40      // Swing radius (60-100px)
+      pendulumRadius: 60 + Math.random() * 40,     // Swing radius (60-100px)
+      isPendulumActive: false                     // Start inactive, activate randomly per pass
     } : {};
     
     nets.push({ 

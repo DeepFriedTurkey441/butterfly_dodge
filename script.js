@@ -130,18 +130,52 @@ const MAX_LIVES_BEFORE_LEVEL = 5; // when lives reaches 5 → level up, lives re
 const NET_SCALE_PER_LEVEL = 0.15; // nets grow 15% per level beyond 1
 
 // Butterfly state & physics
-const SPEED_LEVELS = [1, 3, 6];
+const BASE_SPEED_LEVELS = [1, 3, 6]; // Base speeds before screen scaling
 let speedIndex = 0;
-let speed = SPEED_LEVELS[0];
+let speed = BASE_SPEED_LEVELS[0];
 let bx = 0;
 let by = window.innerHeight / 2;
 let dy = 0;
 let paused = false;
 let gameOver = false;
 let spacePressed = false;
-const GRAVITY = 0.2;
-const MAX_FALL_SPEED = 5;
-const MAX_RISE_SPEED = -5;
+
+// Dynamic physics scaling based on screen size
+function getScreenScaleFactor() {
+  // Reference screen width: 1200px (typical laptop)
+  // Scale factor increases with screen width to make larger screens more challenging
+  const referenceWidth = 1200;
+  const currentWidth = window.innerWidth;
+  
+  // Scale factor: 1.0 at reference size, increases for larger screens
+  // Clamp between 0.8 and 2.5 to prevent extreme values
+  return Math.max(0.8, Math.min(2.5, currentWidth / referenceWidth));
+}
+
+function getScaledGravity() {
+  const scaleFactor = getScreenScaleFactor();
+  return 0.2 * scaleFactor;
+}
+
+function getScaledMaxFallSpeed() {
+  const scaleFactor = getScreenScaleFactor();
+  return 5 * scaleFactor;
+}
+
+function getScaledMaxRiseSpeed() {
+  const scaleFactor = getScreenScaleFactor();
+  return -5 * scaleFactor;
+}
+
+function getScaledSpeed() {
+  const scaleFactor = getScreenScaleFactor();
+  return BASE_SPEED_LEVELS[speedIndex] * scaleFactor;
+}
+
+// Initialize with scaled values
+const GRAVITY = getScaledGravity();
+const MAX_FALL_SPEED = getScaledMaxFallSpeed();
+const MAX_RISE_SPEED = getScaledMaxRiseSpeed();
 
 // Collision cooldown to prevent multiple life losses in one overlap
 const HIT_COOLDOWN_MS = 800;
@@ -499,6 +533,8 @@ function updateDeveloperMode() {
       Super: ${isSuper ? 'YES' : 'NO'} | Skill: ${skillAvgFlowersPerPass.toFixed(3)}<br>
       Nets: ${nets.length} | Flowers: ${flowers.length}<br>
       Screen: ${window.innerWidth}x${window.innerHeight}<br>
+      Scale Factor: ${getScreenScaleFactor().toFixed(2)}x<br>
+      Scaled Speed: ${getScaledSpeed().toFixed(1)}<br>
       FPS: ${Math.round(1000 / 16)} (approx)<br>
       Invincible: ${invincibilityMode ? 'YES' : 'NO'}<br>
       Infinite Lives: ${infiniteLives ? 'YES' : 'NO'}
@@ -611,17 +647,18 @@ document.addEventListener('keydown', e => {
 
   switch (e.key) {
     case 'ArrowRight':
-      speedIndex = Math.min(SPEED_LEVELS.length - 1, speedIndex + 1);
-      speed = SPEED_LEVELS[speedIndex];
+      speedIndex = Math.min(BASE_SPEED_LEVELS.length - 1, speedIndex + 1);
+      speed = getScaledSpeed();
       break;
     case 'ArrowLeft':
       speedIndex = Math.max(0, speedIndex - 1);
-      speed = SPEED_LEVELS[speedIndex];
+      speed = getScaledSpeed();
       break;
     case ' ':
       if (!spacePressed) {
         spacePressed = true;
-        dy = Math.max(MAX_RISE_SPEED, dy - 2.5);
+        const scaleFactor = getScreenScaleFactor();
+        dy = Math.max(getScaledMaxRiseSpeed(), dy - 2.5 * scaleFactor);
         // visual flap impulse
         butterfly.style.transform = 'scale(1.1) rotate(-6deg)';
         butterfly.textContent = '/\\';
@@ -1035,9 +1072,13 @@ function gameLoop() {
       }
     }
 
+    const currentGravity = getScaledGravity();
+    const currentMaxFall = getScaledMaxFallSpeed();
+    const currentMaxRise = getScaledMaxRiseSpeed();
+    
     dy = spacePressed
-      ? Math.max(MAX_RISE_SPEED, dy - 0.5)
-      : Math.min(MAX_FALL_SPEED, dy + GRAVITY);
+      ? Math.max(currentMaxRise, dy - 0.5 * getScreenScaleFactor())
+      : Math.min(currentMaxFall, dy + currentGravity);
 
     by = Math.max(0, Math.min(window.innerHeight - 30, by + dy));
     butterfly.style.left = bx + 'px';
@@ -1233,7 +1274,7 @@ function startGame() {
   by = window.innerHeight / 2;
   dy = 0;
   speedIndex = 0;
-  speed = SPEED_LEVELS[0];
+  speed = getScaledSpeed();
   paused = false;
   running = true;
   gameOver = false;

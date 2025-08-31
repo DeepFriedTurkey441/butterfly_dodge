@@ -532,6 +532,7 @@ function updateDeveloperMode() {
       Level: ${level} | Lives: ${lives} | Points: ${score}<br>
       Super: ${isSuper ? 'YES' : 'NO'} | Skill: ${skillAvgFlowersPerPass.toFixed(3)}<br>
       Nets: ${nets.length} | Flowers: ${flowers.length}<br>
+      Pendulum Mode: ${level >= 5 ? 'ACTIVE' : 'inactive'}<br>
       Screen: ${window.innerWidth}x${window.innerHeight}<br>
       Scale Factor: ${getScreenScaleFactor().toFixed(2)}x<br>
       Scaled Speed: ${getScaledSpeed().toFixed(1)}<br>
@@ -867,6 +868,8 @@ function showLevelUp(newLevel) {
       levelupDetails.textContent = 'Clouds now bump you to a random spot. Watch out!';
     } else if (newLevel === 3) {
       levelupDetails.textContent = 'Clouds still bump you. New: fast winds sweep right→left; colliding pushes you backward. Music speeds up!';
+    } else if (newLevel === 5) {
+      levelupDetails.textContent = 'Nets now swing like pendulums! They oscillate left and right while moving up and down. Much trickier to dodge!';
     } else {
       levelupDetails.textContent = 'Difficulty increased.';
     }
@@ -1088,9 +1091,23 @@ function gameLoop() {
     checkFlowers();
 
     nets.forEach(n => {
+      // Vertical movement (all levels)
       n.y += n.speedY * n.dir;
       if (n.y < 50 || n.y > window.innerHeight - 130) n.dir *= -1;
       n.el.style.top = `${n.y}px`;
+      
+      // Level 5+: Add pendulum horizontal oscillation
+      if (level >= 5 && n.pendulumAngle !== undefined) {
+        // Update pendulum angle
+        n.pendulumAngle += n.pendulumSpeed;
+        
+        // Calculate horizontal offset from center using sine wave
+        const horizontalOffset = Math.sin(n.pendulumAngle) * n.pendulumRadius;
+        const newX = n.baseX + horizontalOffset;
+        
+        // Apply the pendulum position
+        n.el.style.left = `${newX}px`;
+      }
 
       const b = butterfly.getBoundingClientRect();
       const m = n.el.getBoundingClientRect();
@@ -1266,7 +1283,23 @@ function startGame() {
 
     let speedY = BASE_NET_SPEED + i * SPEED_INCREMENT;
     if (i >= NUM_NETS - 3) speedY *= 0.7;
-    nets.push({ el: div, svg: svgEl, y: window.innerHeight * 0.25, dir: 1, speedY });
+    
+    // Level 5+ oscillating pendulum properties
+    const pendulumProps = level >= 5 ? {
+      baseX: cx - 40,                           // Center point for pendulum swing
+      pendulumAngle: Math.random() * Math.PI * 2, // Random starting angle
+      pendulumSpeed: 0.03 + Math.random() * 0.02, // Angular velocity (0.03-0.05)
+      pendulumRadius: 60 + Math.random() * 40      // Swing radius (60-100px)
+    } : {};
+    
+    nets.push({ 
+      el: div, 
+      svg: svgEl, 
+      y: window.innerHeight * 0.25, 
+      dir: 1, 
+      speedY,
+      ...pendulumProps
+    });
   }
 
   // Reset butterfly physics

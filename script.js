@@ -1162,7 +1162,16 @@ function gameLoop() {
     nets.forEach(n => {
       // Vertical movement (all levels)
       n.y += n.speedY * n.dir;
-      if (n.y < 50 || n.y > window.innerHeight - 130) n.dir *= -1;
+      
+      // Boundary collision with proper position clamping
+      if (n.y < 50) {
+        n.y = 50; // Clamp to minimum boundary
+        n.dir = 1; // Change direction to down
+      } else if (n.y > window.innerHeight - 130) {
+        n.y = window.innerHeight - 130; // Clamp to maximum boundary  
+        n.dir = -1; // Change direction to up
+      }
+      
       n.el.style.top = `${n.y}px`;
       
       // Level 5+: Add pendulum horizontal oscillation (only if this net is active)

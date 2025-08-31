@@ -1,168 +1,198 @@
-Butterfly Dodge Game 🦋
+# Butterfly Dodge Game 🦋
 
-A fun and engaging web-based game where players control a butterfly character to dodge falling and rising nets while collecting points by drinking nectar from flowers. Built with pure HTML5, CSS3, and JavaScript for smooth gameplay across all devices.
+A fun and engaging web-based game where players control a butterfly to dodge moving nets while collecting nectar from flowers. Built with pure HTML5, CSS3, and JavaScript for smooth gameplay across all devices.
 
-🎮 Game Overview
+**🎮 [Play Now!](https://deepfriedturkey441.github.io/butterfly_dodge/)**
 
-Navigate your character left and right to avoid the colorful butterflies falling from the sky! The longer you survive, the higher your score. Test your reflexes and see how long you can last in this addictive arcade-style game.
+## 🎮 Game Overview
 
-How to Play
+Navigate your butterfly left and right across the screen to avoid the moving nets while collecting flowers for points! The butterfly moves continuously from left to right, and you control its height and speed. Test your reflexes and see how high you can level up in this addictive arcade-style game.
 
-Move Left: Use left arrow key or 'A' key
-Move Right: Use right arrow key or 'D' key
+## 🕹️ How to Play
 
-Objective: Avoid all falling butterflies to keep your score climbing
-Challenge: Game speed increases as your score gets higher
+### Movement Controls
+- **Left Arrow**: Slow down
+- **Right Arrow**: Speed up  
+- **Spacebar**: Flap wings to fly up (hold to keep flying)
+- **Release Spacebar**: Butterfly descends with gravity
 
-🌟 Features
+### Additional Controls
+- **P**: Pause/Resume game
+- **Q**: Quit to game over
+- **Enter**: Start game from instructions
+- **Y**: Play again after game over
 
-Gameplay
+### Objective
+- 🌸 **Collect flowers** to earn points (1 point each)
+- 🥅 **Avoid nets** or lose a life
+- 🎯 **Reach 5 lives** to advance to the next level
+- 📊 **Build skill score** by collecting flowers consistently
 
-Smooth character movement with responsive controls
-Dynamic butterfly spawning with randomized positions
-Increasing difficulty - butterflies fall faster as you progress
-Score tracking with high score persistence
-Collision detection with visual feedback
-Visual Design
-Colorful butterfly sprites with varied animations
-Smooth animations using CSS transitions and JavaScript
-Responsive design that works on desktop and mobile
-Clean, modern UI with intuitive controls
+## ✨ Game Features
 
-Technical Features
+### Core Gameplay
+- **Progressive difficulty** - Nets grow larger each level
+- **Dynamic physics** - Scales with screen size for consistent challenge
+- **Skill scoring** - Average flowers collected per screen pass
+- **Super Butterfly mode** - Activated at skill level 8.000+
+- **Multiple levels** with unique mechanics (clouds, winds)
 
-Pure vanilla JavaScript - no frameworks required
-HTML5 Canvas for smooth game rendering
-Local storage for saving high scores
-Touch controls optimized for mobile devices
-60 FPS gameplay with requestAnimationFrame
+### Level Progression
+- **Level 1**: Basic net dodging
+- **Level 2**: Clouds bump you to random positions  
+- **Level 3**: Wind gusts push you backward + faster music
+- **Level 4+**: Nets continue growing, skill score tracking
 
-🚀 Quick Start
+### Visual & Audio
+- **Parallax cloud backgrounds** with smooth animations
+- **Responsive scaling** - Works on all screen sizes
+- **Dynamic music** - Procedurally generated, speeds up at Level 3+
+- **Sound effects** - Toggleable with volume control
+- **Visual feedback** - Screen shake, flower pop animations
 
-Play Online
-Simply paste https://deepfriedturkey441.github.io/butterfly_dodgein any modern web browser and start playing!
+## 🐛 Developer Mode
 
-Local Setup
+**New in v2.1.0!** Press **Shift+M** to toggle developer mode on/off.
 
-Clone or download this repository
-Open index.html in your web browser
-Start playing immediately - no installation required
+### Features
+- **Real-time debug overlay** - Position, physics, game state
+- **Collision boundaries** - Visual hitboxes for all objects
+- **Cheat controls**:
+  - Invincibility mode
+  - Infinite lives  
+  - Level jumping (1-99)
+  - Instant super mode activation
+- **Physics monitoring** - Screen scale factor, speeds, FPS
 
-Host Your Own Version
+### Debug Information
+- Butterfly coordinates and velocity
+- Current level, lives, points, skill score
+- Net and flower counts
+- Screen dimensions and scaling
+- Performance metrics
 
-Upload files to any web hosting service
-Share the URL with friends for multiplayer fun
-Customize the game by modifying the code
+## ⚖️ Dynamic Difficulty Scaling
 
-🛠️ Technical Details
+The game automatically adjusts physics based on your screen size:
 
-Built With
-HTML5 - Game structure and canvas element
-CSS3 - Styling, animations, and responsive design
-Vanilla JavaScript - Game logic, physics, and controls
-Local Storage API - High score persistence
+- **Small screens** (laptops): Easier, slower movement
+- **Large screens** (desktops): Harder, faster movement  
+- **Reference size**: 1200px width
+- **Scale factor**: 0.8x to 2.5x depending on screen
 
-File Structure
+This ensures consistent challenge across all devices!
 
-index.html - Main game page and structure
-script.js - Game logic, physics, and controls
-style.css - Styling, animations, and responsive design
-leaderboard.json - Score tracking (if implemented)
+## 🎯 Scoring System
 
-Browser Compatibility
+- **Points**: 1 per flower (2 during Super mode)
+- **Lives**: Start with 3, gain 1 every 10 points
+- **Level up**: When lives reach 5, advance level and reset to 3 lives
+- **Skill score**: Running average of flowers collected per left→right pass
+- **Super mode**: Activated when skill reaches 8.000+ (Level 4+)
 
-Chrome, Firefox, Safari, Edge (modern versions)
+## 🏆 Leaderboard
 
+- **Global leaderboard** - Top 10 highest levels achieved
+- **Name entry** - Enter your name for each playthrough
+- **Persistent storage** - Scores saved across sessions
+- **Best level tracking** - Your highest level is submitted
 
-🎯 Game Mechanics
+## 🚀 Quick Start
 
-Scoring System
-+1 point for each flower touched
+### Play Online
+Visit **[https://deepfriedturkey441.github.io/butterfly_dodge/](https://deepfriedturkey441.github.io/butterfly_dodge/)** in any modern web browser and start playing!
 
-High score tracking with local storage
+### Local Development
+1. Clone this repository
+2. Start a local server: `python3 -m http.server 8000`
+3. Open `http://localhost:8000` in your browser
+4. Press **Shift+M** for developer mode
 
-Progressive difficulty increases challenge over time
+### Host Your Own
+- Upload files to any web hosting service
+- No build process required - pure HTML/CSS/JavaScript
+- Customize by modifying the source files
 
-Difficulty Progression
+## 🛠️ Technical Details
 
-Level 1: Slow butterfly speed, fewer spawns
-Level 2: Medium speed, more frequent spawns
-Level 3+: Fast speed, multiple butterflies, challenging patterns
+### Built With
+- **HTML5** - Game structure and DOM elements
+- **CSS3** - Responsive design, animations, effects
+- **Vanilla JavaScript** - Game logic, physics, rendering
+- **Web Audio API** - Procedural music and sound effects
 
-Power-ups (Future Feature Ideas)
+### File Structure
+```
+├── index.html          # Main game page
+├── script.js           # Game logic and physics  
+├── style.css           # Styling and animations
+├── server.js           # Leaderboard backend
+├── leaderboard.json    # Score storage
+└── README.md           # This file
+```
 
-Shield: Temporary invincibility
-Slow Motion: Reduces butterfly speed briefly
-Score Multiplier: Double points for limited time
-Extra Life: Additional chance after collision
+### Browser Compatibility
+- Chrome, Firefox, Safari, Edge (modern versions)
+- Mobile browsers supported
+- Requires JavaScript enabled
 
-🏆 High Scores & Leaderboard
+## 🎨 Customization
 
-The game automatically saves your best score using browser local storage. Challenge yourself to beat your personal best, or compete with friends and family!
-Score Tracking Features
-Personal high score saved locally
-Session statistics - games played, average score
-Achievement system for reaching score milestones
-Shareable scores for social media bragging rights
+### Easy Modifications
+- **Colors**: Edit CSS color variables
+- **Physics**: Adjust JavaScript constants (`GRAVITY`, `SPEED_LEVELS`)
+- **Difficulty**: Modify `NET_SCALE_PER_LEVEL`, net counts
+- **Sounds**: Replace audio generation with files
 
-🎨 Customization
+### Advanced Features
+- **New levels**: Add mechanics in `gameLoop()` level checks
+- **Power-ups**: Extend flower collision system
+- **Themes**: Create CSS class variants
+- **Multiplayer**: Add networking for competitive play
 
-Easy Modifications
-Butterfly colors: Edit CSS butterfly classes
-Game speed: Adjust JavaScript timing variables
-Character sprite: Replace character image or CSS styling
-Background: Modify CSS background properties
-Sound effects: Add audio files and JavaScript audio controls
+## 📋 Version History
 
-Advanced Customization
+### v2.1.0 (Current)
+- ✅ Developer mode with Shift+M toggle
+- ✅ Dynamic physics scaling for screen sizes
+- ✅ Enhanced debug tools and visualization
+- ✅ Fixed player name prompting on restart
+- ✅ Improved UI consistency (Score → Points)
 
-New power-ups: Extend JavaScript game logic
-Multiplayer mode: Add networking for competitive play
-Different enemies: Create new falling object types
-Level system: Design structured progression stages
+### Previous Versions
+- Basic gameplay with progressive difficulty
+- Leaderboard system with global scores
+- Responsive design and mobile support
 
-🐛 Known Issues & Future Improvements
+## 🤝 Contributing
 
-Current Limitations
+Contributions welcome! Please:
 
-Single player only - multiplayer would enhance social fun
-Basic graphics - could benefit from sprite animations
+1. Fork this repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Test thoroughly (use developer mode!)
+4. Commit changes: `git commit -m 'Add amazing feature'`
+5. Push: `git push origin feature/amazing-feature`  
+6. Open a Pull Request
 
-Planned Improvements
+### Development Workflow
+- Use `feature/` branches for new features
+- Test with developer mode enabled
+- Ensure cross-browser compatibility
+- Update README for user-facing changes
 
-Sound effects and background music
-Animated butterfly sprites with wing flapping
-Power-up system with temporary abilities
-Online leaderboard for global competition
-Mobile touch controls optimization
-Pause/resume functionality
-
-🤝 Contributing
-
-Want to improve the game? Contributions are welcome!
-
-How to Contribute
-
-Fork this repository
-Create a feature branch (git checkout -b feature/amazing-feature)
-Make your changes and test thoroughly
-Commit your changes (git commit -m 'Add amazing feature')
-Push to the branch (git push origin feature/amazing-feature)
-Open a Pull Request with description of changes
-
-Contribution Ideas
-
-Sound system - Add background music and sound effects
-Better graphics - Improve sprites and animations
-Mobile optimization - Enhanced touch controls
-New game modes - Time attack, survival mode, etc.
-Achievement system - Unlock rewards for milestones
-📄 License
+## 📄 License
 
 This project is open source and available under the MIT License. Feel free to use, modify, and distribute for personal or educational purposes.
-🎮 Play Now!
 
-Ready to test your reflexes? Open the game and see how long you can dodge those butterflies!
-Current High Score Challenge: What level can you reach?
+## 🎮 Ready to Play?
 
-Have fun playing, and don't forget to share your high scores! 🦋🎯
+**[🚀 Launch Game](https://deepfriedturkey441.github.io/butterfly_dodge/)**
+
+Try to reach Level 10+ and get your name on the global leaderboard! 
+
+**Pro tip**: Press **Shift+M** to explore the developer tools and see how the game works behind the scenes.
+
+---
+
+*Have fun playing! 🦋🎯*

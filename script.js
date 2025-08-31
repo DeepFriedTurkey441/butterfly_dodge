@@ -220,17 +220,25 @@ function stopFlap() {
 }
 
 // Developer Mode Functions
-function checkDeveloperModeActivation(event) {
+function checkDeveloperModeToggle(event) {
   // Debug logging
   console.log('Key pressed:', event.key, 'Code:', event.code, 'Shift:', event.shiftKey);
   
-  // Shift + M activates developer mode
+  // Shift + M toggles developer mode on/off
   if (event.shiftKey && (event.code === 'KeyM' || (event.key && event.key.toLowerCase() === 'm'))) {
-    console.log('Developer mode activation detected!');
-    activateDeveloperMode();
+    console.log('Developer mode toggle detected!');
+    toggleDeveloperMode();
     return true;
   }
   return false;
+}
+
+function toggleDeveloperMode() {
+  if (developerMode) {
+    deactivateDeveloperMode();
+  } else {
+    activateDeveloperMode();
+  }
 }
 
 function activateDeveloperMode() {
@@ -243,28 +251,62 @@ function activateDeveloperMode() {
   createDeveloperPanel();
   
   // Show activation message
+  showDeveloperModeMessage('🐛 DEVELOPER MODE ACTIVATED', '#0f0');
+}
+
+function deactivateDeveloperMode() {
+  if (!developerMode) return; // Already inactive
+  
+  developerMode = false;
+  console.log('🐛 Developer Mode Deactivated. Goodbye!');
+  
+  // Remove developer panel
+  if (devModePanel) {
+    devModePanel.remove();
+    devModePanel = null;
+  }
+  
+  // Remove debug overlay
+  removeDebugOverlay();
+  
+  // Remove collision bounds
+  document.querySelectorAll('.collision-bound').forEach(el => el.remove());
+  showCollisionBounds = false;
+  
+  // Reset cheat modes
+  invincibilityMode = false;
+  infiniteLives = false;
+  
+  // Show deactivation message
+  showDeveloperModeMessage('🐛 DEVELOPER MODE DEACTIVATED', '#f44');
+}
+
+function showDeveloperModeMessage(text, color) {
   const msg = document.createElement('div');
   msg.style.cssText = `
     position: fixed; top: 20px; right: 20px; z-index: 20000;
-    background: #000; color: #0f0; padding: 12px 16px;
+    background: #000; color: ${color}; padding: 12px 16px;
     border-radius: 8px; font-family: monospace; font-size: 14px;
     box-shadow: 0 4px 12px rgba(0,255,0,0.3);
     animation: devModeFlash 3s ease-out forwards;
   `;
-  msg.textContent = '🐛 DEVELOPER MODE ACTIVATED';
+  msg.textContent = text;
   document.body.appendChild(msg);
   
-  // Add flash animation
-  const style = document.createElement('style');
-  style.textContent = `
-    @keyframes devModeFlash {
-      0% { opacity: 0; transform: translateX(100px); }
-      20% { opacity: 1; transform: translateX(0); }
-      80% { opacity: 1; transform: translateX(0); }
-      100% { opacity: 0; transform: translateX(-100px); }
-    }
-  `;
-  document.head.appendChild(style);
+  // Add flash animation if not already present
+  if (!document.getElementById('dev-mode-animation')) {
+    const style = document.createElement('style');
+    style.id = 'dev-mode-animation';
+    style.textContent = `
+      @keyframes devModeFlash {
+        0% { opacity: 0; transform: translateX(100px); }
+        20% { opacity: 1; transform: translateX(0); }
+        80% { opacity: 1; transform: translateX(0); }
+        100% { opacity: 0; transform: translateX(-100px); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
   
   setTimeout(() => msg.remove(), 3000);
 }
@@ -506,9 +548,9 @@ function createBoundingBox(rect, color, id) {
 
 // Input handlers
 document.addEventListener('keydown', e => {
-  // Check for developer mode activation first (works everywhere)
-  if (checkDeveloperModeActivation(e)) {
-    return; // Don't process other keys if dev mode was just activated
+  // Check for developer mode toggle first (works everywhere)
+  if (checkDeveloperModeToggle(e)) {
+    return; // Don't process other keys if dev mode was just toggled
   }
   // Instructions screen startup
   if (!gameStarted && e.key === 'Enter') {

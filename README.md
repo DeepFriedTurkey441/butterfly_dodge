@@ -1,6 +1,8 @@
 # Butterfly Dodge Game 🦋
 
-A fun and engaging web-based game where players control a butterfly to dodge moving nets while collecting nectar from flowers. Built with pure HTML5, CSS3, and JavaScript for smooth gameplay across all devices.
+A fun and engaging web-based game where players control a butterfly to dodge moving nets while collecting nectar from flowers. Built with pure HTML5, CSS3, and JavaScript for smooth gameplay.
+
+**⌨️ Desktop/Keyboard Required** - This game requires keyboard controls and is not currently mobile-compatible. Touch controls may be added in a future version.
 
 **🎮 [Play Now!](https://deepfriedturkey441.github.io/butterfly_dodge/)**
 
@@ -45,7 +47,7 @@ Navigate your butterfly left and right across the screen to avoid the moving net
 
 ### Visual & Audio
 - **Parallax cloud backgrounds** with smooth animations
-- **Responsive scaling** - Works on all screen sizes
+- **Responsive scaling** - Works on all desktop screen sizes
 - **Dynamic music** - Procedurally generated, speeds up at Level 3+
 - **Sound effects** - Toggleable with volume control
 - **Visual feedback** - Screen shake, flower pop animations
@@ -132,9 +134,9 @@ Visit **[https://deepfriedturkey441.github.io/butterfly_dodge/](https://deepfrie
 ```
 
 ### Browser Compatibility
-- Chrome, Firefox, Safari, Edge (modern versions)
-- Mobile browsers supported
-- Requires JavaScript enabled
+- **Desktop browsers**: Chrome, Firefox, Safari, Edge (modern versions)
+- **Mobile**: Not currently supported (keyboard required)
+- **Requirements**: JavaScript enabled, physical keyboard
 
 ## 🎨 Customization
 
@@ -162,7 +164,7 @@ Visit **[https://deepfriedturkey441.github.io/butterfly_dodge/](https://deepfrie
 ### Previous Versions
 - Basic gameplay with progressive difficulty
 - Leaderboard system with global scores
-- Responsive design and mobile support
+- Responsive design for desktop browsers
 
 ## 🤝 Contributing
 

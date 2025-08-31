@@ -900,6 +900,47 @@ function updateNetScales() {
   nets.forEach(n => n && n.el && (n.el.style.transform = `scale(${scale})`));
 }
 
+// --- Level 5+ pendulum helpers ---
+function ensurePendulumPropsForNets() {
+  if (level < 5) return;
+  nets.forEach(n => {
+    if (n && n.el && n.pendulumAngle === undefined) {
+      // Derive a reasonable baseX from current style or layout
+      const leftStyle = parseFloat(n.el.style.left || '0');
+      const baseX = Number.isFinite(leftStyle) && leftStyle !== 0
+        ? leftStyle
+        : n.el.getBoundingClientRect().left;
+      n.baseX = baseX;
+      n.pendulumAngle = Math.random() * Math.PI * 2;
+      n.pendulumSpeed = 0.03 + Math.random() * 0.02;
+      n.pendulumRadius = 60 + Math.random() * 40;
+      n.isPendulumActive = false;
+    }
+  });
+}
+
+function activateRandomPendulumNet() {
+  if (level < 5) return;
+  ensurePendulumPropsForNets();
+  // Deactivate all and reset to center position
+  nets.forEach(n => {
+    if (n && n.pendulumAngle !== undefined) {
+      n.isPendulumActive = false;
+      if (typeof n.baseX === 'number') n.el.style.left = `${n.baseX}px`;
+    }
+  });
+  // Activate one randomly
+  const candidates = nets.filter(n => n && n.pendulumAngle !== undefined);
+  if (candidates.length > 0) {
+    const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+    chosen.isPendulumActive = true;
+    if (developerMode) {
+      const index = nets.indexOf(chosen);
+      console.log(`Activated pendulum net (level start/level up): #${index + 1}`);
+    }
+  }
+}
+
 function showLevelUp(newLevel) {
   if (announcedLevels.has(newLevel)) return;
   announcedLevels.add(newLevel);
@@ -1118,25 +1159,10 @@ function gameLoop() {
         
         // Level 5+: Randomly select one net to oscillate for this pass
         if (level >= 5) {
-          // First, deactivate all pendulums and reset positions
-          nets.forEach(net => {
-            if (net.pendulumAngle !== undefined) {
-              net.isPendulumActive = false;
-              // Reset to center position
-              net.el.style.left = `${net.baseX}px`;
-            }
-          });
-          
-          // Then randomly activate one net's pendulum
-          const netsWithPendulum = nets.filter(net => net.pendulumAngle !== undefined);
-          if (netsWithPendulum.length > 0) {
-            const randomIndex = Math.floor(Math.random() * netsWithPendulum.length);
-            netsWithPendulum[randomIndex].isPendulumActive = true;
-            
-            // Debug logging
-            if (developerMode) {
-              console.log(`Pass ${skillPassCount}: Activated pendulum on net ${nets.indexOf(netsWithPendulum[randomIndex]) + 1}`);
-            }
+          activateRandomPendulumNet();
+          if (developerMode) {
+            const idx = nets.findIndex(n => n.isPendulumActive);
+            console.log(`Pass ${skillPassCount}: Activated pendulum on net ${idx >= 0 ? idx + 1 : 'none'}`);
           }
         }
         
@@ -1449,6 +1475,9 @@ function startGame() {
   requestAnimationFrame(gameLoop);
   // Ensure music starts when a new round begins (including restart)
   startMusic();
+
+  // Level 5+: ensure pendulum props exist and activate a starting net
+  activateRandomPendulumNet();
 }
 
 function restartGame() {

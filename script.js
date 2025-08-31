@@ -221,8 +221,12 @@ function stopFlap() {
 
 // Developer Mode Functions
 function checkDeveloperModeActivation(event) {
+  // Debug logging
+  console.log('Key pressed:', event.key, 'Code:', event.code, 'Shift:', event.shiftKey);
+  
   // Shift + M activates developer mode
   if (event.shiftKey && (event.code === 'KeyM' || (event.key && event.key.toLowerCase() === 'm'))) {
+    console.log('Developer mode activation detected!');
     activateDeveloperMode();
     return true;
   }

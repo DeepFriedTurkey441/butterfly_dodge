@@ -1286,6 +1286,8 @@ function startGame() {
 }
 
 function restartGame() {
+  // Reset player name so it gets prompted again for the new game
+  playerName = null;
   startGame();
 }
 

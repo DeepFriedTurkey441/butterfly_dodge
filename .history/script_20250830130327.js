@@ -445,18 +445,18 @@ function updateDeveloperMode() {
   
   // Update debug overlay
   if (debugOverlay) {
-    debugOverlay.innerHTML = `
+    debugOverlay.innerHTML = \`
       <strong>🐛 DEBUG INFO</strong><br>
       Position: (${Math.round(bx)}, ${Math.round(by)})<br>
       Velocity: dy=${dy.toFixed(1)}, speed=${speed}<br>
-      Level: ${level} | Lives: ${lives} | Points: ${score}<br>
+      Level: ${level} | Lives: ${lives} | Score: ${score}<br>
       Super: ${isSuper ? 'YES' : 'NO'} | Skill: ${skillAvgFlowersPerPass.toFixed(3)}<br>
       Nets: ${nets.length} | Flowers: ${flowers.length}<br>
       Screen: ${window.innerWidth}x${window.innerHeight}<br>
       FPS: ${Math.round(1000 / 16)} (approx)<br>
       Invincible: ${invincibilityMode ? 'YES' : 'NO'}<br>
       Infinite Lives: ${infiniteLives ? 'YES' : 'NO'}
-    `;
+    \`;
   }
 }
 
@@ -474,7 +474,7 @@ function updateCollisionBounds() {
   nets.forEach((net, i) => {
     if (net.el) {
       const netBounds = net.el.getBoundingClientRect();
-      createBoundingBox(netBounds, '#f00', `net-${i}`);
+      createBoundingBox(netBounds, '#f00', \`net-\${i}\`);
     }
   });
   
@@ -482,7 +482,7 @@ function updateCollisionBounds() {
   flowers.forEach((flower, i) => {
     if (flower) {
       const flowerBounds = flower.getBoundingClientRect();
-      createBoundingBox(flowerBounds, '#ff0', `flower-${i}`);
+      createBoundingBox(flowerBounds, '#ff0', \`flower-\${i}\`);
     }
   });
 }
@@ -490,13 +490,13 @@ function updateCollisionBounds() {
 function createBoundingBox(rect, color, id) {
   const box = document.createElement('div');
   box.className = 'collision-bound';
-  box.id = `bound-${id}`;
-  box.style.cssText = `
+  box.id = \`bound-\${id}\`;
+  box.style.cssText = \`
     position: fixed; pointer-events: none; z-index: 13000;
-    border: 2px solid ${color}; background: transparent;
-    left: ${rect.left}px; top: ${rect.top}px;
-    width: ${rect.width}px; height: ${rect.height}px;
-  `;
+    border: 2px solid \${color}; background: transparent;
+    left: \${rect.left}px; top: \${rect.top}px;
+    width: \${rect.width}px; height: \${rect.height}px;
+  \`;
   document.body.appendChild(box);
 }
 
@@ -759,7 +759,7 @@ function checkFlowers() {
 }
 
 function updateHUD() {
-  scoreBox.innerText = `Points: ${score}`;
+  scoreBox.innerText = `Score: ${score}`;
   livesBox.innerText = `Lives: ${lives}`;
   levelBox.innerText = `Level: ${level}`;
   if (skillBox) skillBox.innerText = `Skill: ${skillAvgFlowersPerPass.toFixed(3)}`;

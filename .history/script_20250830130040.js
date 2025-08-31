@@ -351,7 +351,7 @@ function setupDeveloperPanelEvents() {
       
       // Update tab content
       document.querySelectorAll('.dev-tab-content').forEach(content => {
-        content.style.display = content.id === `dev-tab-${tabName}` ? 'block' : 'none';
+        content.style.display = content.id === \`dev-tab-\${tabName}\` ? 'block' : 'none';
       });
     });
   });
@@ -384,7 +384,7 @@ function setupDeveloperPanelEvents() {
       level = targetLevel;
       updateHUD();
       updateNetScales();
-      console.log(`Jumped to level ${targetLevel}`);
+      console.log(\`Jumped to level \${targetLevel}\`);
     }
   });
   
@@ -436,8 +436,8 @@ function updateDeveloperMode() {
     const debugSuper = document.getElementById('debug-super');
     const debugSkill = document.getElementById('debug-skill');
     
-    if (debugButterfly) debugButterfly.textContent = `${Math.round(bx)}, ${Math.round(by)}`;
-    if (debugPhysics) debugPhysics.textContent = `dy: ${dy.toFixed(1)}, speed: ${speed}`;
+    if (debugButterfly) debugButterfly.textContent = \`\${Math.round(bx)}, \${Math.round(by)}\`;
+    if (debugPhysics) debugPhysics.textContent = \`dy: \${dy.toFixed(1)}, speed: \${speed}\`;
     if (debugLevel) debugLevel.textContent = level;
     if (debugSuper) debugSuper.textContent = isSuper ? 'true' : 'false';
     if (debugSkill) debugSkill.textContent = skillAvgFlowersPerPass.toFixed(3);
@@ -445,18 +445,18 @@ function updateDeveloperMode() {
   
   // Update debug overlay
   if (debugOverlay) {
-    debugOverlay.innerHTML = `
+    debugOverlay.innerHTML = \`
       <strong>🐛 DEBUG INFO</strong><br>
-      Position: (${Math.round(bx)}, ${Math.round(by)})<br>
-      Velocity: dy=${dy.toFixed(1)}, speed=${speed}<br>
-      Level: ${level} | Lives: ${lives} | Points: ${score}<br>
-      Super: ${isSuper ? 'YES' : 'NO'} | Skill: ${skillAvgFlowersPerPass.toFixed(3)}<br>
-      Nets: ${nets.length} | Flowers: ${flowers.length}<br>
-      Screen: ${window.innerWidth}x${window.innerHeight}<br>
-      FPS: ${Math.round(1000 / 16)} (approx)<br>
-      Invincible: ${invincibilityMode ? 'YES' : 'NO'}<br>
-      Infinite Lives: ${infiniteLives ? 'YES' : 'NO'}
-    `;
+      Position: (\${Math.round(bx)}, \${Math.round(by)})<br>
+      Velocity: dy=\${dy.toFixed(1)}, speed=\${speed}<br>
+      Level: \${level} | Lives: \${lives} | Score: \${score}<br>
+      Super: \${isSuper ? 'YES' : 'NO'} | Skill: \${skillAvgFlowersPerPass.toFixed(3)}<br>
+      Nets: \${nets.length} | Flowers: \${flowers.length}<br>
+      Screen: \${window.innerWidth}x\${window.innerHeight}<br>
+      FPS: \${Math.round(1000 / 16)} (approx)<br>
+      Invincible: \${invincibilityMode ? 'YES' : 'NO'}<br>
+      Infinite Lives: \${infiniteLives ? 'YES' : 'NO'}
+    \`;
   }
 }
 
@@ -474,7 +474,7 @@ function updateCollisionBounds() {
   nets.forEach((net, i) => {
     if (net.el) {
       const netBounds = net.el.getBoundingClientRect();
-      createBoundingBox(netBounds, '#f00', `net-${i}`);
+      createBoundingBox(netBounds, '#f00', \`net-\${i}\`);
     }
   });
   
@@ -482,7 +482,7 @@ function updateCollisionBounds() {
   flowers.forEach((flower, i) => {
     if (flower) {
       const flowerBounds = flower.getBoundingClientRect();
-      createBoundingBox(flowerBounds, '#ff0', `flower-${i}`);
+      createBoundingBox(flowerBounds, '#ff0', \`flower-\${i}\`);
     }
   });
 }
@@ -490,13 +490,13 @@ function updateCollisionBounds() {
 function createBoundingBox(rect, color, id) {
   const box = document.createElement('div');
   box.className = 'collision-bound';
-  box.id = `bound-${id}`;
-  box.style.cssText = `
+  box.id = \`bound-\${id}\`;
+  box.style.cssText = \`
     position: fixed; pointer-events: none; z-index: 13000;
-    border: 2px solid ${color}; background: transparent;
-    left: ${rect.left}px; top: ${rect.top}px;
-    width: ${rect.width}px; height: ${rect.height}px;
-  `;
+    border: 2px solid \${color}; background: transparent;
+    left: \${rect.left}px; top: \${rect.top}px;
+    width: \${rect.width}px; height: \${rect.height}px;
+  \`;
   document.body.appendChild(box);
 }
 
@@ -517,7 +517,26 @@ document.addEventListener('keydown', e => {
     return;
   }
 
-
+  // Developer easter egg: SHIFT + M on instructions screen sets starting level and skill
+  if (!gameStarted && (e.code === 'KeyM' || (e.key && e.key.toLowerCase() === 'm')) && e.shiftKey) {
+    const levelInput = prompt('Developer mode: Start at level (1-99)?', String(level));
+    if (levelInput !== null) {
+      const n = Math.max(1, Math.min(99, Math.floor(Number(levelInput)) || 1));
+      devStartLevel = n;
+      
+      // Also allow setting skill score for super butterfly testing
+      const skillInput = prompt('Set skill score for testing (0.000-15.000)?', '8.000');
+      if (skillInput !== null) {
+        const skillValue = Math.max(0, Math.min(15, parseFloat(skillInput) || 0));
+        devStartSkill = skillValue; // Store for use in startGame
+      }
+      
+      // Provide quick visual feedback
+      const displaySkill = devStartSkill !== null ? devStartSkill : 0;
+      try { alert(`Will start at level ${n} with skill ${displaySkill.toFixed(3)}. Press Enter to begin.`); } catch (_) {}
+    }
+    return;
+  }
 
   if (gameOver) {
     if (e.key.toLowerCase() === 'y') restartGame();
@@ -759,7 +778,7 @@ function checkFlowers() {
 }
 
 function updateHUD() {
-  scoreBox.innerText = `Points: ${score}`;
+  scoreBox.innerText = `Score: ${score}`;
   livesBox.innerText = `Lives: ${lives}`;
   levelBox.innerText = `Level: ${level}`;
   if (skillBox) skillBox.innerText = `Skill: ${skillAvgFlowersPerPass.toFixed(3)}`;

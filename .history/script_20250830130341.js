@@ -445,18 +445,18 @@ function updateDeveloperMode() {
   
   // Update debug overlay
   if (debugOverlay) {
-    debugOverlay.innerHTML = `
+    debugOverlay.innerHTML = \`
       <strong>🐛 DEBUG INFO</strong><br>
       Position: (${Math.round(bx)}, ${Math.round(by)})<br>
       Velocity: dy=${dy.toFixed(1)}, speed=${speed}<br>
-      Level: ${level} | Lives: ${lives} | Points: ${score}<br>
+      Level: ${level} | Lives: ${lives} | Score: ${score}<br>
       Super: ${isSuper ? 'YES' : 'NO'} | Skill: ${skillAvgFlowersPerPass.toFixed(3)}<br>
       Nets: ${nets.length} | Flowers: ${flowers.length}<br>
       Screen: ${window.innerWidth}x${window.innerHeight}<br>
       FPS: ${Math.round(1000 / 16)} (approx)<br>
       Invincible: ${invincibilityMode ? 'YES' : 'NO'}<br>
       Infinite Lives: ${infiniteLives ? 'YES' : 'NO'}
-    `;
+    \`;
   }
 }
 
@@ -759,7 +759,7 @@ function checkFlowers() {
 }
 
 function updateHUD() {
-  scoreBox.innerText = `Points: ${score}`;
+  scoreBox.innerText = `Score: ${score}`;
   livesBox.innerText = `Lives: ${lives}`;
   levelBox.innerText = `Level: ${level}`;
   if (skillBox) skillBox.innerText = `Skill: ${skillAvgFlowersPerPass.toFixed(3)}`;

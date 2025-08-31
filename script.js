@@ -1194,8 +1194,11 @@ function gameLoop() {
             setCloudsPaused(true);
             netMsgShown = true;
           }
-          if (!muted) sfxHit();
-          if (lives <= 0) {
+          // Play hit sound only if not in invincibility mode
+          if (!muted && !invincibilityMode) sfxHit();
+          
+          // Only trigger game over if not using infinite lives cheat
+          if (lives <= 0 && !infiniteLives) {
             running = false;
             gameOver = true;
             gameOverBox.hidden = false;
@@ -1237,13 +1240,18 @@ function gameLoop() {
           } else {
             // Update HUD and give the player a fresh position to avoid immediate re-collision
             updateHUD();
-            document.body.classList.add('shake');
-            setTimeout(() => document.body.classList.remove('shake'), 160);
-            bx = 0;
-            by = window.innerHeight / 2;
-            dy = 0;
-            butterfly.style.left = bx + 'px';
-            butterfly.style.top = by + 'px';
+            
+            // Only show damage effects if not in invincibility mode
+            if (!invincibilityMode) {
+              document.body.classList.add('shake');
+              setTimeout(() => document.body.classList.remove('shake'), 160);
+              // Reset position to avoid immediate re-collision
+              bx = 0;
+              by = window.innerHeight / 2;
+              dy = 0;
+              butterfly.style.left = bx + 'px';
+              butterfly.style.top = by + 'px';
+            }
           }
         }
       }

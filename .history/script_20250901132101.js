@@ -827,8 +827,6 @@ document.addEventListener('keydown', e => {
       updateHUD();
       stopMusic();
       stopFlap();
-      if (isMobileSession) exitFullscreenIfPossible();
-      teardownMobileSession();
       break;
   }
 });

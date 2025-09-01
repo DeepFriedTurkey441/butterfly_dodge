@@ -827,8 +827,6 @@ document.addEventListener('keydown', e => {
       updateHUD();
       stopMusic();
       stopFlap();
-      if (isMobileSession) exitFullscreenIfPossible();
-      teardownMobileSession();
       break;
   }
 });
@@ -1691,7 +1689,6 @@ function attachTapToStart() {
     e.preventDefault();
     tapStartOverlay.hidden = true;
     enableTouchLocks();
-    requestFullscreenIfPossible();
     // Begin game at slowest speed; use pointer for flap
     gameArea.hidden = false;
     gameStarted = true;

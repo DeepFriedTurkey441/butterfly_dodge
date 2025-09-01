@@ -651,21 +651,40 @@ document.addEventListener('keydown', e => {
     return;
   }
 
-  // Resume from level-up overlay with Enter
+  // Resume from level-up overlay with Enter (suppressed entirely in dev mode)
+  if (developerMode && levelupBox && !levelupBox.hidden) {
+    levelupBox.hidden = true;
+    paused = false;
+    updateHUD();
+    return;
+  }
   if (levelupBox && !levelupBox.hidden && e.key === 'Enter') {
     levelupBox.hidden = true;
     paused = false;
     updateHUD();
     return;
   }
-  // Resume from super message overlay with Enter
+  // Resume from super message overlay with Enter (suppressed entirely in dev mode)
+  if (developerMode && superMsg && !superMsg.hidden) {
+    superMsg.hidden = true;
+    paused = false;
+    updateHUD();
+    return;
+  }
   if (superMsg && !superMsg.hidden && e.key === 'Enter') {
     superMsg.hidden = true;
     paused = false;
     updateHUD();
     return;
   }
-  // Resume from flower message overlay with Enter
+  // Resume from flower message overlay with Enter (suppressed entirely in dev mode)
+  if (developerMode && flowerMsg && !flowerMsg.hidden) {
+    flowerMsg.hidden = true;
+    paused = false;
+    setCloudsPaused(false);
+    updateHUD();
+    return;
+  }
   if (flowerMsg && !flowerMsg.hidden && e.key === 'Enter') {
     flowerMsg.hidden = true;
     paused = false;
@@ -673,7 +692,14 @@ document.addEventListener('keydown', e => {
     updateHUD();
     return;
   }
-  // Resume from net message overlay with Enter
+  // Resume from net message overlay with Enter (suppressed entirely in dev mode)
+  if (developerMode && netMsg && !netMsg.hidden) {
+    netMsg.hidden = true;
+    paused = false;
+    setCloudsPaused(false);
+    updateHUD();
+    return;
+  }
   if (netMsg && !netMsg.hidden && e.key === 'Enter') {
     netMsg.hidden = true;
     paused = false;
@@ -681,7 +707,14 @@ document.addEventListener('keydown', e => {
     updateHUD();
     return;
   }
-  // Resume from skill message overlay with Enter
+  // Resume from skill message overlay with Enter (suppressed entirely in dev mode)
+  if (developerMode && skillMsg && !skillMsg.hidden) {
+    skillMsg.hidden = true;
+    paused = false;
+    setCloudsPaused(false);
+    updateHUD();
+    return;
+  }
   if (skillMsg && !skillMsg.hidden && e.key === 'Enter') {
     skillMsg.hidden = true;
     paused = false;
@@ -796,7 +829,7 @@ function checkFlowers() {
       // Track for skill metric (flowers per pass)
       skillFlowersThisPass += 1;
       // First-flower tutorial popup (one-time, skip if developer debug mode)
-      if (!flowerMsgShown && flowerMsg && devStartSkill === null) {
+      if (!flowerMsgShown && flowerMsg && devStartSkill === null && !developerMode) {
         paused = true;
         flowerMsg.hidden = false;
         setCloudsPaused(true);
@@ -944,6 +977,24 @@ function activateRandomPendulumNet() {
 function showLevelUp(newLevel) {
   if (announcedLevels.has(newLevel)) return;
   announcedLevels.add(newLevel);
+  // In developer mode, suppress the blocking overlay entirely
+  if (developerMode) {
+    highestLevelAchieved = Math.max(highestLevelAchieved, newLevel);
+    if (levelupNum) levelupNum.textContent = String(newLevel);
+    if (levelupDetails) {
+      if (newLevel === 2) {
+        levelupDetails.textContent = 'Clouds now bump you to a random spot. Watch out!';
+      } else if (newLevel === 3) {
+        levelupDetails.textContent = 'Clouds still bump you. New: fast winds sweep right→left; colliding pushes you backward. Music speeds up!';
+      } else if (newLevel === 5) {
+        levelupDetails.textContent = 'Nets now swing like pendulums! They oscillate left and right while moving up and down. Much trickier to dodge!';
+      } else {
+        levelupDetails.textContent = 'Difficulty increased.';
+      }
+      levelupDetails.textContent += ' Nets grow slightly this level.';
+    }
+    return;
+  }
   paused = true;
   pauseBox.hidden = true;
   highestLevelAchieved = Math.max(highestLevelAchieved, newLevel);
@@ -1249,8 +1300,8 @@ function gameLoop() {
           if (!infiniteLives) {
             lives -= 1;
           }
-          // Show net tutorial once
-          if (!netMsgShown && netMsg) {
+          // Show net tutorial once (skip in developer mode)
+          if (!netMsgShown && netMsg && !developerMode) {
             paused = true;
             netMsg.hidden = false;
             setCloudsPaused(true);
@@ -1520,7 +1571,7 @@ function activateSuper(durationMs) {
     superTimer.hidden = false;
     positionSuperTimer();
   }
-  if (!superShownFirst) {
+  if (!superShownFirst && !developerMode) {
     superShownFirst = true;
     if (superMsg && superMsgText) {
       superMsgText.textContent = "Congrats! You achieved a skill score of 8+ and unlocked Super Butterfly! For the next 15 seconds, you get double points and can slide flowers to safety. This can only happen once per level.";

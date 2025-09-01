@@ -820,19 +820,6 @@ document.addEventListener('keyup', e => {
   }
 });
 
-// Exit training helper
-function exitTrainingAndStartRealGame() {
-  if (trainingBanner) trainingBanner.hidden = true;
-  inTrainingMode = false;
-  // Stop current loop and music
-  running = false;
-  stopMusic();
-  // Start normal mode (skip instructions)
-  gameStarted = true;
-  level = 1;
-  startGame();
-}
-
 // Collision detection
 function isColliding(a, b) {
   const r1 = a.getBoundingClientRect();
@@ -1234,11 +1221,6 @@ if (musicVolumeSlider) {
 function gameLoop() {
   if (!running) return;
   if (!paused) {
-    // Auto-exit training if player progressed beyond level 2
-    if (inTrainingMode && level > 2) {
-      exitTrainingAndStartRealGame();
-      return;
-    }
     // Expire Super state
     if (isSuper && performance.now() > superUntil) {
       isSuper = false;

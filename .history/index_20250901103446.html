@@ -48,8 +48,6 @@
       <li>0 lives = game over</li>
     </ul>
 
-    <p><strong>Training option</strong>: Press <strong>Shift + Enter</strong> to start a Learn‑to‑Fly session (no nets, same gravity) to practice controls.</p>
-
     <p><strong>Leveling up</strong>: When Lives reaches 5, you go up a level and Lives reset to 3.</p>
     <p><strong>Tip</strong>: For best results, set browser zoom to 100%.</p>
 
@@ -67,14 +65,6 @@
 
   <!-- Game UI (hidden until game starts) -->
   <div id="game-area" hidden>
-    <!-- Training mode banner -->
-    <div id="training-banner" hidden>
-      <div class="levelup-wrap">
-        <h2>Training Mode</h2>
-        <p>You are in a special training mode. Nets are disabled so you can practice flying.</p>
-        <p>Press <strong>Enter</strong> to start the real game.</p>
-      </div>
-    </div>
     <div id="hud">
       <span id="score">Points: 0</span>   <span id="lives">Lives: 3</span>   <span id="level">Level: 1</span>   <span>   Mute sound:</span> <button id="mute-sfx" aria-label="Toggle sound effects" title="Toggle sound effects" tabindex="-1">🔊</button>   <span>   Music volume:</span> <input id="music-volume" type="range" min="0" max="100" value="30" />   <span id="skill">Skill: 0.000</span>
     </div>
@@ -94,6 +84,14 @@
         <p>See the <strong>Skill</strong> score at the top? That's the average number of flowers you're touching per pass from left to right across the screen.</p>
         <p>If this ever reaches <strong>8.000 or higher</strong>, you'll get a powerful surprise! 🦋✨</p>
         <p>Press Enter to continue…</p>
+      </div>
+    </div>
+    <!-- Learn-to-fly tutorial overlay -->
+    <div id="learnmsg" hidden>
+      <div class="levelup-wrap">
+        <h2>Learn to Fly</h2>
+        <p>Press and hold <strong>Space</strong> to flap up. Release to glide down.</p>
+        <p>Collect flowers and practice your control. Press <strong>Enter</strong> to begin.</p>
       </div>
     </div>
     <!-- Super timer badge (shown only during super mode) -->

@@ -22,7 +22,6 @@ const leaderboardBox = document.getElementById('leaderboard');
 const netMsg = document.getElementById('netmsg');
 const flowerMsg = document.getElementById('flowermsg');
 const skillMsg = document.getElementById('skillmsg');
-const trainingBanner = document.getElementById('training-banner');
 function positionSuperTimer() {
   if (!superTimer) return;
   // Place just to the left of the butterfly
@@ -140,7 +139,6 @@ let dy = 0;
 let paused = false;
 let gameOver = false;
 let spacePressed = false;
-let inTrainingMode = false; // true when running Learn-to-Fly mode
 
 // Dynamic physics scaling based on screen size
 function getScreenScaleFactor() {
@@ -309,7 +307,9 @@ function deactivateDeveloperMode() {
   document.querySelectorAll('.collision-bound').forEach(el => el.remove());
   showCollisionBounds = false;
   
-  // Do not reset cheat modes; keep them sticky even if dev panel is toggled
+  // Reset cheat modes
+  invincibilityMode = false;
+  infiniteLives = false;
   
   // Show deactivation message
   showDeveloperModeMessage('🐛 DEVELOPER MODE DEACTIVATED', '#f44');
@@ -462,57 +462,9 @@ function setupDeveloperPanelEvents() {
     const targetLevel = parseInt(document.getElementById('level-jump').value);
     if (targetLevel >= 1 && targetLevel <= 99) {
       level = targetLevel;
-      
-      // Recreate nets with new level properties (important for Level 5+ pendulum nets)
-      nets.forEach(n => n.el.remove());
-      nets.length = 0;
-      
-      // Create fresh nets for the new level
-      for (let i = 0; i < NUM_NETS; i++) {
-        const div = document.createElement('div');
-        div.className = 'net';
-        const cx = (i + 1) * window.innerWidth / (NUM_NETS + 1);
-        div.style.left = `${cx - 40}px`;
-        // Distribute starting Y positions to avoid same-height spawn
-        const minY = 50;
-        const maxY = window.innerHeight - 130;
-        const startY = minY + ((maxY - minY) * (i + 1) / (NUM_NETS + 1));
-        div.style.top = `${startY}px`;
-        div.innerHTML = svgMarkup;
-        
-        // Scale nets by current level (capped at level 10 size)
-        const effectiveLevel = Math.min(level, 10);
-        const scale = 1.15 + Math.max(0, effectiveLevel - 1) * NET_SCALE_PER_LEVEL;
-        div.style.transform = `scale(${scale})`;
-        document.body.appendChild(div);
-
-        const svgEl = div.querySelector('svg');
-
-        let speedY = BASE_NET_SPEED + i * SPEED_INCREMENT;
-        if (i >= NUM_NETS - 3) speedY *= 0.7;
-        
-        // Level 5+ oscillating pendulum properties (initially disabled)
-        const pendulumProps = level >= 5 ? {
-          baseX: cx - 40,                           // Center point for pendulum swing
-          pendulumAngle: Math.random() * Math.PI * 2, // Random starting angle
-          pendulumSpeed: 0.03 + Math.random() * 0.02, // Angular velocity (0.03-0.05)
-          pendulumRadius: 60 + Math.random() * 40,     // Swing radius (60-100px)
-          isPendulumActive: false                     // Start inactive, activate randomly per pass
-        } : {};
-        
-        nets.push({ 
-          el: div, 
-          svg: svgEl, 
-          y: startY,
-          x: cx - 40,
-          dir: 1, 
-          speedY,
-          ...pendulumProps
-        });
-      }
-      
       updateHUD();
-      console.log(`Jumped to level ${targetLevel} - nets recreated with ${level >= 5 ? 'pendulum' : 'normal'} properties`);
+      updateNetScales();
+      console.log(`Jumped to level ${targetLevel}`);
     }
   });
   
@@ -581,7 +533,6 @@ function updateDeveloperMode() {
       Super: ${isSuper ? 'YES' : 'NO'} | Skill: ${skillAvgFlowersPerPass.toFixed(3)}<br>
       Nets: ${nets.length} | Flowers: ${flowers.length}<br>
       Pendulum Mode: ${level >= 5 ? 'ACTIVE' : 'inactive'}<br>
-      Active Pendulum Net: ${level >= 5 ? (nets.findIndex(n => n.isPendulumActive) + 1 || 'none') : 'N/A'}<br>
       Screen: ${window.innerWidth}x${window.innerHeight}<br>
       Scale Factor: ${getScreenScaleFactor().toFixed(2)}x<br>
       Scaled Speed: ${getScaledSpeed().toFixed(1)}<br>
@@ -639,24 +590,6 @@ document.addEventListener('keydown', e => {
     return; // Don't process other keys if dev mode was just toggled
   }
   // Instructions screen startup
-  // Learn-to-fly mode with Shift+Enter
-  if (!gameStarted && e.key === 'Enter' && e.shiftKey) {
-    instructionsBox.hidden = true;
-    instructionsBox.style.display = 'none'; // Safety net
-    gameArea.hidden = false;
-    gameStarted = true;
-    startMusic();
-    // start training: no nets, normal gravity
-    level = 0;
-    // Start, then remove nets and keep flowers only
-    startGame();
-    nets.forEach(n => n.el && n.el.remove());
-    nets.length = 0;
-    // Show training banner so player knows how to exit
-    inTrainingMode = true;
-    if (trainingBanner) trainingBanner.hidden = false;
-    return;
-  }
   if (!gameStarted && e.key === 'Enter') {
     instructionsBox.hidden = true;
     instructionsBox.style.display = 'none'; // Safety net
@@ -674,45 +607,21 @@ document.addEventListener('keydown', e => {
     return;
   }
 
-  // Resume from level-up overlay with Enter (suppressed entirely in dev mode)
-  if (developerMode && levelupBox && !levelupBox.hidden) {
-    levelupBox.hidden = true;
-    paused = false;
-    updateHUD();
-    return;
-  }
+  // Resume from level-up overlay with Enter
   if (levelupBox && !levelupBox.hidden && e.key === 'Enter') {
     levelupBox.hidden = true;
     paused = false;
     updateHUD();
     return;
   }
-  // Exit training mode with Enter -> start normal game
-  if (trainingBanner && !trainingBanner.hidden && e.key === 'Enter') {
-    exitTrainingAndStartRealGame();
-    return;
-  }
-  // Resume from super message overlay with Enter (suppressed entirely in dev mode)
-  if (developerMode && superMsg && !superMsg.hidden) {
-    superMsg.hidden = true;
-    paused = false;
-    updateHUD();
-    return;
-  }
+  // Resume from super message overlay with Enter
   if (superMsg && !superMsg.hidden && e.key === 'Enter') {
     superMsg.hidden = true;
     paused = false;
     updateHUD();
     return;
   }
-  // Resume from flower message overlay with Enter (suppressed entirely in dev mode)
-  if (developerMode && flowerMsg && !flowerMsg.hidden) {
-    flowerMsg.hidden = true;
-    paused = false;
-    setCloudsPaused(false);
-    updateHUD();
-    return;
-  }
+  // Resume from flower message overlay with Enter
   if (flowerMsg && !flowerMsg.hidden && e.key === 'Enter') {
     flowerMsg.hidden = true;
     paused = false;
@@ -720,14 +629,7 @@ document.addEventListener('keydown', e => {
     updateHUD();
     return;
   }
-  // Resume from net message overlay with Enter (suppressed entirely in dev mode)
-  if (developerMode && netMsg && !netMsg.hidden) {
-    netMsg.hidden = true;
-    paused = false;
-    setCloudsPaused(false);
-    updateHUD();
-    return;
-  }
+  // Resume from net message overlay with Enter
   if (netMsg && !netMsg.hidden && e.key === 'Enter') {
     netMsg.hidden = true;
     paused = false;
@@ -735,14 +637,7 @@ document.addEventListener('keydown', e => {
     updateHUD();
     return;
   }
-  // Resume from skill message overlay with Enter (suppressed entirely in dev mode)
-  if (developerMode && skillMsg && !skillMsg.hidden) {
-    skillMsg.hidden = true;
-    paused = false;
-    setCloudsPaused(false);
-    updateHUD();
-    return;
-  }
+  // Resume from skill message overlay with Enter
   if (skillMsg && !skillMsg.hidden && e.key === 'Enter') {
     skillMsg.hidden = true;
     paused = false;
@@ -820,19 +715,6 @@ document.addEventListener('keyup', e => {
   }
 });
 
-// Exit training helper
-function exitTrainingAndStartRealGame() {
-  if (trainingBanner) trainingBanner.hidden = true;
-  inTrainingMode = false;
-  // Stop current loop and music
-  running = false;
-  stopMusic();
-  // Start normal mode (skip instructions)
-  gameStarted = true;
-  level = 1;
-  startGame();
-}
-
 // Collision detection
 function isColliding(a, b) {
   const r1 = a.getBoundingClientRect();
@@ -870,7 +752,7 @@ function checkFlowers() {
       // Track for skill metric (flowers per pass)
       skillFlowersThisPass += 1;
       // First-flower tutorial popup (one-time, skip if developer debug mode)
-      if (!flowerMsgShown && flowerMsg && devStartSkill === null && !developerMode) {
+      if (!flowerMsgShown && flowerMsg && devStartSkill === null) {
         paused = true;
         flowerMsg.hidden = false;
         setCloudsPaused(true);
@@ -903,11 +785,6 @@ function checkFlowers() {
             lives = 3;
             if (!muted) sfxLevel();
             updateHUD();
-            // Auto-exit training if surpassing level 2
-            if (inTrainingMode && level > 2) {
-              exitTrainingAndStartRealGame();
-              return;
-            }
             showLevelUp(level);
             updateNetScales();
           }
@@ -939,11 +816,6 @@ function checkFlowers() {
           lives = 3;
           if (!muted) sfxLevel();
           updateHUD();
-          // Auto-exit training if surpassing level 2
-          if (inTrainingMode && level > 2) {
-            exitTrainingAndStartRealGame();
-            return;
-          }
           showLevelUp(level);
           updateNetScales();
         }
@@ -984,86 +856,9 @@ function updateNetScales() {
   nets.forEach(n => n && n.el && (n.el.style.transform = `scale(${scale})`));
 }
 
-// --- Level 5+ pendulum helpers ---
-function ensurePendulumPropsForNets() {
-  if (level < 5) return;
-  nets.forEach(n => {
-    if (n && n.el && n.pendulumAngle === undefined) {
-      // Derive a reasonable baseX from current style or layout
-      const leftStyle = parseFloat(n.el.style.left || '0');
-      const baseX = Number.isFinite(leftStyle) && leftStyle !== 0
-        ? leftStyle
-        : n.el.getBoundingClientRect().left;
-      n.baseX = baseX;
-      n.pendulumAngle = Math.random() * Math.PI * 2;
-      n.pendulumSpeed = 0.03 + Math.random() * 0.02;
-      n.pendulumRadius = 60 + Math.random() * 40;
-      n.isPendulumActive = false;
-    }
-  });
-}
-
-function activateRandomPendulumNet() {
-  if (level < 5) return;
-  ensurePendulumPropsForNets();
-  // Deactivate all and reset to center position
-  nets.forEach(n => {
-    if (n && n.pendulumAngle !== undefined) {
-      n.isPendulumActive = false;
-      if (typeof n.baseX === 'number') {
-        n.el.style.left = `${n.baseX}px`;
-        n.x = n.baseX;
-      }
-    }
-  });
-  // Activate one randomly
-  const candidates = nets.filter(n => n && n.pendulumAngle !== undefined);
-  if (candidates.length > 0) {
-    const chosen = candidates[Math.floor(Math.random() * candidates.length)];
-    chosen.isPendulumActive = true;
-    if (developerMode) {
-      const index = nets.indexOf(chosen);
-      console.log(`Activated pendulum net (level start/level up): #${index + 1}`);
-    }
-  }
-}
-
-// Level 6+: choose a hunter net that eases toward the butterfly's x-position
-function activateHunterNet() {
-  if (level < 6) return;
-  // pick from non-pendulum nets
-  const nonPendulum = nets.filter(n => !n.isPendulumActive);
-  if (nonPendulum.length === 0) return;
-  const chosen = nonPendulum[Math.floor(Math.random() * nonPendulum.length)];
-  nets.forEach(n => { n.isHunter = false; });
-  chosen.isHunter = true;
-  if (developerMode) {
-    const index = nets.indexOf(chosen);
-    console.log(`Activated hunter net: #${index + 1}`);
-  }
-}
-
 function showLevelUp(newLevel) {
   if (announcedLevels.has(newLevel)) return;
   announcedLevels.add(newLevel);
-  // In developer mode, suppress the blocking overlay entirely
-  if (developerMode) {
-    highestLevelAchieved = Math.max(highestLevelAchieved, newLevel);
-    if (levelupNum) levelupNum.textContent = String(newLevel);
-    if (levelupDetails) {
-      if (newLevel === 2) {
-        levelupDetails.textContent = 'Clouds now bump you to a random spot. Watch out!';
-      } else if (newLevel === 3) {
-        levelupDetails.textContent = 'Clouds still bump you. New: fast winds sweep right→left; colliding pushes you backward. Music speeds up!';
-      } else if (newLevel === 5) {
-        levelupDetails.textContent = 'Nets now swing like pendulums! They oscillate left and right while moving up and down. Much trickier to dodge!';
-      } else {
-        levelupDetails.textContent = 'Difficulty increased.';
-      }
-      levelupDetails.textContent += ' Nets grow slightly this level.';
-    }
-    return;
-  }
   paused = true;
   pauseBox.hidden = true;
   highestLevelAchieved = Math.max(highestLevelAchieved, newLevel);
@@ -1082,10 +877,6 @@ function showLevelUp(newLevel) {
     levelupDetails.textContent += ' Nets grow slightly this level.';
   }
   if (levelupBox) levelupBox.hidden = false;
-  // Auto-exit training if surpassing level 2
-  if (inTrainingMode && newLevel > 2) {
-    exitTrainingAndStartRealGame();
-  }
 }
 
 // --- Background Music (simple looping melody) ---
@@ -1234,11 +1025,6 @@ if (musicVolumeSlider) {
 function gameLoop() {
   if (!running) return;
   if (!paused) {
-    // Auto-exit training if player progressed beyond level 2
-    if (inTrainingMode && level > 2) {
-      exitTrainingAndStartRealGame();
-      return;
-    }
     // Expire Super state
     if (isSuper && performance.now() > superUntil) {
       isSuper = false;
@@ -1285,20 +1071,6 @@ function gameLoop() {
         skillAvgFlowersPerPass = (totalPrev + skillFlowersThisPass) / skillPassCount;
         skillFlowersThisPass = 0;
         if (skillBox) skillBox.innerText = `Skill: ${skillAvgFlowersPerPass.toFixed(3)}`;
-        
-        // Level 5+: Randomly select one net to oscillate for this pass
-        if (level >= 5) {
-          activateRandomPendulumNet();
-          if (developerMode) {
-            const idx = nets.findIndex(n => n.isPendulumActive);
-            console.log(`Pass ${skillPassCount}: Activated pendulum on net ${idx >= 0 ? idx + 1 : 'none'}`);
-          }
-        }
-        // Level 6+: also select a hunter net (not the pendulum one)
-        if (level >= 6) {
-          activateHunterNet();
-        }
-        
         bx = -50;
       }
     }
@@ -1321,34 +1093,11 @@ function gameLoop() {
     nets.forEach(n => {
       // Vertical movement (all levels)
       n.y += n.speedY * n.dir;
-
-      // Robust bounce with overshoot reflection
-      const minY = 50;
-      const maxY = window.innerHeight - 130;
-      if (n.y < minY) {
-        // reflect overshoot back into range
-        n.y = minY + (minY - n.y);
-        n.dir = 1; // heading down
-        if (n.y > maxY) { n.y = maxY; } // guard if huge overshoot
-      } else if (n.y > maxY) {
-        n.y = maxY - (n.y - maxY);
-        n.dir = -1; // heading up
-        if (n.y < minY) { n.y = minY; }
-      }
-
+      if (n.y < 50 || n.y > window.innerHeight - 130) n.dir *= -1;
       n.el.style.top = `${n.y}px`;
-
-      // Level 6+: if this is the hunter net, ease its x toward the butterfly
-      if (level >= 6 && n.isHunter) {
-        // simple easing toward bx
-        const targetX = bx - 40; // approximate butterfly center offset
-        const easing = 0.04;     // adjust to tune chase speed
-        n.x = (n.x ?? n.el.getBoundingClientRect().left) + (targetX - (n.x ?? 0)) * easing;
-        n.el.style.left = `${n.x}px`;
-      }
       
-      // Level 5+: Add pendulum horizontal oscillation (only if this net is active)
-      if (level >= 5 && n.pendulumAngle !== undefined && n.isPendulumActive) {
+      // Level 5+: Add pendulum horizontal oscillation
+      if (level >= 5 && n.pendulumAngle !== undefined) {
         // Update pendulum angle
         n.pendulumAngle += n.pendulumSpeed;
         
@@ -1396,18 +1145,15 @@ function gameLoop() {
           if (!infiniteLives) {
             lives -= 1;
           }
-          // Show net tutorial once (skip in developer mode)
-          if (!netMsgShown && netMsg && !developerMode) {
+          // Show net tutorial once
+          if (!netMsgShown && netMsg) {
             paused = true;
             netMsg.hidden = false;
             setCloudsPaused(true);
             netMsgShown = true;
           }
-          // Play hit sound only if not in invincibility mode
-          if (!muted && !invincibilityMode) sfxHit();
-          
-          // Only trigger game over if not using infinite lives cheat
-          if (lives <= 0 && !infiniteLives) {
+          if (!muted) sfxHit();
+          if (lives <= 0) {
             running = false;
             gameOver = true;
             gameOverBox.hidden = false;
@@ -1449,18 +1195,13 @@ function gameLoop() {
           } else {
             // Update HUD and give the player a fresh position to avoid immediate re-collision
             updateHUD();
-            
-            // Only show damage effects if not in invincibility mode
-            if (!invincibilityMode) {
-              document.body.classList.add('shake');
-              setTimeout(() => document.body.classList.remove('shake'), 160);
-              // Reset position to avoid immediate re-collision
-              bx = 0;
-              by = window.innerHeight / 2;
-              dy = 0;
-              butterfly.style.left = bx + 'px';
-              butterfly.style.top = by + 'px';
-            }
+            document.body.classList.add('shake');
+            setTimeout(() => document.body.classList.remove('shake'), 160);
+            bx = 0;
+            by = window.innerHeight / 2;
+            dy = 0;
+            butterfly.style.left = bx + 'px';
+            butterfly.style.top = by + 'px';
           }
         }
       }
@@ -1535,11 +1276,7 @@ function startGame() {
     div.className = 'net';
     const cx = (i + 1) * window.innerWidth / (NUM_NETS + 1);
     div.style.left = `${cx - 40}px`;
-    // Distribute starting Y positions to avoid all nets spawning at same height
-    const minY = 50;
-    const maxY = window.innerHeight - 130;
-    const startY = minY + ((maxY - minY) * (i + 1) / (NUM_NETS + 1));
-    div.style.top = `${startY}px`;
+    div.style.top = `${window.innerHeight * 0.25}px`;
     div.innerHTML = svgMarkup;
     // Scale nets by current level (capped at level 10 size)
     const effectiveLevel = Math.min(level, 10);
@@ -1552,20 +1289,18 @@ function startGame() {
     let speedY = BASE_NET_SPEED + i * SPEED_INCREMENT;
     if (i >= NUM_NETS - 3) speedY *= 0.7;
     
-    // Level 5+ oscillating pendulum properties (initially disabled)
+    // Level 5+ oscillating pendulum properties
     const pendulumProps = level >= 5 ? {
       baseX: cx - 40,                           // Center point for pendulum swing
       pendulumAngle: Math.random() * Math.PI * 2, // Random starting angle
       pendulumSpeed: 0.03 + Math.random() * 0.02, // Angular velocity (0.03-0.05)
-      pendulumRadius: 60 + Math.random() * 40,     // Swing radius (60-100px)
-      isPendulumActive: false                     // Start inactive, activate randomly per pass
+      pendulumRadius: 60 + Math.random() * 40      // Swing radius (60-100px)
     } : {};
     
     nets.push({ 
       el: div, 
       svg: svgEl, 
-      y: startY,
-      x: cx - 40,
+      y: window.innerHeight * 0.25, 
       dir: 1, 
       speedY,
       ...pendulumProps
@@ -1593,7 +1328,7 @@ function startGame() {
   // Reset score
   score = 0;
   lives = 3;
-  level = devStartLevel != null ? devStartLevel : (inTrainingMode ? Math.max(level, 0) : 1);
+  level = devStartLevel != null ? devStartLevel : 1;
   highestLevelAchieved = Math.max(highestLevelAchieved, level);
   // Reset skill metric (preserve developer-set skill for testing)
   skillPassCount = 0;
@@ -1627,10 +1362,6 @@ function startGame() {
   requestAnimationFrame(gameLoop);
   // Ensure music starts when a new round begins (including restart)
   startMusic();
-
-  // Level 5+: ensure pendulum props exist and activate a starting net
-  activateRandomPendulumNet();
-  if (level >= 6) activateHunterNet();
 }
 
 function restartGame() {
@@ -1673,7 +1404,7 @@ function activateSuper(durationMs) {
     superTimer.hidden = false;
     positionSuperTimer();
   }
-  if (!superShownFirst && !developerMode) {
+  if (!superShownFirst) {
     superShownFirst = true;
     if (superMsg && superMsgText) {
       superMsgText.textContent = "Congrats! You achieved a skill score of 8+ and unlocked Super Butterfly! For the next 15 seconds, you get double points and can slide flowers to safety. This can only happen once per level.";

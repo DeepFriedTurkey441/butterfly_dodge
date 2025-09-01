@@ -22,7 +22,6 @@ const leaderboardBox = document.getElementById('leaderboard');
 const netMsg = document.getElementById('netmsg');
 const flowerMsg = document.getElementById('flowermsg');
 const skillMsg = document.getElementById('skillmsg');
-const trainingBanner = document.getElementById('training-banner');
 function positionSuperTimer() {
   if (!superTimer) return;
   // Place just to the left of the butterfly
@@ -140,7 +139,6 @@ let dy = 0;
 let paused = false;
 let gameOver = false;
 let spacePressed = false;
-let inTrainingMode = false; // true when running Learn-to-Fly mode
 
 // Dynamic physics scaling based on screen size
 function getScreenScaleFactor() {
@@ -639,24 +637,6 @@ document.addEventListener('keydown', e => {
     return; // Don't process other keys if dev mode was just toggled
   }
   // Instructions screen startup
-  // Learn-to-fly mode with Shift+Enter
-  if (!gameStarted && e.key === 'Enter' && e.shiftKey) {
-    instructionsBox.hidden = true;
-    instructionsBox.style.display = 'none'; // Safety net
-    gameArea.hidden = false;
-    gameStarted = true;
-    startMusic();
-    // start training: no nets, normal gravity
-    level = 0;
-    // Start, then remove nets and keep flowers only
-    startGame();
-    nets.forEach(n => n.el && n.el.remove());
-    nets.length = 0;
-    // Show training banner so player knows how to exit
-    inTrainingMode = true;
-    if (trainingBanner) trainingBanner.hidden = false;
-    return;
-  }
   if (!gameStarted && e.key === 'Enter') {
     instructionsBox.hidden = true;
     instructionsBox.style.display = 'none'; // Safety net
@@ -685,11 +665,6 @@ document.addEventListener('keydown', e => {
     levelupBox.hidden = true;
     paused = false;
     updateHUD();
-    return;
-  }
-  // Exit training mode with Enter -> start normal game
-  if (trainingBanner && !trainingBanner.hidden && e.key === 'Enter') {
-    exitTrainingAndStartRealGame();
     return;
   }
   // Resume from super message overlay with Enter (suppressed entirely in dev mode)
@@ -820,19 +795,6 @@ document.addEventListener('keyup', e => {
   }
 });
 
-// Exit training helper
-function exitTrainingAndStartRealGame() {
-  if (trainingBanner) trainingBanner.hidden = true;
-  inTrainingMode = false;
-  // Stop current loop and music
-  running = false;
-  stopMusic();
-  // Start normal mode (skip instructions)
-  gameStarted = true;
-  level = 1;
-  startGame();
-}
-
 // Collision detection
 function isColliding(a, b) {
   const r1 = a.getBoundingClientRect();
@@ -903,11 +865,6 @@ function checkFlowers() {
             lives = 3;
             if (!muted) sfxLevel();
             updateHUD();
-            // Auto-exit training if surpassing level 2
-            if (inTrainingMode && level > 2) {
-              exitTrainingAndStartRealGame();
-              return;
-            }
             showLevelUp(level);
             updateNetScales();
           }
@@ -939,11 +896,6 @@ function checkFlowers() {
           lives = 3;
           if (!muted) sfxLevel();
           updateHUD();
-          // Auto-exit training if surpassing level 2
-          if (inTrainingMode && level > 2) {
-            exitTrainingAndStartRealGame();
-            return;
-          }
           showLevelUp(level);
           updateNetScales();
         }
@@ -1028,21 +980,6 @@ function activateRandomPendulumNet() {
   }
 }
 
-// Level 6+: choose a hunter net that eases toward the butterfly's x-position
-function activateHunterNet() {
-  if (level < 6) return;
-  // pick from non-pendulum nets
-  const nonPendulum = nets.filter(n => !n.isPendulumActive);
-  if (nonPendulum.length === 0) return;
-  const chosen = nonPendulum[Math.floor(Math.random() * nonPendulum.length)];
-  nets.forEach(n => { n.isHunter = false; });
-  chosen.isHunter = true;
-  if (developerMode) {
-    const index = nets.indexOf(chosen);
-    console.log(`Activated hunter net: #${index + 1}`);
-  }
-}
-
 function showLevelUp(newLevel) {
   if (announcedLevels.has(newLevel)) return;
   announcedLevels.add(newLevel);
@@ -1082,10 +1019,6 @@ function showLevelUp(newLevel) {
     levelupDetails.textContent += ' Nets grow slightly this level.';
   }
   if (levelupBox) levelupBox.hidden = false;
-  // Auto-exit training if surpassing level 2
-  if (inTrainingMode && newLevel > 2) {
-    exitTrainingAndStartRealGame();
-  }
 }
 
 // --- Background Music (simple looping melody) ---
@@ -1234,11 +1167,6 @@ if (musicVolumeSlider) {
 function gameLoop() {
   if (!running) return;
   if (!paused) {
-    // Auto-exit training if player progressed beyond level 2
-    if (inTrainingMode && level > 2) {
-      exitTrainingAndStartRealGame();
-      return;
-    }
     // Expire Super state
     if (isSuper && performance.now() > superUntil) {
       isSuper = false;
@@ -1294,10 +1222,6 @@ function gameLoop() {
             console.log(`Pass ${skillPassCount}: Activated pendulum on net ${idx >= 0 ? idx + 1 : 'none'}`);
           }
         }
-        // Level 6+: also select a hunter net (not the pendulum one)
-        if (level >= 6) {
-          activateHunterNet();
-        }
         
         bx = -50;
       }
@@ -1337,15 +1261,6 @@ function gameLoop() {
       }
 
       n.el.style.top = `${n.y}px`;
-
-      // Level 6+: if this is the hunter net, ease its x toward the butterfly
-      if (level >= 6 && n.isHunter) {
-        // simple easing toward bx
-        const targetX = bx - 40; // approximate butterfly center offset
-        const easing = 0.04;     // adjust to tune chase speed
-        n.x = (n.x ?? n.el.getBoundingClientRect().left) + (targetX - (n.x ?? 0)) * easing;
-        n.el.style.left = `${n.x}px`;
-      }
       
       // Level 5+: Add pendulum horizontal oscillation (only if this net is active)
       if (level >= 5 && n.pendulumAngle !== undefined && n.isPendulumActive) {
@@ -1593,7 +1508,7 @@ function startGame() {
   // Reset score
   score = 0;
   lives = 3;
-  level = devStartLevel != null ? devStartLevel : (inTrainingMode ? Math.max(level, 0) : 1);
+  level = devStartLevel != null ? devStartLevel : 1;
   highestLevelAchieved = Math.max(highestLevelAchieved, level);
   // Reset skill metric (preserve developer-set skill for testing)
   skillPassCount = 0;
@@ -1630,7 +1545,6 @@ function startGame() {
 
   // Level 5+: ensure pendulum props exist and activate a starting net
   activateRandomPendulumNet();
-  if (level >= 6) activateHunterNet();
 }
 
 function restartGame() {

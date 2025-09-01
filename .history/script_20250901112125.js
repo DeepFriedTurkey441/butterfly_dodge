@@ -1234,11 +1234,6 @@ if (musicVolumeSlider) {
 function gameLoop() {
   if (!running) return;
   if (!paused) {
-    // Auto-exit training if player progressed beyond level 2
-    if (inTrainingMode && level > 2) {
-      exitTrainingAndStartRealGame();
-      return;
-    }
     // Expire Super state
     if (isSuper && performance.now() > superUntil) {
       isSuper = false;

@@ -22,7 +22,7 @@ const leaderboardBox = document.getElementById('leaderboard');
 const netMsg = document.getElementById('netmsg');
 const flowerMsg = document.getElementById('flowermsg');
 const skillMsg = document.getElementById('skillmsg');
-const trainingBanner = document.getElementById('training-banner');
+const learnMsg = document.getElementById('learnmsg');
 function positionSuperTimer() {
   if (!superTimer) return;
   // Place just to the left of the butterfly
@@ -140,7 +140,6 @@ let dy = 0;
 let paused = false;
 let gameOver = false;
 let spacePressed = false;
-let inTrainingMode = false; // true when running Learn-to-Fly mode
 
 // Dynamic physics scaling based on screen size
 function getScreenScaleFactor() {
@@ -639,31 +638,27 @@ document.addEventListener('keydown', e => {
     return; // Don't process other keys if dev mode was just toggled
   }
   // Instructions screen startup
-  // Learn-to-fly mode with Shift+Enter
-  if (!gameStarted && e.key === 'Enter' && e.shiftKey) {
+  if (!gameStarted && e.key === 'Enter' && !e.shiftKey) {
     instructionsBox.hidden = true;
     instructionsBox.style.display = 'none'; // Safety net
     gameArea.hidden = false;
     gameStarted = true;
     startMusic();
-    // start training: no nets, normal gravity
-    level = 0;
-    // Start, then remove nets and keep flowers only
     startGame();
-    nets.forEach(n => n.el && n.el.remove());
-    nets.length = 0;
-    // Show training banner so player knows how to exit
-    inTrainingMode = true;
-    if (trainingBanner) trainingBanner.hidden = false;
     return;
   }
-  if (!gameStarted && e.key === 'Enter') {
+  // Learn-to-fly mode: Shift + Enter from instructions only
+  if (!gameStarted && e.key === 'Enter' && e.shiftKey) {
+    // show learn overlay then start a training level 0
+    if (learnMsg) learnMsg.hidden = false;
     instructionsBox.hidden = true;
-    instructionsBox.style.display = 'none'; // Safety net
+    instructionsBox.style.display = 'none';
     gameArea.hidden = false;
     gameStarted = true;
     startMusic();
-    startGame();
+    // Configure a gentle training mode
+    devStartLevel = 0; // display purposes; level 0 training
+    startLearnToFly();
     return;
   }
 
@@ -685,11 +680,6 @@ document.addEventListener('keydown', e => {
     levelupBox.hidden = true;
     paused = false;
     updateHUD();
-    return;
-  }
-  // Exit training mode with Enter -> start normal game
-  if (trainingBanner && !trainingBanner.hidden && e.key === 'Enter') {
-    exitTrainingAndStartRealGame();
     return;
   }
   // Resume from super message overlay with Enter (suppressed entirely in dev mode)
@@ -747,6 +737,13 @@ document.addEventListener('keydown', e => {
     skillMsg.hidden = true;
     paused = false;
     setCloudsPaused(false);
+    updateHUD();
+    return;
+  }
+  // Dismiss learn-to-fly overlay with Enter
+  if (learnMsg && !learnMsg.hidden && e.key === 'Enter') {
+    learnMsg.hidden = true;
+    paused = false;
     updateHUD();
     return;
   }
@@ -820,19 +817,6 @@ document.addEventListener('keyup', e => {
   }
 });
 
-// Exit training helper
-function exitTrainingAndStartRealGame() {
-  if (trainingBanner) trainingBanner.hidden = true;
-  inTrainingMode = false;
-  // Stop current loop and music
-  running = false;
-  stopMusic();
-  // Start normal mode (skip instructions)
-  gameStarted = true;
-  level = 1;
-  startGame();
-}
-
 // Collision detection
 function isColliding(a, b) {
   const r1 = a.getBoundingClientRect();
@@ -903,11 +887,6 @@ function checkFlowers() {
             lives = 3;
             if (!muted) sfxLevel();
             updateHUD();
-            // Auto-exit training if surpassing level 2
-            if (inTrainingMode && level > 2) {
-              exitTrainingAndStartRealGame();
-              return;
-            }
             showLevelUp(level);
             updateNetScales();
           }
@@ -939,11 +918,6 @@ function checkFlowers() {
           lives = 3;
           if (!muted) sfxLevel();
           updateHUD();
-          // Auto-exit training if surpassing level 2
-          if (inTrainingMode && level > 2) {
-            exitTrainingAndStartRealGame();
-            return;
-          }
           showLevelUp(level);
           updateNetScales();
         }
@@ -1082,10 +1056,6 @@ function showLevelUp(newLevel) {
     levelupDetails.textContent += ' Nets grow slightly this level.';
   }
   if (levelupBox) levelupBox.hidden = false;
-  // Auto-exit training if surpassing level 2
-  if (inTrainingMode && newLevel > 2) {
-    exitTrainingAndStartRealGame();
-  }
 }
 
 // --- Background Music (simple looping melody) ---
@@ -1234,11 +1204,6 @@ if (musicVolumeSlider) {
 function gameLoop() {
   if (!running) return;
   if (!paused) {
-    // Auto-exit training if player progressed beyond level 2
-    if (inTrainingMode && level > 2) {
-      exitTrainingAndStartRealGame();
-      return;
-    }
     // Expire Super state
     if (isSuper && performance.now() > superUntil) {
       isSuper = false;
@@ -1303,7 +1268,8 @@ function gameLoop() {
       }
     }
 
-    const currentGravity = getScaledGravity();
+    let currentGravity = getScaledGravity();
+    if (window.__learnMode) currentGravity *= 0.7;
     const currentMaxFall = getScaledMaxFallSpeed();
     const currentMaxRise = getScaledMaxRiseSpeed();
     
@@ -1593,7 +1559,7 @@ function startGame() {
   // Reset score
   score = 0;
   lives = 3;
-  level = devStartLevel != null ? devStartLevel : (inTrainingMode ? Math.max(level, 0) : 1);
+  level = devStartLevel != null ? devStartLevel : 1;
   highestLevelAchieved = Math.max(highestLevelAchieved, level);
   // Reset skill metric (preserve developer-set skill for testing)
   skillPassCount = 0;
@@ -1637,6 +1603,21 @@ function restartGame() {
   // Reset player name so it gets prompted again for the new game
   playerName = null;
   startGame();
+}
+
+// --- Learn-to-fly training ---
+function startLearnToFly() {
+  // Start normal game then reduce difficulty and freeze level label to 0
+  level = 0;
+  startGame();
+  // Training parameters: slower nets, fewer collisions, lower gravity
+  nets.forEach(n => { n.speedY *= 0.6; });
+  // Slightly reduce gravity effect dynamically
+  const originalGetScaledGravity = getScaledGravity;
+  const trainingScale = 0.7;
+  // Monkey patch local helper used in loop by overriding a closure value is complex;
+  // Instead, gently cap dy each frame via a helper flag
+  window.__learnMode = true;
 }
 
 // --- Leaderboard client helpers ---

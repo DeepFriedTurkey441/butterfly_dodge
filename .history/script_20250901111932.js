@@ -820,19 +820,6 @@ document.addEventListener('keyup', e => {
   }
 });
 
-// Exit training helper
-function exitTrainingAndStartRealGame() {
-  if (trainingBanner) trainingBanner.hidden = true;
-  inTrainingMode = false;
-  // Stop current loop and music
-  running = false;
-  stopMusic();
-  // Start normal mode (skip instructions)
-  gameStarted = true;
-  level = 1;
-  startGame();
-}
-
 // Collision detection
 function isColliding(a, b) {
   const r1 = a.getBoundingClientRect();
@@ -903,11 +890,6 @@ function checkFlowers() {
             lives = 3;
             if (!muted) sfxLevel();
             updateHUD();
-            // Auto-exit training if surpassing level 2
-            if (inTrainingMode && level > 2) {
-              exitTrainingAndStartRealGame();
-              return;
-            }
             showLevelUp(level);
             updateNetScales();
           }
@@ -939,11 +921,6 @@ function checkFlowers() {
           lives = 3;
           if (!muted) sfxLevel();
           updateHUD();
-          // Auto-exit training if surpassing level 2
-          if (inTrainingMode && level > 2) {
-            exitTrainingAndStartRealGame();
-            return;
-          }
           showLevelUp(level);
           updateNetScales();
         }
@@ -1082,10 +1059,6 @@ function showLevelUp(newLevel) {
     levelupDetails.textContent += ' Nets grow slightly this level.';
   }
   if (levelupBox) levelupBox.hidden = false;
-  // Auto-exit training if surpassing level 2
-  if (inTrainingMode && newLevel > 2) {
-    exitTrainingAndStartRealGame();
-  }
 }
 
 // --- Background Music (simple looping melody) ---
@@ -1234,11 +1207,6 @@ if (musicVolumeSlider) {
 function gameLoop() {
   if (!running) return;
   if (!paused) {
-    // Auto-exit training if player progressed beyond level 2
-    if (inTrainingMode && level > 2) {
-      exitTrainingAndStartRealGame();
-      return;
-    }
     // Expire Super state
     if (isSuper && performance.now() > superUntil) {
       isSuper = false;
@@ -1593,7 +1561,7 @@ function startGame() {
   // Reset score
   score = 0;
   lives = 3;
-  level = devStartLevel != null ? devStartLevel : (inTrainingMode ? Math.max(level, 0) : 1);
+  level = devStartLevel != null ? devStartLevel : 1;
   highestLevelAchieved = Math.max(highestLevelAchieved, level);
   // Reset skill metric (preserve developer-set skill for testing)
   skillPassCount = 0;

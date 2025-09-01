@@ -1610,14 +1610,20 @@ function startLearnToFly() {
   // Start normal game then reduce difficulty and freeze level label to 0
   level = 0;
   startGame();
+  // Clear nets entirely for training (flowers only)
+  nets.forEach(n => n.el && n.el.remove());
+  nets.length = 0;
   // Training parameters: slower nets, fewer collisions, lower gravity
-  nets.forEach(n => { n.speedY *= 0.6; });
+  // (no nets present, keep placeholder in case of future training tweaks)
   // Slightly reduce gravity effect dynamically
   const originalGetScaledGravity = getScaledGravity;
   const trainingScale = 0.7;
   // Monkey patch local helper used in loop by overriding a closure value is complex;
   // Instead, gently cap dy each frame via a helper flag
   window.__learnMode = true;
+  // Ensure subsequent normal starts default to level 1 again
+  devStartLevel = null;
+  updateHUD();
 }
 
 // --- Leaderboard client helpers ---

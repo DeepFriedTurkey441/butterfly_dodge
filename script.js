@@ -637,6 +637,21 @@ document.addEventListener('keydown', e => {
     return; // Don't process other keys if dev mode was just toggled
   }
   // Instructions screen startup
+  // Learn-to-fly mode with Shift+Enter
+  if (!gameStarted && e.key === 'Enter' && e.shiftKey) {
+    instructionsBox.hidden = true;
+    instructionsBox.style.display = 'none'; // Safety net
+    gameArea.hidden = false;
+    gameStarted = true;
+    startMusic();
+    // start training: no nets, normal gravity
+    level = 0;
+    // Start, then remove nets and keep flowers only
+    startGame();
+    nets.forEach(n => n.el && n.el.remove());
+    nets.length = 0;
+    return;
+  }
   if (!gameStarted && e.key === 'Enter') {
     instructionsBox.hidden = true;
     instructionsBox.style.display = 'none'; // Safety net

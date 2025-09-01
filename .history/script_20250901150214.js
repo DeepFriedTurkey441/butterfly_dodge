@@ -737,7 +737,7 @@ document.addEventListener('keydown', e => {
     updateHUD();
     return;
   }
-  if (("ontouchstart" in window || navigator.maxTouchPoints > 0) && superMsg && !superMsg.hidden) {
+  if (("ontouchstart" in window || navigator.maxTouchPoints > 0) && superMsg && !superMsg.hidden && (e.key === ' ' || e.key === 'Enter')) {
     superMsg.hidden = true;
     paused = false;
     updateHUD();
@@ -758,7 +758,7 @@ document.addEventListener('keydown', e => {
     updateHUD();
     return;
   }
-  if (("ontouchstart" in window || navigator.maxTouchPoints > 0) && flowerMsg && !flowerMsg.hidden) {
+  if (("ontouchstart" in window || navigator.maxTouchPoints > 0) && flowerMsg && !flowerMsg.hidden && (e.key === ' ' || e.key === 'Enter')) {
     flowerMsg.hidden = true;
     paused = false;
     setCloudsPaused(false);
@@ -780,7 +780,7 @@ document.addEventListener('keydown', e => {
     updateHUD();
     return;
   }
-  if (("ontouchstart" in window || navigator.maxTouchPoints > 0) && netMsg && !netMsg.hidden) {
+  if (("ontouchstart" in window || navigator.maxTouchPoints > 0) && netMsg && !netMsg.hidden && (e.key === ' ' || e.key === 'Enter')) {
     netMsg.hidden = true;
     paused = false;
     setCloudsPaused(false);
@@ -802,7 +802,7 @@ document.addEventListener('keydown', e => {
     updateHUD();
     return;
   }
-  if (("ontouchstart" in window || navigator.maxTouchPoints > 0) && skillMsg && !skillMsg.hidden) {
+  if (("ontouchstart" in window || navigator.maxTouchPoints > 0) && skillMsg && !skillMsg.hidden && (e.key === ' ' || e.key === 'Enter')) {
     skillMsg.hidden = true;
     paused = false;
     setCloudsPaused(false);

@@ -161,26 +161,26 @@ function getScreenScaleFactor() {
 
 function getScaledGravity() {
   const scaleFactor = getScreenScaleFactor();
-  const mobileDampen = ("ontouchstart" in window || navigator.maxTouchPoints > 0) ? 0.45 : 1.0;
+  const mobileDampen = ("ontouchstart" in window || navigator.maxTouchPoints > 0) ? 0.6 : 1.0;
   return 0.2 * scaleFactor * mobileDampen; // slower gravity on mobile
 }
 
 function getScaledMaxFallSpeed() {
   const scaleFactor = getScreenScaleFactor();
-  const mobileDampen = ("ontouchstart" in window || navigator.maxTouchPoints > 0) ? 0.55 : 1.0;
+  const mobileDampen = ("ontouchstart" in window || navigator.maxTouchPoints > 0) ? 0.7 : 1.0;
   return 5 * scaleFactor * mobileDampen;
 }
 
 function getScaledMaxRiseSpeed() {
   const scaleFactor = getScreenScaleFactor();
-  const mobileDampen = ("ontouchstart" in window || navigator.maxTouchPoints > 0) ? 0.55 : 1.0;
+  const mobileDampen = ("ontouchstart" in window || navigator.maxTouchPoints > 0) ? 0.7 : 1.0;
   return -5 * scaleFactor * mobileDampen;
 }
 
 function getScaledSpeed() {
   const scaleFactor = getScreenScaleFactor();
   // If mobile, start slower: dampen scale to avoid very fast nets
-  const mobileDampen = ("ontouchstart" in window || navigator.maxTouchPoints > 0) ? 0.6 : 1.0;
+  const mobileDampen = ("ontouchstart" in window || navigator.maxTouchPoints > 0) ? 0.7 : 1.0;
   return BASE_SPEED_LEVELS[speedIndex] * scaleFactor * mobileDampen;
 }
 
@@ -512,7 +512,7 @@ function setupDeveloperPanelEvents() {
 
         let speedY = BASE_NET_SPEED + i * SPEED_INCREMENT;
         if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
-          speedY *= 0.6;
+          speedY *= 0.75;
         }
         if (i >= NUM_NETS - 3) speedY *= 0.7;
         
@@ -1618,7 +1618,7 @@ function startGame() {
 
     let speedY = BASE_NET_SPEED + i * SPEED_INCREMENT;
     if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
-      speedY *= 0.6;
+      speedY *= 0.75;
     }
     if (i >= NUM_NETS - 3) speedY *= 0.7;
     

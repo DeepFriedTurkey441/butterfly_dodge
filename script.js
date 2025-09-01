@@ -471,7 +471,11 @@ function setupDeveloperPanelEvents() {
         div.className = 'net';
         const cx = (i + 1) * window.innerWidth / (NUM_NETS + 1);
         div.style.left = `${cx - 40}px`;
-        div.style.top = `${window.innerHeight * 0.25}px`;
+        // Distribute starting Y positions to avoid same-height spawn
+        const minY = 50;
+        const maxY = window.innerHeight - 130;
+        const startY = minY + ((maxY - minY) * (i + 1) / (NUM_NETS + 1));
+        div.style.top = `${startY}px`;
         div.innerHTML = svgMarkup;
         
         // Scale nets by current level (capped at level 10 size)
@@ -497,7 +501,8 @@ function setupDeveloperPanelEvents() {
         nets.push({ 
           el: div, 
           svg: svgEl, 
-          y: window.innerHeight * 0.25, 
+          y: startY,
+          x: cx - 40,
           dir: 1, 
           speedY,
           ...pendulumProps
@@ -957,7 +962,10 @@ function activateRandomPendulumNet() {
   nets.forEach(n => {
     if (n && n.pendulumAngle !== undefined) {
       n.isPendulumActive = false;
-      if (typeof n.baseX === 'number') n.el.style.left = `${n.baseX}px`;
+      if (typeof n.baseX === 'number') {
+        n.el.style.left = `${n.baseX}px`;
+        n.x = n.baseX;
+      }
     }
   });
   // Activate one randomly
@@ -969,6 +977,21 @@ function activateRandomPendulumNet() {
       const index = nets.indexOf(chosen);
       console.log(`Activated pendulum net (level start/level up): #${index + 1}`);
     }
+  }
+}
+
+// Level 6+: choose a hunter net that eases toward the butterfly's x-position
+function activateHunterNet() {
+  if (level < 6) return;
+  // pick from non-pendulum nets
+  const nonPendulum = nets.filter(n => !n.isPendulumActive);
+  if (nonPendulum.length === 0) return;
+  const chosen = nonPendulum[Math.floor(Math.random() * nonPendulum.length)];
+  nets.forEach(n => { n.isHunter = false; });
+  chosen.isHunter = true;
+  if (developerMode) {
+    const index = nets.indexOf(chosen);
+    console.log(`Activated hunter net: #${index + 1}`);
   }
 }
 
@@ -1214,6 +1237,10 @@ function gameLoop() {
             console.log(`Pass ${skillPassCount}: Activated pendulum on net ${idx >= 0 ? idx + 1 : 'none'}`);
           }
         }
+        // Level 6+: also select a hunter net (not the pendulum one)
+        if (level >= 6) {
+          activateHunterNet();
+        }
         
         bx = -50;
       }
@@ -1253,6 +1280,15 @@ function gameLoop() {
       }
 
       n.el.style.top = `${n.y}px`;
+
+      // Level 6+: if this is the hunter net, ease its x toward the butterfly
+      if (level >= 6 && n.isHunter) {
+        // simple easing toward bx
+        const targetX = bx - 40; // approximate butterfly center offset
+        const easing = 0.04;     // adjust to tune chase speed
+        n.x = (n.x ?? n.el.getBoundingClientRect().left) + (targetX - (n.x ?? 0)) * easing;
+        n.el.style.left = `${n.x}px`;
+      }
       
       // Level 5+: Add pendulum horizontal oscillation (only if this net is active)
       if (level >= 5 && n.pendulumAngle !== undefined && n.isPendulumActive) {
@@ -1471,7 +1507,8 @@ function startGame() {
     nets.push({ 
       el: div, 
       svg: svgEl, 
-      y: startY, 
+      y: startY,
+      x: cx - 40,
       dir: 1, 
       speedY,
       ...pendulumProps
@@ -1536,6 +1573,7 @@ function startGame() {
 
   // Level 5+: ensure pendulum props exist and activate a starting net
   activateRandomPendulumNet();
+  if (level >= 6) activateHunterNet();
 }
 
 function restartGame() {

@@ -1746,14 +1746,6 @@ function teardownMobileSession() {
   if (rotateOverlay) rotateOverlay.hidden = true;
 }
 
-// Auto-show tap-to-start on touch-capable devices when page loads
-window.addEventListener('load', () => {
-  const isTouchCapable = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
-  if (isTouchCapable) {
-    attachTapToStart();
-  }
-});
-
 function restartGame() {
   // Reset player name so it gets prompted again for the new game
   playerName = null;

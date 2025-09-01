@@ -22,6 +22,7 @@ const leaderboardBox = document.getElementById('leaderboard');
 const netMsg = document.getElementById('netmsg');
 const flowerMsg = document.getElementById('flowermsg');
 const skillMsg = document.getElementById('skillmsg');
+const learnMsg = document.getElementById('learnmsg');
 function positionSuperTimer() {
   if (!superTimer) return;
   // Place just to the left of the butterfly
@@ -637,13 +638,27 @@ document.addEventListener('keydown', e => {
     return; // Don't process other keys if dev mode was just toggled
   }
   // Instructions screen startup
-  if (!gameStarted && e.key === 'Enter') {
+  if (!gameStarted && e.key === 'Enter' && !e.shiftKey) {
     instructionsBox.hidden = true;
     instructionsBox.style.display = 'none'; // Safety net
     gameArea.hidden = false;
     gameStarted = true;
     startMusic();
     startGame();
+    return;
+  }
+  // Learn-to-fly mode: Shift + Enter from instructions only
+  if (!gameStarted && e.key === 'Enter' && e.shiftKey) {
+    // show learn overlay then start a training level 0
+    if (learnMsg) learnMsg.hidden = false;
+    instructionsBox.hidden = true;
+    instructionsBox.style.display = 'none';
+    gameArea.hidden = false;
+    gameStarted = true;
+    startMusic();
+    // Configure a gentle training mode
+    devStartLevel = 0; // display purposes; level 0 training
+    startLearnToFly();
     return;
   }
 
@@ -722,6 +737,13 @@ document.addEventListener('keydown', e => {
     skillMsg.hidden = true;
     paused = false;
     setCloudsPaused(false);
+    updateHUD();
+    return;
+  }
+  // Dismiss learn-to-fly overlay with Enter
+  if (learnMsg && !learnMsg.hidden && e.key === 'Enter') {
+    learnMsg.hidden = true;
+    paused = false;
     updateHUD();
     return;
   }
@@ -1246,7 +1268,8 @@ function gameLoop() {
       }
     }
 
-    const currentGravity = getScaledGravity();
+    let currentGravity = getScaledGravity();
+    if (window.__learnMode) currentGravity *= 0.7;
     const currentMaxFall = getScaledMaxFallSpeed();
     const currentMaxRise = getScaledMaxRiseSpeed();
     
@@ -1580,6 +1603,21 @@ function restartGame() {
   // Reset player name so it gets prompted again for the new game
   playerName = null;
   startGame();
+}
+
+// --- Learn-to-fly training ---
+function startLearnToFly() {
+  // Start normal game then reduce difficulty and freeze level label to 0
+  level = 0;
+  startGame();
+  // Training parameters: slower nets, fewer collisions, lower gravity
+  nets.forEach(n => { n.speedY *= 0.6; });
+  // Slightly reduce gravity effect dynamically
+  const originalGetScaledGravity = getScaledGravity;
+  const trainingScale = 0.7;
+  // Monkey patch local helper used in loop by overriding a closure value is complex;
+  // Instead, gently cap dy each frame via a helper flag
+  window.__learnMode = true;
 }
 
 // --- Leaderboard client helpers ---

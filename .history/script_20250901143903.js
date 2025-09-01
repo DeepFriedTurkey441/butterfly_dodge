@@ -1701,7 +1701,7 @@ function attachTapToStart() {
   window.addEventListener('orientationchange', onResize);
   // One-time start handler
   const startHandler = (e) => {
-    if (!isLandscape()) { showRotateGateIfNeeded(); return; } // enforce rotate first
+    if (!isLandscape()) return; // enforce rotate first
     e.preventDefault();
     tapStartOverlay.hidden = true;
     enableTouchLocks();

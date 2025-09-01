@@ -99,6 +99,38 @@ This ensures consistent challenge across all devices!
 - **Persistent storage** - Scores saved across sessions
 - **Best level tracking** - Your highest level is submitted
 
+### Supabase Backend (experimental)
+
+This branch optionally uses Supabase for the all‑time leaderboard.
+
+Environment variables expected by `server.js`:
+
+```
+SUPABASE_URL=your-project-url
+SUPABASE_ANON_KEY=your-anon-key
+```
+
+Recommended table schema (SQL):
+
+```sql
+create table if not exists public.leaderboard (
+  name text primary key,
+  best_level integer not null default 0,
+  updated_at timestamp with time zone default now()
+);
+
+-- For anonymous key access (optional; scope tightly in production)
+alter table public.leaderboard enable row level security;
+create policy "read leaderboard" on public.leaderboard
+  for select using (true);
+create policy "write leaderboard" on public.leaderboard
+  for insert with check (true);
+create policy "update leaderboard" on public.leaderboard
+  for update using (true) with check (true);
+```
+
+If Supabase variables are unset, the server falls back to a local JSON file.
+
 ## 🚀 Quick Start
 
 ### Play Online

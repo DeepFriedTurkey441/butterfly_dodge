@@ -1599,7 +1599,7 @@ function startGame() {
 
   // Reset butterfly physics
   bx = 0;
-  by = Math.max(40, Math.min(window.innerHeight - 70, window.innerHeight / 2));
+  by = window.innerHeight / 2;
   dy = 0;
   speedIndex = 0;
   speed = getScaledSpeed();
@@ -1639,9 +1639,7 @@ function startGame() {
   updateNetScales();
 
   // Clear and respawn flowers
-  try {
-    flowers.forEach(f => f && f.remove());
-  } catch (_) {}
+  flowers.forEach(f => f && f.remove());
   flowers.length = 0;
   spawnFlowers();
 

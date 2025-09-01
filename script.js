@@ -1237,16 +1237,21 @@ function gameLoop() {
     nets.forEach(n => {
       // Vertical movement (all levels)
       n.y += n.speedY * n.dir;
-      
-      // Boundary collision with proper position clamping
-      if (n.y < 50) {
-        n.y = 50; // Clamp to minimum boundary
-        n.dir = 1; // Change direction to down
-      } else if (n.y > window.innerHeight - 130) {
-        n.y = window.innerHeight - 130; // Clamp to maximum boundary  
-        n.dir = -1; // Change direction to up
+
+      // Robust bounce with overshoot reflection
+      const minY = 50;
+      const maxY = window.innerHeight - 130;
+      if (n.y < minY) {
+        // reflect overshoot back into range
+        n.y = minY + (minY - n.y);
+        n.dir = 1; // heading down
+        if (n.y > maxY) { n.y = maxY; } // guard if huge overshoot
+      } else if (n.y > maxY) {
+        n.y = maxY - (n.y - maxY);
+        n.dir = -1; // heading up
+        if (n.y < minY) { n.y = minY; }
       }
-      
+
       n.el.style.top = `${n.y}px`;
       
       // Level 5+: Add pendulum horizontal oscillation (only if this net is active)
@@ -1437,7 +1442,11 @@ function startGame() {
     div.className = 'net';
     const cx = (i + 1) * window.innerWidth / (NUM_NETS + 1);
     div.style.left = `${cx - 40}px`;
-    div.style.top = `${window.innerHeight * 0.25}px`;
+    // Distribute starting Y positions to avoid all nets spawning at same height
+    const minY = 50;
+    const maxY = window.innerHeight - 130;
+    const startY = minY + ((maxY - minY) * (i + 1) / (NUM_NETS + 1));
+    div.style.top = `${startY}px`;
     div.innerHTML = svgMarkup;
     // Scale nets by current level (capped at level 10 size)
     const effectiveLevel = Math.min(level, 10);
@@ -1462,7 +1471,7 @@ function startGame() {
     nets.push({ 
       el: div, 
       svg: svgEl, 
-      y: window.innerHeight * 0.25, 
+      y: startY, 
       dir: 1, 
       speedY,
       ...pendulumProps

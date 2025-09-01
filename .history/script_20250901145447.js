@@ -508,9 +508,6 @@ function setupDeveloperPanelEvents() {
         const svgEl = div.querySelector('svg');
 
         let speedY = BASE_NET_SPEED + i * SPEED_INCREMENT;
-        if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
-          speedY *= 0.75;
-        }
         if (i >= NUM_NETS - 3) speedY *= 0.7;
         
         // Level 5+ oscillating pendulum properties (initially disabled)
@@ -1614,9 +1611,6 @@ function startGame() {
     const svgEl = div.querySelector('svg');
 
     let speedY = BASE_NET_SPEED + i * SPEED_INCREMENT;
-    if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
-      speedY *= 0.75;
-    }
     if (i >= NUM_NETS - 3) speedY *= 0.7;
     
     // Level 5+ oscillating pendulum properties (initially disabled)

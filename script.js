@@ -307,9 +307,7 @@ function deactivateDeveloperMode() {
   document.querySelectorAll('.collision-bound').forEach(el => el.remove());
   showCollisionBounds = false;
   
-  // Reset cheat modes
-  invincibilityMode = false;
-  infiniteLives = false;
+  // Do not reset cheat modes; keep them sticky even if dev panel is toggled
   
   // Show deactivation message
   showDeveloperModeMessage('🐛 DEVELOPER MODE DEACTIVATED', '#f44');

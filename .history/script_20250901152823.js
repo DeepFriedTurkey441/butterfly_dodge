@@ -512,7 +512,7 @@ function setupDeveloperPanelEvents() {
 
         let speedY = BASE_NET_SPEED + i * SPEED_INCREMENT;
         if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
-          speedY *= 0.45;
+          speedY *= 0.5;
         }
         if (i >= NUM_NETS - 3) speedY *= 0.7;
         
@@ -1618,7 +1618,7 @@ function startGame() {
 
     let speedY = BASE_NET_SPEED + i * SPEED_INCREMENT;
     if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
-      speedY *= 0.45;
+      speedY *= 0.5;
     }
     if (i >= NUM_NETS - 3) speedY *= 0.7;
     

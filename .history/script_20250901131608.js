@@ -757,17 +757,12 @@ document.addEventListener('keydown', e => {
 
   switch (e.key) {
     case 'ArrowRight':
-      // In initial mobile scope, ignore keyboard speed on mobile sessions
-      if (!isMobileSession) {
-        speedIndex = Math.min(BASE_SPEED_LEVELS.length - 1, speedIndex + 1);
-        speed = getScaledSpeed();
-      }
+      speedIndex = Math.min(BASE_SPEED_LEVELS.length - 1, speedIndex + 1);
+      speed = getScaledSpeed();
       break;
     case 'ArrowLeft':
-      if (!isMobileSession) {
-        speedIndex = Math.max(0, speedIndex - 1);
-        speed = getScaledSpeed();
-      }
+      speedIndex = Math.max(0, speedIndex - 1);
+      speed = getScaledSpeed();
       break;
     case ' ':
       if (!spacePressed) {
@@ -840,7 +835,6 @@ function exitTrainingAndStartRealGame() {
   gameStarted = true;
   level = 1;
   startGame();
-  // If mobile session was active, keep touch locks; end restores happen via normal game over
 }
 
 // Collision detection

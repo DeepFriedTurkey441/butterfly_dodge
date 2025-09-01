@@ -757,17 +757,12 @@ document.addEventListener('keydown', e => {
 
   switch (e.key) {
     case 'ArrowRight':
-      // In initial mobile scope, ignore keyboard speed on mobile sessions
-      if (!isMobileSession) {
-        speedIndex = Math.min(BASE_SPEED_LEVELS.length - 1, speedIndex + 1);
-        speed = getScaledSpeed();
-      }
+      speedIndex = Math.min(BASE_SPEED_LEVELS.length - 1, speedIndex + 1);
+      speed = getScaledSpeed();
       break;
     case 'ArrowLeft':
-      if (!isMobileSession) {
-        speedIndex = Math.max(0, speedIndex - 1);
-        speed = getScaledSpeed();
-      }
+      speedIndex = Math.max(0, speedIndex - 1);
+      speed = getScaledSpeed();
       break;
     case ' ':
       if (!spacePressed) {
@@ -840,7 +835,6 @@ function exitTrainingAndStartRealGame() {
   gameStarted = true;
   level = 1;
   startGame();
-  // If mobile session was active, keep touch locks; end restores happen via normal game over
 }
 
 // Collision detection
@@ -1641,88 +1635,6 @@ function startGame() {
   // Level 5+: ensure pendulum props exist and activate a starting net
   activateRandomPendulumNet();
   if (level >= 6) activateHunterNet();
-}
-
-// --- Mobile helpers ---
-function isLandscape() {
-  return window.innerWidth > window.innerHeight;
-}
-
-function showRotateGateIfNeeded() {
-  if (!rotateOverlay) return;
-  const needRotate = !isLandscape();
-  rotateOverlay.hidden = !needRotate;
-  // While rotate gate is up, hide tap start to avoid accidental starts
-  if (tapStartOverlay) tapStartOverlay.hidden = true;
-}
-
-function enableTouchLocks() {
-  document.body.classList.add('touch-lock');
-}
-
-function disableTouchLocks() {
-  document.body.classList.remove('touch-lock');
-}
-
-function attachTapToStart() {
-  if (!tapStartOverlay) return;
-  isMobileSession = true;
-  tapStartOverlay.hidden = false;
-  showRotateGateIfNeeded();
-  const onResize = () => showRotateGateIfNeeded();
-  window.addEventListener('resize', onResize);
-  // One-time start handler
-  const startHandler = (e) => {
-    if (!isLandscape()) return; // enforce rotate first
-    e.preventDefault();
-    tapStartOverlay.hidden = true;
-    enableTouchLocks();
-    // Begin game at slowest speed; use pointer for flap
-    gameArea.hidden = false;
-    gameStarted = true;
-    startMusic();
-    startGame();
-    // Replace keyboard flap with pointer flap for mobile session
-    setupPointerFlapControls();
-    tapStartOverlay.removeEventListener('pointerdown', startHandler);
-    window.removeEventListener('resize', onResize);
-  };
-  tapStartOverlay.addEventListener('pointerdown', startHandler, { passive: false });
-}
-
-function setupPointerFlapControls() {
-  // Guard against double taps causing zoom on iOS
-  const guardDoubleTap = (e) => {
-    const now = performance.now();
-    if (now < preventDoubleTapUntil) {
-      e.preventDefault();
-      return true;
-    }
-    preventDoubleTapUntil = now + 350;
-    return false;
-  };
-  const down = (e) => {
-    e.preventDefault();
-    guardDoubleTap(e);
-    spacePressed = true;
-  };
-  const up = (e) => {
-    e.preventDefault();
-    spacePressed = false;
-    stopFlap();
-  };
-  // Attach on the entire game area
-  gameArea.addEventListener('pointerdown', down, { passive: false });
-  gameArea.addEventListener('pointerup', up, { passive: false });
-  gameArea.addEventListener('pointercancel', up, { passive: false });
-  gameArea.addEventListener('pointerleave', up, { passive: false });
-}
-
-function teardownMobileSession() {
-  disableTouchLocks();
-  isMobileSession = false;
-  if (tapStartOverlay) tapStartOverlay.hidden = true;
-  if (rotateOverlay) rotateOverlay.hidden = true;
 }
 
 function restartGame() {

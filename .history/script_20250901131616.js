@@ -840,7 +840,6 @@ function exitTrainingAndStartRealGame() {
   gameStarted = true;
   level = 1;
   startGame();
-  // If mobile session was active, keep touch locks; end restores happen via normal game over
 }
 
 // Collision detection

@@ -40,8 +40,8 @@ let running = false;
 
 // Net parameters
 const NUM_NETS = 6;
-const BASE_NET_SPEED = ("ontouchstart" in window || navigator.maxTouchPoints > 0) ? 0.6 : 1;
-const MAX_NET_SPEED = ("ontouchstart" in window || navigator.maxTouchPoints > 0) ? 5.5 : 8;
+const BASE_NET_SPEED = 1;
+const MAX_NET_SPEED = 8;
 const SPEED_INCREMENT = (MAX_NET_SPEED - BASE_NET_SPEED) / (NUM_NETS - 1);
 
 // Net SVG (butterfly net: hoop + mesh + handle). Preserves size and red color

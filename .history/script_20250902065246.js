@@ -1402,7 +1402,8 @@ function gameLoop() {
       n.y += n.speedY * n.dir;
 
       // Robust bounce with overshoot reflection
-      const { minY, maxY } = getNetVerticalBounds();
+      const minY = 50;
+      const maxY = window.innerHeight - 130;
       if (n.y < minY) {
         // reflect overshoot back into range
         n.y = minY + (minY - n.y);
@@ -1614,7 +1615,8 @@ function startGame() {
     const cx = (i + 1) * window.innerWidth / (NUM_NETS + 1);
     div.style.left = `${cx - 40}px`;
     // Distribute starting Y positions to avoid all nets spawning at same height
-    const { minY, maxY } = getNetVerticalBounds();
+    const minY = 50;
+    const maxY = window.innerHeight - 130;
     const startY = minY + ((maxY - minY) * (i + 1) / (NUM_NETS + 1));
     div.style.top = `${startY}px`;
     div.innerHTML = svgMarkup;

@@ -150,6 +150,7 @@ let preventDoubleTapUntil = 0;
 // Mobile gesture control helpers
 let swipeStartX = null;           // starting X for swipe-to-speed
 let nextDescentSlowAt = null;     // next timestamp to auto-slow during descent
+let autoSlowProtectionUntil = 0;  // grace period after (re)start where auto-slow is disabled
 
 // Dynamic physics scaling based on screen size
 function getScreenScaleFactor() {
@@ -188,11 +189,13 @@ function getScaledSpeed() {
   return BASE_SPEED_LEVELS[speedIndex] * scaleFactor * mobileDampen;
 }
 
-// Vertical limits for net motion; on mobile allow closer to top/bottom
+// Compute vertical movement limits for nets; widen on mobile to avoid safe zones
 function getNetVerticalBounds() {
   const isMobile = ("ontouchstart" in window || navigator.maxTouchPoints > 0);
-  const minY = isMobile ? 24 : 50;
-  const maxY = window.innerHeight - (isMobile ? 60 : 130);
+  const topPad = isMobile ? 18 : 50;            // reduce top padding on mobile
+  const bottomPad = isMobile ? 72 : 130;        // reduce bottom padding on mobile
+  const minY = topPad;
+  const maxY = Math.max(topPad + 60, window.innerHeight - bottomPad);
   return { minY, maxY };
 }
 
@@ -1403,6 +1406,7 @@ function gameLoop() {
 
       // Robust bounce with overshoot reflection
       const { minY, maxY } = getNetVerticalBounds();
+      const { minY, maxY } = getNetVerticalBounds();
       if (n.y < minY) {
         // reflect overshoot back into range
         n.y = minY + (minY - n.y);
@@ -1709,6 +1713,8 @@ function startGame() {
   requestAnimationFrame(gameLoop);
   // Ensure music starts when a new round begins (including restart)
   startMusic();
+  // Disable auto-slow for a short grace period after start
+  autoSlowProtectionUntil = performance.now() + 1500;
 
   // Level 5+: ensure pendulum props exist and activate a starting net
   activateRandomPendulumNet();
@@ -1906,6 +1912,78 @@ setTimeout(() => {
     attachTapToStart();
   }
 }, 1200);
+
+// Global bootstrap: if user taps anywhere on mobile while instructions are visible, start mobile flow
+['pointerdown','touchstart','click'].forEach(evt => {
+  window.addEventListener(evt, (e) => {
+    if (shouldUseMobileFlow() && instructionsBox && !instructionsBox.hidden) {
+      try { e.preventDefault(); } catch(_) {}
+      attachTapToStart();
+    }
+  }, { passive: false, capture: true });
+});
+
+// Desktop safety: capture Enter anywhere to start game if instructions are visible
+window.addEventListener('keydown', (e) => {
+  if (!gameStarted && e.key === 'Enter' && instructionsBox && !instructionsBox.hidden) {
+    try { e.preventDefault(); } catch(_) {}
+    instructionsBox.hidden = true;
+    instructionsBox.style.display = 'none';
+    if (gameArea) gameArea.hidden = false;
+    gameStarted = true;
+    startMusic();
+    startGame();
+  }
+}, { capture: true });
+
+// Allow the in-instructions "Tap to Start" button to immediately start the mobile game
+function startMobileFromInstructions() {
+  if (!shouldUseMobileFlow()) return;
+  // If not landscape yet, fall back to rotate/tap overlay flow
+  if (!isLandscape()) { attachTapToStart(); return; }
+  // Immediate start (mirror attachTapToStart's startHandler)
+  isMobileSession = true;
+  if (instructionsBox) { instructionsBox.hidden = true; instructionsBox.style.display = 'none'; }
+  if (tapStartOverlay) tapStartOverlay.hidden = true;
+  if (rotateOverlay) rotateOverlay.hidden = true;
+  if (gameArea) gameArea.hidden = false;
+  enableTouchLocks();
+  requestFullscreenIfPossible();
+  gameStarted = true;
+  startMusic();
+  startGame();
+  setupPointerFlapControls();
+}
+
+// Attach button handlers immediately (script loads after DOM), and also on DOMContentLoaded as fallback
+(function attachMobileStartHandlers() {
+  if (mobileStartBtn) {
+    const handler = (e) => {
+      if (shouldUseMobileFlow()) {
+        try { e.preventDefault(); e.stopPropagation(); } catch(_) {}
+        startMobileFromInstructions();
+      }
+      // On desktop, do nothing and allow normal Enter key handling to proceed
+    };
+    mobileStartBtn.addEventListener('pointerdown', handler, { passive: false });
+    mobileStartBtn.addEventListener('click', handler, { passive: false });
+    mobileStartBtn.addEventListener('touchstart', handler, { passive: false });
+  }
+})();
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (mobileStartBtn) {
+    const handler = (e) => {
+      if (shouldUseMobileFlow()) {
+        try { e.preventDefault(); e.stopPropagation(); } catch(_) {}
+        startMobileFromInstructions();
+      }
+    };
+    mobileStartBtn.addEventListener('pointerdown', handler, { passive: false });
+    mobileStartBtn.addEventListener('click', handler, { passive: false });
+    mobileStartBtn.addEventListener('touchstart', handler, { passive: false });
+  }
+});
 
 function restartGame() {
   // Reset player name so it gets prompted again for the new game

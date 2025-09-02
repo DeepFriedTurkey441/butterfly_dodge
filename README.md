@@ -197,7 +197,7 @@ This project is open source and available under the MIT License. Feel free to us
 
 **[🚀 Launch Game](https://deepfriedturkey441.github.io/butterfly_dodge/)**
 
-Try to reach Level 10+ and get your name on the global leaderboard! 
+Try to reach your highest level and get your name on the global leaderboard! 
 
 **Pro tip**: Press **Shift+M** to explore the developer tools and see how the game works behind the scenes.
 

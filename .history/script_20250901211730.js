@@ -1786,8 +1786,16 @@ function attachTapToStart() {
   document.body.addEventListener('pointerdown', bodyStart, { passive: false });
   document.body.addEventListener('click', bodyStart, { passive: false });
   document.body.addEventListener('touchstart', bodyStart, { passive: false });
-  // Initialize speed bar controls for mobile
-  setupSpeedBarControls();
+  // Fallback: visible button inside instructions on iOS Chrome
+  if (mobileStartBtn) {
+    const btnStart = (e) => {
+      e.preventDefault();
+      attachTapToStart();
+    };
+    mobileStartBtn.addEventListener('pointerdown', btnStart, { passive: false });
+    mobileStartBtn.addEventListener('click', btnStart, { passive: false });
+    mobileStartBtn.addEventListener('touchstart', btnStart, { passive: false });
+  }
 }
 
 function setupPointerFlapControls() {
@@ -1930,42 +1938,4 @@ function activateSuper(durationMs) {
       superMsg.hidden = false;
     }
   }
-}
-
-function updateSpeedReadout() {
-  if (!speedReadout) return;
-  const levels = BASE_SPEED_LEVELS.length;
-  speedReadout.textContent = `Speed ${speedIndex + 1}/${levels}`;
-}
-
-function setupSpeedBarControls() {
-  if (!(speedBar && speedIncBtn && speedDecBtn)) return;
-  speedBar.hidden = !("ontouchstart" in window || navigator.maxTouchPoints > 0);
-  const step = (dir) => {
-    if (dir > 0) {
-      speedIndex = Math.min(BASE_SPEED_LEVELS.length - 1, speedIndex + 1);
-    } else {
-      speedIndex = Math.max(0, speedIndex - 1);
-    }
-    speed = getScaledSpeed();
-    updateSpeedReadout();
-  };
-  let incTimer = null, decTimer = null;
-  const startHoldInc = (e) => { e.preventDefault(); e.stopPropagation(); step(1); incTimer = setInterval(() => step(1), 150); };
-  const startHoldDec = (e) => { e.preventDefault(); e.stopPropagation(); step(-1); decTimer = setInterval(() => step(-1), 150); };
-  const endHold = (e) => { e.preventDefault(); e.stopPropagation(); clearInterval(incTimer); clearInterval(decTimer); incTimer = decTimer = null; };
-  // Prevent bubbling to flap
-  const swallow = (e) => { e.preventDefault(); e.stopPropagation(); };
-  speedBar.addEventListener('pointerdown', swallow, { passive: false });
-  speedBar.addEventListener('touchstart', swallow, { passive: false });
-  speedIncBtn.addEventListener('pointerdown', startHoldInc, { passive: false });
-  speedIncBtn.addEventListener('touchstart', startHoldInc, { passive: false });
-  speedDecBtn.addEventListener('pointerdown', startHoldDec, { passive: false });
-  speedDecBtn.addEventListener('touchstart', startHoldDec, { passive: false });
-  ['pointerup','pointercancel','pointerleave','touchend','touchcancel'].forEach(evt => {
-    speedIncBtn.addEventListener(evt, endHold, { passive: false });
-    speedDecBtn.addEventListener(evt, endHold, { passive: false });
-    speedBar.addEventListener(evt, endHold, { passive: false });
-  });
-  updateSpeedReadout();
 }

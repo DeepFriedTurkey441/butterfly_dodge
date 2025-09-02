@@ -135,7 +135,7 @@ Visit **[https://deepfriedturkey441.github.io/butterfly_dodge/](https://deepfrie
 
 ### Browser Compatibility
 - **Desktop browsers**: Chrome, Firefox, Safari, Edge (modern versions)
-- **Mobile**: Not currently supported (keyboard required)
+- **Mobile**: Now supported. The game is more difficult with swipe andf tap controls than a keyboard, but the game plays.
 - **Requirements**: JavaScript enabled, physical keyboard
 
 ## 🎨 Customization

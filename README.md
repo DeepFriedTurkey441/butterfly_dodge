@@ -12,11 +12,17 @@ Navigate your butterfly left and right across the screen to avoid the moving net
 
 ## 🕹️ How to Play
 
-### Movement Controls
+### Movement Controls - Desktop Browser
 - **Left Arrow**: Slow down
 - **Right Arrow**: Speed up  
 - **Spacebar**: Flap wings to fly up (hold to keep flying)
 - **Release Spacebar**: Butterfly descends with gravity
+
+### Movement Controls - mobile Browser
+- **Tap and swipe left**: Slow down
+- **Tap and awipe right**: Speed up  
+- **Tap**: Flap wings to fly up (hold to keep flying)
+- **Do nothing**: Butterfly descends at current speed with gravity
 
 ### Additional Controls
 - **P**: Pause/Resume game

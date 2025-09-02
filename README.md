@@ -18,7 +18,7 @@ Navigate your butterfly left and right across the screen to avoid the moving net
 - **Spacebar**: Flap wings to fly up (hold to keep flying)
 - **Release Spacebar**: Butterfly descends with gravity
 
-### Movement Controls - mobile Browser
+### Movement Controls - Mobile Browser
 - **Tap and swipe left**: Slow down
 - **Tap and awipe right**: Speed up  
 - **Tap**: Flap wings to fly up (hold to keep flying)

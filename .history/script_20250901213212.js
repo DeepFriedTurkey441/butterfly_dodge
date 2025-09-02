@@ -188,14 +188,6 @@ function getScaledSpeed() {
   return BASE_SPEED_LEVELS[speedIndex] * scaleFactor * mobileDampen;
 }
 
-// Vertical limits for net motion; on mobile allow closer to top/bottom
-function getNetVerticalBounds() {
-  const isMobile = ("ontouchstart" in window || navigator.maxTouchPoints > 0);
-  const minY = isMobile ? 24 : 50;
-  const maxY = window.innerHeight - (isMobile ? 60 : 130);
-  return { minY, maxY };
-}
-
 // Initialize with scaled values
 const GRAVITY = getScaledGravity();
 const MAX_FALL_SPEED = getScaledMaxFallSpeed();
@@ -1402,7 +1394,8 @@ function gameLoop() {
       n.y += n.speedY * n.dir;
 
       // Robust bounce with overshoot reflection
-      const { minY, maxY } = getNetVerticalBounds();
+      const minY = 50;
+      const maxY = window.innerHeight - 130;
       if (n.y < minY) {
         // reflect overshoot back into range
         n.y = minY + (minY - n.y);
@@ -1614,7 +1607,8 @@ function startGame() {
     const cx = (i + 1) * window.innerWidth / (NUM_NETS + 1);
     div.style.left = `${cx - 40}px`;
     // Distribute starting Y positions to avoid all nets spawning at same height
-    const { minY, maxY } = getNetVerticalBounds();
+    const minY = 50;
+    const maxY = window.innerHeight - 130;
     const startY = minY + ((maxY - minY) * (i + 1) / (NUM_NETS + 1));
     div.style.top = `${startY}px`;
     div.innerHTML = svgMarkup;
@@ -1838,7 +1832,7 @@ function setupPointerFlapControls() {
     butterfly.style.transform = 'scale(1) rotate(0deg)';
     butterfly.textContent = '\\/' ;
     wingsUp = false;
-    // Swipe-to-speed adjust: right = speed up, left = slow down
+    // Swipe-to-speed-up (right swipe)
     if (!(levelupBox && !levelupBox.hidden) && !(superMsg && !superMsg.hidden) && !(flowerMsg && !flowerMsg.hidden) && !(netMsg && !netMsg.hidden) && !(skillMsg && !skillMsg.hidden)) {
       const endX = (typeof e.clientX === 'number') ? e.clientX : (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientX : 0);
       if (swipeStartX != null) {
@@ -1847,11 +1841,6 @@ function setupPointerFlapControls() {
           let steps = 1;
           if (dx > 110) steps = 2;
           speedIndex = Math.min(BASE_SPEED_LEVELS.length - 1, speedIndex + steps);
-          speed = getScaledSpeed();
-        } else if (dx < -40) {
-          let steps = 1;
-          if (dx < -110) steps = 2;
-          speedIndex = Math.max(0, speedIndex - steps);
           speed = getScaledSpeed();
         }
       }
@@ -1871,7 +1860,6 @@ function setupPointerFlapControls() {
     if (flowerMsg && !flowerMsg.hidden) { flowerMsg.hidden = true; paused = false; setCloudsPaused(false); updateHUD(); return; }
     if (netMsg && !netMsg.hidden) { netMsg.hidden = true; paused = false; setCloudsPaused(false); updateHUD(); return; }
     if (skillMsg && !skillMsg.hidden) { skillMsg.hidden = true; paused = false; setCloudsPaused(false); updateHUD(); return; }
-    if (gameOver && gameOverBox && !gameOverBox.hidden) { restartGame(); return; }
   };
   gameArea.addEventListener('pointerdown', dismissIfVisible, { passive: false });
 }

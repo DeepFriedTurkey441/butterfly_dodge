@@ -26,7 +26,10 @@ const trainingBanner = document.getElementById('training-banner');
 const rotateOverlay = document.getElementById('rotate-overlay');
 const tapStartOverlay = document.getElementById('tap-start');
 const mobileStartBtn = document.getElementById('mobile-start');
-// Speed bar removed
+const speedBar = document.getElementById('speed-bar');
+const speedIncBtn = document.getElementById('speed-inc');
+const speedDecBtn = document.getElementById('speed-dec');
+const speedReadout = document.getElementById('speed-readout');
 function positionSuperTimer() {
   if (!superTimer) return;
   // Place just to the left of the butterfly
@@ -147,9 +150,6 @@ let spacePressed = false;
 let inTrainingMode = false; // true when running Learn-to-Fly mode
 let isMobileSession = false; // set when tap-to-start is used
 let preventDoubleTapUntil = 0;
-// Mobile gesture control helpers
-let swipeStartX = null;           // starting X for swipe-to-speed
-let nextDescentSlowAt = null;     // next timestamp to auto-slow during descent
 
 // Dynamic physics scaling based on screen size
 function getScreenScaleFactor() {
@@ -186,14 +186,6 @@ function getScaledSpeed() {
   // If mobile, start slower: dampen scale to avoid very fast nets
   const mobileDampen = ("ontouchstart" in window || navigator.maxTouchPoints > 0) ? 0.5 : 1.0;
   return BASE_SPEED_LEVELS[speedIndex] * scaleFactor * mobileDampen;
-}
-
-// Vertical limits for net motion; on mobile allow closer to top/bottom
-function getNetVerticalBounds() {
-  const isMobile = ("ontouchstart" in window || navigator.maxTouchPoints > 0);
-  const minY = isMobile ? 24 : 50;
-  const maxY = window.innerHeight - (isMobile ? 60 : 130);
-  return { minY, maxY };
 }
 
 // Initialize with scaled values
@@ -1402,7 +1394,8 @@ function gameLoop() {
       n.y += n.speedY * n.dir;
 
       // Robust bounce with overshoot reflection
-      const { minY, maxY } = getNetVerticalBounds();
+      const minY = 50;
+      const maxY = window.innerHeight - 130;
       if (n.y < minY) {
         // reflect overshoot back into range
         n.y = minY + (minY - n.y);
@@ -1614,7 +1607,8 @@ function startGame() {
     const cx = (i + 1) * window.innerWidth / (NUM_NETS + 1);
     div.style.left = `${cx - 40}px`;
     // Distribute starting Y positions to avoid all nets spawning at same height
-    const { minY, maxY } = getNetVerticalBounds();
+    const minY = 50;
+    const maxY = window.innerHeight - 130;
     const startY = minY + ((maxY - minY) * (i + 1) / (NUM_NETS + 1));
     div.style.top = `${startY}px`;
     div.innerHTML = svgMarkup;
@@ -1734,7 +1728,10 @@ function showRotateGateIfNeeded() {
   if (tapStartOverlay) tapStartOverlay.hidden = !landscape;
   // Ensure game area is visible when in landscape so overlays and HUD can render
   if (landscape && gameArea) gameArea.hidden = false;
-  // Speed bar removed
+  // Show speed bar for mobile when landscape
+  if (landscape && speedBar && ("ontouchstart" in window || navigator.maxTouchPoints > 0)) {
+    speedBar.hidden = false;
+  }
 }
 
 function enableTouchLocks() {
@@ -1789,7 +1786,8 @@ function attachTapToStart() {
   document.body.addEventListener('pointerdown', bodyStart, { passive: false });
   document.body.addEventListener('click', bodyStart, { passive: false });
   document.body.addEventListener('touchstart', bodyStart, { passive: false });
-  // Speed bar removed
+  // Initialize speed bar controls for mobile
+  setupSpeedBarControls();
 }
 
 function setupPointerFlapControls() {
@@ -1827,9 +1825,6 @@ function setupPointerFlapControls() {
         wingsUp = !wingsUp;
       }, 200);
     }
-    // Track swipe for speed control and cancel descent slow schedule while pressing
-    swipeStartX = (typeof e.clientX === 'number') ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
-    nextDescentSlowAt = null;
   };
   const up = (e) => {
     e.preventDefault();
@@ -1838,25 +1833,6 @@ function setupPointerFlapControls() {
     butterfly.style.transform = 'scale(1) rotate(0deg)';
     butterfly.textContent = '\\/' ;
     wingsUp = false;
-    // Swipe-to-speed adjust: right = speed up, left = slow down
-    if (!(levelupBox && !levelupBox.hidden) && !(superMsg && !superMsg.hidden) && !(flowerMsg && !flowerMsg.hidden) && !(netMsg && !netMsg.hidden) && !(skillMsg && !skillMsg.hidden)) {
-      const endX = (typeof e.clientX === 'number') ? e.clientX : (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientX : 0);
-      if (swipeStartX != null) {
-        const dx = endX - swipeStartX;
-        if (dx > 40) {
-          let steps = 1;
-          if (dx > 110) steps = 2;
-          speedIndex = Math.min(BASE_SPEED_LEVELS.length - 1, speedIndex + steps);
-          speed = getScaledSpeed();
-        } else if (dx < -40) {
-          let steps = 1;
-          if (dx < -110) steps = 2;
-          speedIndex = Math.max(0, speedIndex - steps);
-          speed = getScaledSpeed();
-        }
-      }
-    }
-    swipeStartX = null;
   };
   // Attach on the entire game area
   gameArea.addEventListener('pointerdown', down, { passive: false });
@@ -1871,7 +1847,6 @@ function setupPointerFlapControls() {
     if (flowerMsg && !flowerMsg.hidden) { flowerMsg.hidden = true; paused = false; setCloudsPaused(false); updateHUD(); return; }
     if (netMsg && !netMsg.hidden) { netMsg.hidden = true; paused = false; setCloudsPaused(false); updateHUD(); return; }
     if (skillMsg && !skillMsg.hidden) { skillMsg.hidden = true; paused = false; setCloudsPaused(false); updateHUD(); return; }
-    if (gameOver && gameOverBox && !gameOverBox.hidden) { restartGame(); return; }
   };
   gameArea.addEventListener('pointerdown', dismissIfVisible, { passive: false });
 }
@@ -1957,4 +1932,40 @@ function activateSuper(durationMs) {
   }
 }
 
-// Speed bar helper functions removed
+function updateSpeedReadout() {
+  if (!speedReadout) return;
+  const levels = BASE_SPEED_LEVELS.length;
+  speedReadout.textContent = `Speed ${speedIndex + 1}/${levels}`;
+}
+
+function setupSpeedBarControls() {
+  if (!(speedBar && speedIncBtn && speedDecBtn)) return;
+  speedBar.hidden = !("ontouchstart" in window || navigator.maxTouchPoints > 0);
+  const step = (dir) => {
+    if (dir > 0) {
+      speedIndex = Math.min(BASE_SPEED_LEVELS.length - 1, speedIndex + 1);
+    } else {
+      speedIndex = Math.max(0, speedIndex - 1);
+    }
+    speed = getScaledSpeed();
+    updateSpeedReadout();
+  };
+  let incTimer = null, decTimer = null;
+  const startHoldInc = (e) => { e.preventDefault(); e.stopPropagation(); step(1); incTimer = setInterval(() => step(1), 150); };
+  const startHoldDec = (e) => { e.preventDefault(); e.stopPropagation(); step(-1); decTimer = setInterval(() => step(-1), 150); };
+  const endHold = (e) => { e.preventDefault(); e.stopPropagation(); clearInterval(incTimer); clearInterval(decTimer); incTimer = decTimer = null; };
+  // Prevent bubbling to flap
+  const swallow = (e) => { e.preventDefault(); e.stopPropagation(); };
+  speedBar.addEventListener('pointerdown', swallow, { passive: false });
+  speedBar.addEventListener('touchstart', swallow, { passive: false });
+  speedIncBtn.addEventListener('pointerdown', startHoldInc, { passive: false });
+  speedIncBtn.addEventListener('touchstart', startHoldInc, { passive: false });
+  speedDecBtn.addEventListener('pointerdown', startHoldDec, { passive: false });
+  speedDecBtn.addEventListener('touchstart', startHoldDec, { passive: false });
+  ['pointerup','pointercancel','pointerleave','touchend','touchcancel'].forEach(evt => {
+    speedIncBtn.addEventListener(evt, endHold, { passive: false });
+    speedDecBtn.addEventListener(evt, endHold, { passive: false });
+    speedBar.addEventListener(evt, endHold, { passive: false });
+  });
+  updateSpeedReadout();
+}

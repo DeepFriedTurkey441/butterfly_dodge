@@ -70,7 +70,37 @@ body {
   transition: transform 120ms ease;
 }
 
-/* removed mobile speed bar */
+/* Mobile speed bar */
+.mobile-only-ui { display: none; }
+@media (pointer: coarse), (hover: none) {
+  .mobile-only-ui { display: flex; }
+}
+#speed-bar {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(4px);
+  z-index: 12000;
+  touch-action: none;
+}
+#speed-bar[hidden] { display: none !important; }
+#speed-bar button {
+  width: 64px; height: 40px;
+  font-size: 28px;
+  border: none; border-radius: 10px;
+  background: rgba(255,255,255,0.85);
+}
+#speed-readout {
+  flex: 1;
+  text-align: center;
+  color: #fff;
+  font-weight: 600;
+}
 
 /* Super timer badge next to butterfly */
 #super-timer {

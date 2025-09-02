@@ -70,8 +70,6 @@ body {
   transition: transform 120ms ease;
 }
 
-/* removed mobile speed bar */
-
 /* Super timer badge next to butterfly */
 #super-timer {
   position: absolute;

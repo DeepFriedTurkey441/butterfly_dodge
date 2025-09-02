@@ -31,16 +31,10 @@ body {
 
 .mobile-hint { display: none; }
 .desktop-hint { display: block; }
-.mobile-only { display: none; }
-.desktop-only { display: inline; }
 @media (pointer: coarse), (hover: none) {
   .mobile-hint { display: block; }
   .desktop-hint { display: none; }
-  .mobile-only { display: inline; }
-  .desktop-only { display: none; }
 }
-
-/* Remove old continue-hint logic */
 
 #mobile-start {
   font-size: 1em;
@@ -69,8 +63,6 @@ body {
   transform-origin: 50% 50%;
   transition: transform 120ms ease;
 }
-
-/* removed mobile speed bar */
 
 /* Super timer badge next to butterfly */
 #super-timer {

@@ -150,12 +150,17 @@
     </div>
     <div id="game-over" hidden>
       <p>Game Over!</p>
-      <p class="desktop-only">Play again? (Y/N)</p>
-      <p class="mobile-only">Tap to play again</p>
+      <p>Play again? (Y/N)</p>
       <div id="leaderboard" aria-live="polite"></div>
     </div>
     <div id="pause-message" hidden>Game Paused</div>
     <div id="butterfly"></div>
+    <!-- Mobile speed control bar -->
+    <div id="speed-bar" class="mobile-only-ui" hidden>
+      <button id="speed-dec" aria-label="Slow down" tabindex="-1">−</button>
+      <div id="speed-readout" aria-live="polite">Speed</div>
+      <button id="speed-inc" aria-label="Speed up" tabindex="-1">+</button>
+    </div>
   </div>
 
   <script src="script.js"></script>

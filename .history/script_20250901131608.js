@@ -25,8 +25,6 @@ const skillMsg = document.getElementById('skillmsg');
 const trainingBanner = document.getElementById('training-banner');
 const rotateOverlay = document.getElementById('rotate-overlay');
 const tapStartOverlay = document.getElementById('tap-start');
-const mobileStartBtn = document.getElementById('mobile-start');
-// Speed bar removed
 function positionSuperTimer() {
   if (!superTimer) return;
   // Place just to the left of the butterfly
@@ -41,8 +39,8 @@ let running = false;
 
 // Net parameters
 const NUM_NETS = 6;
-const BASE_NET_SPEED = ("ontouchstart" in window || navigator.maxTouchPoints > 0) ? 0.4 : 1;
-const MAX_NET_SPEED = ("ontouchstart" in window || navigator.maxTouchPoints > 0) ? 4.0 : 8;
+const BASE_NET_SPEED = 1;
+const MAX_NET_SPEED = 8;
 const SPEED_INCREMENT = (MAX_NET_SPEED - BASE_NET_SPEED) / (NUM_NETS - 1);
 
 // Net SVG (butterfly net: hoop + mesh + handle). Preserves size and red color
@@ -147,9 +145,6 @@ let spacePressed = false;
 let inTrainingMode = false; // true when running Learn-to-Fly mode
 let isMobileSession = false; // set when tap-to-start is used
 let preventDoubleTapUntil = 0;
-// Mobile gesture control helpers
-let swipeStartX = null;           // starting X for swipe-to-speed
-let nextDescentSlowAt = null;     // next timestamp to auto-slow during descent
 
 // Dynamic physics scaling based on screen size
 function getScreenScaleFactor() {
@@ -165,35 +160,22 @@ function getScreenScaleFactor() {
 
 function getScaledGravity() {
   const scaleFactor = getScreenScaleFactor();
-  const mobileDampen = ("ontouchstart" in window || navigator.maxTouchPoints > 0) ? 0.25 : 1.0;
-  return 0.2 * scaleFactor * mobileDampen; // slower gravity on mobile
+  return 0.2 * scaleFactor;
 }
 
 function getScaledMaxFallSpeed() {
   const scaleFactor = getScreenScaleFactor();
-  const mobileDampen = ("ontouchstart" in window || navigator.maxTouchPoints > 0) ? 0.35 : 1.0;
-  return 5 * scaleFactor * mobileDampen;
+  return 5 * scaleFactor;
 }
 
 function getScaledMaxRiseSpeed() {
   const scaleFactor = getScreenScaleFactor();
-  const mobileDampen = ("ontouchstart" in window || navigator.maxTouchPoints > 0) ? 0.4 : 1.0;
-  return -5 * scaleFactor * mobileDampen;
+  return -5 * scaleFactor;
 }
 
 function getScaledSpeed() {
   const scaleFactor = getScreenScaleFactor();
-  // If mobile, start slower: dampen scale to avoid very fast nets
-  const mobileDampen = ("ontouchstart" in window || navigator.maxTouchPoints > 0) ? 0.5 : 1.0;
-  return BASE_SPEED_LEVELS[speedIndex] * scaleFactor * mobileDampen;
-}
-
-// Vertical limits for net motion; on mobile allow closer to top/bottom
-function getNetVerticalBounds() {
-  const isMobile = ("ontouchstart" in window || navigator.maxTouchPoints > 0);
-  const minY = isMobile ? 24 : 50;
-  const maxY = window.innerHeight - (isMobile ? 60 : 130);
-  return { minY, maxY };
+  return BASE_SPEED_LEVELS[speedIndex] * scaleFactor;
 }
 
 // Initialize with scaled values
@@ -224,18 +206,6 @@ function ensureAudioContext() {
 }
 document.addEventListener('pointerdown', ensureAudioContext, { passive: true });
 document.addEventListener('keydown', ensureAudioContext, { passive: true });
-
-// Fullscreen helpers (best-effort, platform-safe)
-function requestFullscreenIfPossible() {
-  const el = document.documentElement;
-  const fn = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
-  try { fn && fn.call(el); } catch (_) {}
-}
-function exitFullscreenIfPossible() {
-  const d = document;
-  const fn = d.exitFullscreen || d.webkitExitFullscreen || d.msExitFullscreen;
-  try { fn && fn.call(d); } catch (_) {}
-}
 
 function playTone({ frequency = 880, duration = 0.12, type = 'sine', volume = 0.2 }) {
   if (muted || !audioCtx) return;
@@ -523,9 +493,6 @@ function setupDeveloperPanelEvents() {
         const svgEl = div.querySelector('svg');
 
         let speedY = BASE_NET_SPEED + i * SPEED_INCREMENT;
-        if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
-          speedY *= 0.45;
-        }
         if (i >= NUM_NETS - 3) speedY *= 0.7;
         
         // Level 5+ oscillating pendulum properties (initially disabled)
@@ -724,13 +691,6 @@ document.addEventListener('keydown', e => {
     updateHUD();
     return;
   }
-  // Mobile tap-to-continue equivalents for overlays
-  if (("ontouchstart" in window || navigator.maxTouchPoints > 0) && levelupBox && !levelupBox.hidden && (e.key === ' ' || e.key === 'Enter')) {
-    levelupBox.hidden = true;
-    paused = false;
-    updateHUD();
-    return;
-  }
   // Exit training mode with Enter -> start normal game
   if (trainingBanner && !trainingBanner.hidden && e.key === 'Enter') {
     exitTrainingAndStartRealGame();
@@ -749,12 +709,6 @@ document.addEventListener('keydown', e => {
     updateHUD();
     return;
   }
-  if (("ontouchstart" in window || navigator.maxTouchPoints > 0) && superMsg && !superMsg.hidden) {
-    superMsg.hidden = true;
-    paused = false;
-    updateHUD();
-    return;
-  }
   // Resume from flower message overlay with Enter (suppressed entirely in dev mode)
   if (developerMode && flowerMsg && !flowerMsg.hidden) {
     flowerMsg.hidden = true;
@@ -764,13 +718,6 @@ document.addEventListener('keydown', e => {
     return;
   }
   if (flowerMsg && !flowerMsg.hidden && e.key === 'Enter') {
-    flowerMsg.hidden = true;
-    paused = false;
-    setCloudsPaused(false);
-    updateHUD();
-    return;
-  }
-  if (("ontouchstart" in window || navigator.maxTouchPoints > 0) && flowerMsg && !flowerMsg.hidden) {
     flowerMsg.hidden = true;
     paused = false;
     setCloudsPaused(false);
@@ -792,13 +739,6 @@ document.addEventListener('keydown', e => {
     updateHUD();
     return;
   }
-  if (("ontouchstart" in window || navigator.maxTouchPoints > 0) && netMsg && !netMsg.hidden) {
-    netMsg.hidden = true;
-    paused = false;
-    setCloudsPaused(false);
-    updateHUD();
-    return;
-  }
   // Resume from skill message overlay with Enter (suppressed entirely in dev mode)
   if (developerMode && skillMsg && !skillMsg.hidden) {
     skillMsg.hidden = true;
@@ -814,27 +754,15 @@ document.addEventListener('keydown', e => {
     updateHUD();
     return;
   }
-  if (("ontouchstart" in window || navigator.maxTouchPoints > 0) && skillMsg && !skillMsg.hidden) {
-    skillMsg.hidden = true;
-    paused = false;
-    setCloudsPaused(false);
-    updateHUD();
-    return;
-  }
 
   switch (e.key) {
     case 'ArrowRight':
-      // In initial mobile scope, ignore keyboard speed on mobile sessions
-      if (!isMobileSession) {
-        speedIndex = Math.min(BASE_SPEED_LEVELS.length - 1, speedIndex + 1);
-        speed = getScaledSpeed();
-      }
+      speedIndex = Math.min(BASE_SPEED_LEVELS.length - 1, speedIndex + 1);
+      speed = getScaledSpeed();
       break;
     case 'ArrowLeft':
-      if (!isMobileSession) {
-        speedIndex = Math.max(0, speedIndex - 1);
-        speed = getScaledSpeed();
-      }
+      speedIndex = Math.max(0, speedIndex - 1);
+      speed = getScaledSpeed();
       break;
     case ' ':
       if (!spacePressed) {
@@ -882,8 +810,6 @@ document.addEventListener('keydown', e => {
       updateHUD();
       stopMusic();
       stopFlap();
-      if (isMobileSession) exitFullscreenIfPossible();
-      teardownMobileSession();
       break;
   }
 });
@@ -909,7 +835,6 @@ function exitTrainingAndStartRealGame() {
   gameStarted = true;
   level = 1;
   startGame();
-  // If mobile session was active, keep touch locks; end restores happen via normal game over
 }
 
 // Collision detection
@@ -1402,7 +1327,8 @@ function gameLoop() {
       n.y += n.speedY * n.dir;
 
       // Robust bounce with overshoot reflection
-      const { minY, maxY } = getNetVerticalBounds();
+      const minY = 50;
+      const maxY = window.innerHeight - 130;
       if (n.y < minY) {
         // reflect overshoot back into range
         n.y = minY + (minY - n.y);
@@ -1614,7 +1540,8 @@ function startGame() {
     const cx = (i + 1) * window.innerWidth / (NUM_NETS + 1);
     div.style.left = `${cx - 40}px`;
     // Distribute starting Y positions to avoid all nets spawning at same height
-    const { minY, maxY } = getNetVerticalBounds();
+    const minY = 50;
+    const maxY = window.innerHeight - 130;
     const startY = minY + ((maxY - minY) * (i + 1) / (NUM_NETS + 1));
     div.style.top = `${startY}px`;
     div.innerHTML = svgMarkup;
@@ -1627,9 +1554,6 @@ function startGame() {
     const svgEl = div.querySelector('svg');
 
     let speedY = BASE_NET_SPEED + i * SPEED_INCREMENT;
-    if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
-      speedY *= 0.45;
-    }
     if (i >= NUM_NETS - 3) speedY *= 0.7;
     
     // Level 5+ oscillating pendulum properties (initially disabled)
@@ -1654,7 +1578,7 @@ function startGame() {
 
   // Reset butterfly physics
   bx = 0;
-  by = Math.max(40, Math.min(window.innerHeight - 70, window.innerHeight / 2));
+  by = window.innerHeight / 2;
   dy = 0;
   speedIndex = 0;
   speed = getScaledSpeed();
@@ -1694,9 +1618,7 @@ function startGame() {
   updateNetScales();
 
   // Clear and respawn flowers
-  try {
-    flowers.forEach(f => f && f.remove());
-  } catch (_) {}
+  flowers.forEach(f => f && f.remove());
   flowers.length = 0;
   spawnFlowers();
 
@@ -1717,24 +1639,15 @@ function startGame() {
 
 // --- Mobile helpers ---
 function isLandscape() {
-  // Prefer media query when available (more reliable on iOS toolbars)
-  if (window.matchMedia) {
-    const mq = window.matchMedia('(orientation: landscape)');
-    if (mq && typeof mq.matches === 'boolean') return mq.matches;
-  }
   return window.innerWidth > window.innerHeight;
 }
 
 function showRotateGateIfNeeded() {
   if (!rotateOverlay) return;
-  const landscape = isLandscape();
-  // Show rotate only when not landscape
-  rotateOverlay.hidden = landscape;
-  // Show tap start only when landscape
-  if (tapStartOverlay) tapStartOverlay.hidden = !landscape;
-  // Ensure game area is visible when in landscape so overlays and HUD can render
-  if (landscape && gameArea) gameArea.hidden = false;
-  // Speed bar removed
+  const needRotate = !isLandscape();
+  rotateOverlay.hidden = !needRotate;
+  // While rotate gate is up, hide tap start to avoid accidental starts
+  if (tapStartOverlay) tapStartOverlay.hidden = true;
 }
 
 function enableTouchLocks() {
@@ -1748,24 +1661,16 @@ function disableTouchLocks() {
 function attachTapToStart() {
   if (!tapStartOverlay) return;
   isMobileSession = true;
-  // Ensure the overlay is actually visible (its parent must not be hidden)
-  if (instructionsBox) {
-    instructionsBox.hidden = true;
-    instructionsBox.style.display = 'none';
-  }
-  if (gameArea) gameArea.hidden = false;
   tapStartOverlay.hidden = false;
   showRotateGateIfNeeded();
   const onResize = () => showRotateGateIfNeeded();
   window.addEventListener('resize', onResize);
-  window.addEventListener('orientationchange', onResize);
   // One-time start handler
   const startHandler = (e) => {
-    if (!isLandscape()) { showRotateGateIfNeeded(); return; } // enforce rotate first
+    if (!isLandscape()) return; // enforce rotate first
     e.preventDefault();
     tapStartOverlay.hidden = true;
     enableTouchLocks();
-    requestFullscreenIfPossible();
     // Begin game at slowest speed; use pointer for flap
     gameArea.hidden = false;
     gameStarted = true;
@@ -1774,22 +1679,9 @@ function attachTapToStart() {
     // Replace keyboard flap with pointer flap for mobile session
     setupPointerFlapControls();
     tapStartOverlay.removeEventListener('pointerdown', startHandler);
-    tapStartOverlay.removeEventListener('click', startHandler);
-    tapStartOverlay.removeEventListener('touchstart', startHandler);
     window.removeEventListener('resize', onResize);
-    window.removeEventListener('orientationchange', onResize);
   };
   tapStartOverlay.addEventListener('pointerdown', startHandler, { passive: false });
-  tapStartOverlay.addEventListener('click', startHandler, { passive: false });
-  tapStartOverlay.addEventListener('touchstart', startHandler, { passive: false });
-  // Global fallback: start from anywhere if conditions are right
-  const bodyStart = (e) => {
-    if (!gameStarted && isLandscape()) startHandler(e);
-  };
-  document.body.addEventListener('pointerdown', bodyStart, { passive: false });
-  document.body.addEventListener('click', bodyStart, { passive: false });
-  document.body.addEventListener('touchstart', bodyStart, { passive: false });
-  // Speed bar removed
 }
 
 function setupPointerFlapControls() {
@@ -1807,73 +1699,17 @@ function setupPointerFlapControls() {
     e.preventDefault();
     guardDoubleTap(e);
     spacePressed = true;
-    // Mobile flap impulse + start wing animation
-    const scaleFactor = getScreenScaleFactor();
-    dy = Math.max(getScaledMaxRiseSpeed(), dy - 3.0 * scaleFactor);
-    butterfly.style.transform = 'scale(1.1) rotate(-6deg)';
-    butterfly.textContent = '/\\\u0008'.slice(0,2).replace('\u0008','');
-    butterfly.textContent = '/\\';
-    wingsUp = true;
-    clearTimeout(singleFlap);
-    singleFlap = setTimeout(() => {
-      butterfly.style.transform = 'scale(1) rotate(0deg)';
-      butterfly.textContent = '\\/' ;
-      wingsUp = false;
-    }, 200);
-    if (!flapInt) {
-      flapInt = setInterval(() => {
-        butterfly.style.transform = wingsUp ? 'scale(1) rotate(0deg)' : 'scale(1.1) rotate(-6deg)';
-        butterfly.textContent = wingsUp ? '\\/' : '/\\';
-        wingsUp = !wingsUp;
-      }, 200);
-    }
-    // Track swipe for speed control and cancel descent slow schedule while pressing
-    swipeStartX = (typeof e.clientX === 'number') ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
-    nextDescentSlowAt = null;
   };
   const up = (e) => {
     e.preventDefault();
     spacePressed = false;
     stopFlap();
-    butterfly.style.transform = 'scale(1) rotate(0deg)';
-    butterfly.textContent = '\\/' ;
-    wingsUp = false;
-    // Swipe-to-speed adjust: right = speed up, left = slow down
-    if (!(levelupBox && !levelupBox.hidden) && !(superMsg && !superMsg.hidden) && !(flowerMsg && !flowerMsg.hidden) && !(netMsg && !netMsg.hidden) && !(skillMsg && !skillMsg.hidden)) {
-      const endX = (typeof e.clientX === 'number') ? e.clientX : (e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientX : 0);
-      if (swipeStartX != null) {
-        const dx = endX - swipeStartX;
-        if (dx > 40) {
-          let steps = 1;
-          if (dx > 110) steps = 2;
-          speedIndex = Math.min(BASE_SPEED_LEVELS.length - 1, speedIndex + steps);
-          speed = getScaledSpeed();
-        } else if (dx < -40) {
-          let steps = 1;
-          if (dx < -110) steps = 2;
-          speedIndex = Math.max(0, speedIndex - steps);
-          speed = getScaledSpeed();
-        }
-      }
-    }
-    swipeStartX = null;
   };
   // Attach on the entire game area
   gameArea.addEventListener('pointerdown', down, { passive: false });
   gameArea.addEventListener('pointerup', up, { passive: false });
   gameArea.addEventListener('pointercancel', up, { passive: false });
   gameArea.addEventListener('pointerleave', up, { passive: false });
-
-  // Dismiss overlays on tap anywhere (mobile)
-  const dismissIfVisible = (e) => {
-    if (levelupBox && !levelupBox.hidden) { levelupBox.hidden = true; paused = false; updateHUD(); return; }
-    if (superMsg && !superMsg.hidden) { superMsg.hidden = true; paused = false; updateHUD(); return; }
-    if (flowerMsg && !flowerMsg.hidden) { flowerMsg.hidden = true; paused = false; setCloudsPaused(false); updateHUD(); return; }
-    if (netMsg && !netMsg.hidden) { netMsg.hidden = true; paused = false; setCloudsPaused(false); updateHUD(); return; }
-    if (skillMsg && !skillMsg.hidden) { skillMsg.hidden = true; paused = false; setCloudsPaused(false); updateHUD(); return; }
-    if (gameOver && gameOverBox && !gameOverBox.hidden) { restartGame(); return; }
-  };
-  gameArea.addEventListener('pointerdown', dismissIfVisible, { passive: false });
 }
 
 function teardownMobileSession() {
@@ -1882,30 +1718,6 @@ function teardownMobileSession() {
   if (tapStartOverlay) tapStartOverlay.hidden = true;
   if (rotateOverlay) rotateOverlay.hidden = true;
 }
-
-// Auto-show tap-to-start on touch-capable devices when page loads
-function shouldUseMobileFlow() {
-  const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-  const coarse = window.matchMedia && matchMedia('(pointer: coarse)').matches;
-  const ua = navigator.userAgent || '';
-  const mobileUA = /iPhone|iPad|iPod|Android|Mobile/i.test(ua);
-  return isTouch || coarse || mobileUA;
-}
-
-function tryAttachTapStartIfMobile() {
-  if (shouldUseMobileFlow()) {
-    attachTapToStart();
-  }
-}
-
-document.addEventListener('DOMContentLoaded', tryAttachTapStartIfMobile);
-window.addEventListener('load', tryAttachTapStartIfMobile);
-// Safety: if instructions still visible shortly after load on mobile, force attach
-setTimeout(() => {
-  if (shouldUseMobileFlow() && instructionsBox && !instructionsBox.hidden) {
-    attachTapToStart();
-  }
-}, 1200);
 
 function restartGame() {
   // Reset player name so it gets prompted again for the new game
@@ -1956,5 +1768,3 @@ function activateSuper(durationMs) {
     }
   }
 }
-
-// Speed bar helper functions removed

@@ -1088,8 +1088,13 @@ function gameLoop() {
     checkFlowers();
 
     nets.forEach(n => {
+      // Use actual rendered height (includes CSS transform scale) for bounds
+      const netHeight = n.el.getBoundingClientRect().height;
       n.y += n.speedY * n.dir;
-      if (n.y < 50 || n.y > window.innerHeight - 130) n.dir *= -1;
+      const minY = 5;
+      const maxY = Math.max(minY, window.innerHeight - netHeight - 5);
+      if (n.y < minY) { n.y = minY; n.dir *= -1; }
+      else if (n.y > maxY) { n.y = maxY; n.dir *= -1; }
       n.el.style.top = `${n.y}px`;
 
       const b = butterfly.getBoundingClientRect();

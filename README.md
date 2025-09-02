@@ -24,7 +24,7 @@ Navigate your butterfly left and right across the screen to avoid the moving net
 - **Tap**: Flap wings to fly up (hold to keep flying)
 - **Do nothing**: Butterfly descends at current speed with gravity
 
-### Additional Controls
+### Additional Controls - Desktop Browser
 - **P**: Pause/Resume game
 - **Q**: Quit to game over
 - **Enter**: Start game from instructions
@@ -58,7 +58,7 @@ Navigate your butterfly left and right across the screen to avoid the moving net
 - **Sound effects** - Toggleable with volume control
 - **Visual feedback** - Screen shake, flower pop animations
 
-## 🐛 Developer Mode
+## 🐛 Developer Mode -Dektop Browser Only
 
 **New in v2.1.0!** Press **Shift+M** to toggle developer mode on/off.
 
@@ -98,7 +98,7 @@ This ensures consistent challenge across all devices!
 - **Skill score**: Running average of flowers collected per left→right pass
 - **Super mode**: Activated when skill reaches 8.000+ (Level 4+)
 
-## 🏆 Leaderboard
+## 🏆 Leaderboard - Desktop Browser Only
 
 - **Global leaderboard** - Top 10 highest levels achieved
 - **Name entry** - Enter your name for each playthrough

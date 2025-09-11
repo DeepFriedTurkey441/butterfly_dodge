@@ -1887,7 +1887,6 @@ function attachTapToStart() {
     gameArea.hidden = false;
     gameStarted = true;
     unlockAudioContext();
-    try { playTone({ frequency: 523, duration: 0.05, type: 'sine', volume: 0.05 }); } catch(_) {}
     startMusic();
     startGame();
     // Replace keyboard flap with pointer flap for mobile session

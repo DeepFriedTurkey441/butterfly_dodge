@@ -230,47 +230,6 @@ function ensureAudioContext() {
 document.addEventListener('pointerdown', ensureAudioContext, { passive: true });
 document.addEventListener('keydown', ensureAudioContext, { passive: true });
 
-// --- Mobile audio unlock helpers (iOS/Android autoplay policies) ---
-let audioUnlocked = false;
-let audioUnlockHandlersAttached = false;
-async function unlockAudioContext() {
-  ensureAudioContext();
-  if (!audioCtx) return;
-  try {
-    if (audioCtx.state === 'suspended') {
-      await audioCtx.resume();
-    }
-    // Play a one-shot silent buffer to trip iOS unlock reliably
-    const buffer = audioCtx.createBuffer(1, 1, 22050);
-    const src = audioCtx.createBufferSource();
-    src.buffer = buffer;
-    const gain = audioCtx.createGain();
-    gain.gain.value = 0.00001;
-    src.connect(gain).connect(audioCtx.destination);
-    src.start(0);
-    // Allow microtask to flush; after start(), most browsers consider audio unlocked
-    audioUnlocked = true;
-  } catch (_) {
-    // Ignore; will retry on next interaction
-  }
-}
-function attachAudioUnlockHandlersOnce() {
-  if (audioUnlockHandlersAttached) return;
-  audioUnlockHandlersAttached = true;
-  const tryUnlock = () => { if (!audioUnlocked) unlockAudioContext(); };
-  ['pointerdown','touchstart','click','keydown'].forEach(evt => {
-    document.addEventListener(evt, tryUnlock, { passive: true, capture: true });
-  });
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-      tryUnlock();
-    }
-  });
-}
-// Attach early and also on DOM ready as a fallback
-attachAudioUnlockHandlersOnce();
-document.addEventListener('DOMContentLoaded', attachAudioUnlockHandlersOnce);
-
 // Fullscreen helpers (best-effort, platform-safe)
 function requestFullscreenIfPossible() {
   const el = document.documentElement;

@@ -192,12 +192,8 @@ function getScaledSpeed() {
 // Vertical limits for net motion; on mobile allow closer to top/bottom
 function getNetVerticalBounds() {
   const isMobile = ("ontouchstart" in window || navigator.maxTouchPoints > 0);
-  // Let nets reach essentially to the very top and bottom, with a tiny gutter
-  // to avoid subpixel clipping and HUD overlap on some devices.
-  const topGutter = isMobile ? 2 : 2;
-  const bottomGutter = isMobile ? 2 : 2;
-  const minY = 0 + topGutter;
-  const maxY = window.innerHeight - bottomGutter;
+  const minY = isMobile ? 24 : 50;
+  const maxY = window.innerHeight - (isMobile ? 60 : 130);
   return { minY, maxY };
 }
 
@@ -229,47 +225,6 @@ function ensureAudioContext() {
 }
 document.addEventListener('pointerdown', ensureAudioContext, { passive: true });
 document.addEventListener('keydown', ensureAudioContext, { passive: true });
-
-// --- Mobile audio unlock helpers (iOS/Android autoplay policies) ---
-let audioUnlocked = false;
-let audioUnlockHandlersAttached = false;
-async function unlockAudioContext() {
-  ensureAudioContext();
-  if (!audioCtx) return;
-  try {
-    if (audioCtx.state === 'suspended') {
-      await audioCtx.resume();
-    }
-    // Play a one-shot silent buffer to trip iOS unlock reliably
-    const buffer = audioCtx.createBuffer(1, 1, 22050);
-    const src = audioCtx.createBufferSource();
-    src.buffer = buffer;
-    const gain = audioCtx.createGain();
-    gain.gain.value = 0.00001;
-    src.connect(gain).connect(audioCtx.destination);
-    src.start(0);
-    // Allow microtask to flush; after start(), most browsers consider audio unlocked
-    audioUnlocked = true;
-  } catch (_) {
-    // Ignore; will retry on next interaction
-  }
-}
-function attachAudioUnlockHandlersOnce() {
-  if (audioUnlockHandlersAttached) return;
-  audioUnlockHandlersAttached = true;
-  const tryUnlock = () => { if (!audioUnlocked) unlockAudioContext(); };
-  ['pointerdown','touchstart','click','keydown'].forEach(evt => {
-    document.addEventListener(evt, tryUnlock, { passive: true, capture: true });
-  });
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
-      tryUnlock();
-    }
-  });
-}
-// Attach early and also on DOM ready as a fallback
-attachAudioUnlockHandlersOnce();
-document.addEventListener('DOMContentLoaded', attachAudioUnlockHandlersOnce);
 
 // Fullscreen helpers (best-effort, platform-safe)
 function requestFullscreenIfPossible() {
@@ -578,8 +533,9 @@ function setupDeveloperPanelEvents() {
         div.className = 'net';
         const cx = (i + 1) * window.innerWidth / (NUM_NETS + 1);
         div.style.left = `${cx - 40}px`;
-        // Distribute starting Y positions using the same vertical bounds as runtime
-        const { minY, maxY } = getNetVerticalBounds();
+        // Distribute starting Y positions to avoid same-height spawn
+        const minY = 50;
+        const maxY = window.innerHeight - 130;
         const startY = minY + ((maxY - minY) * (i + 1) / (NUM_NETS + 1));
         div.style.top = `${startY}px`;
         div.innerHTML = svgMarkup;
@@ -1471,42 +1427,19 @@ function gameLoop() {
       // Vertical movement (all levels)
       n.y += n.speedY * n.dir;
 
-      // Apply tentative position so we can measure hoop vs. container
-      n.el.style.top = `${n.y}px`;
-
-      // Compute container-relative hoop offsets to enforce edge coverage
-      const TOP_GUTTER = 2;
-      const BOTTOM_GUTTER = 2;
-      const m = n.el.getBoundingClientRect();
-      let minYContainer = 0;
-      let maxYContainer = window.innerHeight - (m.height || 0);
-      if (n.svg) {
-        const circle = n.svg.querySelector('#hoop') || n.svg.querySelector('circle');
-        if (circle) {
-          const cb = circle.getBoundingClientRect();
-          const offsetHoopFromTop = cb.top - m.top;   // pixels from container top to hoop top
-          const hoopHeight = cb.height;
-          // Constrain so the hoop itself can reach near the screen edges
-          minYContainer = Math.min(
-            Math.max(-(offsetHoopFromTop - TOP_GUTTER), -(offsetHoopFromTop - TOP_GUTTER)),
-            TOP_GUTTER - offsetHoopFromTop
-          );
-          maxYContainer = (window.innerHeight - BOTTOM_GUTTER) - (offsetHoopFromTop + hoopHeight);
-        }
-      }
-
-      // Robust bounce using container bounds derived from hoop geometry
-      if (n.y < minYContainer) {
-        n.y = minYContainer + (minYContainer - n.y); // reflect overshoot
+      // Robust bounce with overshoot reflection
+      const { minY, maxY } = getNetVerticalBounds();
+      if (n.y < minY) {
+        // reflect overshoot back into range
+        n.y = minY + (minY - n.y);
         n.dir = 1; // heading down
-        if (n.y > maxYContainer) { n.y = maxYContainer; }
-      } else if (n.y > maxYContainer) {
-        n.y = maxYContainer - (n.y - maxYContainer);
+        if (n.y > maxY) { n.y = maxY; } // guard if huge overshoot
+      } else if (n.y > maxY) {
+        n.y = maxY - (n.y - maxY);
         n.dir = -1; // heading up
-        if (n.y < minYContainer) { n.y = minYContainer; }
+        if (n.y < minY) { n.y = minY; }
       }
 
-      // Apply corrected position
       n.el.style.top = `${n.y}px`;
 
       // Level 6+: if this is the hunter net, ease its x toward the butterfly
@@ -1537,7 +1470,7 @@ function gameLoop() {
       }
 
       const b = butterfly.getBoundingClientRect();
-      const m2 = n.el.getBoundingClientRect();
+      const m = n.el.getBoundingClientRect();
       // Compute collision only against the hoop (ignore the handle)
       // Use the actual rendered <circle> position if available
       let hoopX, hoopY, hoopR;
@@ -1548,10 +1481,10 @@ function gameLoop() {
         hoopY = cb.top + cb.height / 2;
         hoopR = (cb.width / 2) * 0.95;
       } else {
-        const scaleX = m2.width / NET_HOOP.view;
-        const scaleY = m2.height / NET_HOOP.view;
-        hoopX = m2.left + NET_HOOP.cx * scaleX;
-        hoopY = m2.top + NET_HOOP.cy * scaleY;
+        const scaleX = m.width / NET_HOOP.view;
+        const scaleY = m.height / NET_HOOP.view;
+        hoopX = m.left + NET_HOOP.cx * scaleX;
+        hoopY = m.top + NET_HOOP.cy * scaleY;
         hoopR = NET_HOOP.r * ((scaleX + scaleY) / 2) * 0.95;
       }
 
@@ -1695,21 +1628,6 @@ function gameLoop() {
 }
 
 // Game start logic (includes net creation now)
-
-function gaPlayStart() {
-  if (typeof gtag === 'function') {
-    gtag('event', 'play_start', {
-      method: (('ontouchstart' in window) || navigator.maxTouchPoints > 0) ? 'mobile' : 'desktop'
-    });
-  }
-}
-function gaPlayStart() {
-  if (typeof gtag === 'function') {
-    gtag('event', 'play_start', {
-      method: (('ontouchstart' in window) || navigator.maxTouchPoints > 0) ? 'mobile' : 'desktop'
-    });
-  }
-}
 function startGame() {
   // Clear old nets
   nets.forEach(n => n.el.remove());

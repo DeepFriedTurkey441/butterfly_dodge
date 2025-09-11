@@ -255,22 +255,6 @@ document.addEventListener('keydown', ensureAudioContext, { passive: true });
 // --- Mobile audio unlock helpers (iOS/Android autoplay policies) ---
 let audioUnlocked = false;
 let audioUnlockHandlersAttached = false;
-function setModalOpen(isOpen) {
-  try {
-    if (isOpen) document.body.classList.add('modal-open');
-    else document.body.classList.remove('modal-open');
-  } catch (_) {}
-}
-function updateModalOpenState() {
-  const any = (levelupBox && !levelupBox.hidden) ||
-              (superMsg && !superMsg.hidden) ||
-              (flowerMsg && !flowerMsg.hidden) ||
-              (netMsg && !netMsg.hidden) ||
-              (skillMsg && !skillMsg.hidden) ||
-              (gameOverBox && !gameOverBox.hidden) ||
-              (trainingBanner && !trainingBanner.hidden);
-  setModalOpen(any);
-}
 async function unlockAudioContext() {
   ensureAudioContext();
   if (!audioCtx) return;
@@ -800,7 +784,6 @@ document.addEventListener('keydown', e => {
     // Show training banner so player knows how to exit
     inTrainingMode = true;
     if (trainingBanner) trainingBanner.hidden = false;
-    updateModalOpenState();
     return;
   }
   if (!gameStarted && e.key === 'Enter') {
@@ -842,34 +825,29 @@ document.addEventListener('keydown', e => {
   // Resume from level-up overlay with Enter (suppressed entirely in dev mode)
   if (developerMode && levelupBox && !levelupBox.hidden) {
     levelupBox.hidden = true;
-    updateModalOpenState();
     paused = false;
     updateHUD();
     return;
   }
   if (levelupBox && !levelupBox.hidden && e.key === 'Enter') {
     levelupBox.hidden = true;
-    updateModalOpenState();
     paused = false;
     updateHUD();
     return;
   }
-  // If paused on desktop: any key resumes ONLY when no modal overlays are visible
-  const overlayVisible = (levelupBox && !levelupBox.hidden) || (superMsg && !superMsg.hidden) || (flowerMsg && !flowerMsg.hidden) || (netMsg && !netMsg.hidden) || (skillMsg && !skillMsg.hidden);
-  if (paused && !isMobileSession && !overlayVisible) {
+  // If paused on desktop: any key resumes
+  if (paused && !isMobileSession) {
     paused = false;
     pauseBox.hidden = true;
     document.body.classList.remove('paused');
     startMusic();
     setCloudsPaused(false);
     updateHUD();
-    updateModalOpenState();
     return;
   }
   // Mobile tap-to-continue equivalents for overlays
   if (("ontouchstart" in window || navigator.maxTouchPoints > 0) && levelupBox && !levelupBox.hidden && (e.key === ' ' || e.key === 'Enter')) {
     levelupBox.hidden = true;
-    updateModalOpenState();
     paused = false;
     updateHUD();
     return;
@@ -882,21 +860,18 @@ document.addEventListener('keydown', e => {
   // Resume from super message overlay with Enter (suppressed entirely in dev mode)
   if (developerMode && superMsg && !superMsg.hidden) {
     superMsg.hidden = true;
-    updateModalOpenState();
     paused = false;
     updateHUD();
     return;
   }
   if (superMsg && !superMsg.hidden && e.key === 'Enter') {
     superMsg.hidden = true;
-    updateModalOpenState();
     paused = false;
     updateHUD();
     return;
   }
   if (("ontouchstart" in window || navigator.maxTouchPoints > 0) && superMsg && !superMsg.hidden) {
     superMsg.hidden = true;
-    updateModalOpenState();
     paused = false;
     updateHUD();
     return;
@@ -904,7 +879,6 @@ document.addEventListener('keydown', e => {
   // Resume from flower message overlay with Enter (suppressed entirely in dev mode)
   if (developerMode && flowerMsg && !flowerMsg.hidden) {
     flowerMsg.hidden = true;
-    updateModalOpenState();
     paused = false;
     setCloudsPaused(false);
     updateHUD();
@@ -912,7 +886,6 @@ document.addEventListener('keydown', e => {
   }
   if (flowerMsg && !flowerMsg.hidden && e.key === 'Enter') {
     flowerMsg.hidden = true;
-    updateModalOpenState();
     paused = false;
     setCloudsPaused(false);
     updateHUD();
@@ -920,7 +893,6 @@ document.addEventListener('keydown', e => {
   }
   if (("ontouchstart" in window || navigator.maxTouchPoints > 0) && flowerMsg && !flowerMsg.hidden) {
     flowerMsg.hidden = true;
-    updateModalOpenState();
     paused = false;
     setCloudsPaused(false);
     updateHUD();
@@ -929,7 +901,6 @@ document.addEventListener('keydown', e => {
   // Resume from net message overlay with Enter (suppressed entirely in dev mode)
   if (developerMode && netMsg && !netMsg.hidden) {
     netMsg.hidden = true;
-    updateModalOpenState();
     paused = false;
     setCloudsPaused(false);
     updateHUD();
@@ -937,7 +908,6 @@ document.addEventListener('keydown', e => {
   }
   if (netMsg && !netMsg.hidden && e.key === 'Enter') {
     netMsg.hidden = true;
-    updateModalOpenState();
     paused = false;
     setCloudsPaused(false);
     updateHUD();
@@ -945,7 +915,6 @@ document.addEventListener('keydown', e => {
   }
   if (("ontouchstart" in window || navigator.maxTouchPoints > 0) && netMsg && !netMsg.hidden) {
     netMsg.hidden = true;
-    updateModalOpenState();
     paused = false;
     setCloudsPaused(false);
     updateHUD();
@@ -954,7 +923,6 @@ document.addEventListener('keydown', e => {
   // Resume from skill message overlay with Enter (suppressed entirely in dev mode)
   if (developerMode && skillMsg && !skillMsg.hidden) {
     skillMsg.hidden = true;
-    updateModalOpenState();
     paused = false;
     setCloudsPaused(false);
     updateHUD();
@@ -962,7 +930,6 @@ document.addEventListener('keydown', e => {
   }
   if (skillMsg && !skillMsg.hidden && e.key === 'Enter') {
     skillMsg.hidden = true;
-    updateModalOpenState();
     paused = false;
     setCloudsPaused(false);
     updateHUD();
@@ -970,7 +937,6 @@ document.addEventListener('keydown', e => {
   }
   if (("ontouchstart" in window || navigator.maxTouchPoints > 0) && skillMsg && !skillMsg.hidden) {
     skillMsg.hidden = true;
-    updateModalOpenState();
     paused = false;
     setCloudsPaused(false);
     updateHUD();
@@ -1036,7 +1002,6 @@ document.addEventListener('keydown', e => {
       running = false;
       gameOver = true;
       gameOverBox.hidden = false;
-      updateModalOpenState();
       pauseBox.hidden = true;
       lives = 0;
       updateHUD();
@@ -1114,7 +1079,6 @@ function checkFlowers() {
         flowerMsg.hidden = false;
         setCloudsPaused(true);
         flowerMsgShown = true;
-        updateModalOpenState();
       }
 
       // Show skill score tutorial once (level 4+ only, skip if developer debug mode or level jumping)
@@ -1123,7 +1087,6 @@ function checkFlowers() {
         skillMsg.hidden = false;
         setCloudsPaused(true);
         skillMsgShown = true;
-        updateModalOpenState();
       }
 
       // Trigger Super Butterfly on L4+ when Skill average reaches exactly 8.000 (once per level)
@@ -1323,7 +1286,6 @@ function showLevelUp(newLevel) {
     levelupDetails.textContent += ' Nets grow slightly this level.';
   }
   if (levelupBox) levelupBox.hidden = false;
-  updateModalOpenState();
   // Auto-exit training if surpassing level 2
   if (inTrainingMode && newLevel > 2) {
     exitTrainingAndStartRealGame();
@@ -1476,18 +1438,6 @@ if (musicVolumeSlider) {
 // Main loop
 function gameLoop() {
   if (!running) return;
-  // If any modal overlay is visible, force the game into paused state
-  const anyOverlayVisible =
-    (levelupBox && !levelupBox.hidden) ||
-    (superMsg && !superMsg.hidden) ||
-    (flowerMsg && !flowerMsg.hidden) ||
-    (netMsg && !netMsg.hidden) ||
-    (skillMsg && !skillMsg.hidden);
-  if (anyOverlayVisible && !paused) {
-    paused = true;
-    setCloudsPaused(true);
-    updateModalOpenState();
-  }
   if (!paused) {
     // Auto-exit training if player progressed beyond level 2
     if (inTrainingMode && level > 2) {
@@ -1673,26 +1623,21 @@ function gameLoop() {
           if (!infiniteLives) {
             lives -= 1;
           }
-          // Show net tutorial once (skip in developer mode), but NOT on game over
-          if (!netMsgShown && netMsg && !developerMode && (lives - 0) > 0) {
+          // Show net tutorial once (skip in developer mode)
+          if (!netMsgShown && netMsg && !developerMode) {
             paused = true;
             netMsg.hidden = false;
             setCloudsPaused(true);
             netMsgShown = true;
-            updateModalOpenState();
           }
           // Play hit sound only if not in invincibility mode
           if (!muted && !invincibilityMode) sfxHit();
           
           // Only trigger game over if not using infinite lives cheat
           if (lives <= 0 && !infiniteLives) {
-            // Ensure any net tutorial overlay is dismissed so only Game Over is shown
-            if (netMsg) netMsg.hidden = true;
-            paused = false;
             running = false;
             gameOver = true;
             gameOverBox.hidden = false;
-            updateModalOpenState();
             pauseBox.hidden = true;
             lives = 0;
             updateHUD();
@@ -1925,7 +1870,6 @@ function startGame() {
   gameOverBox.hidden = true;
   pauseBox.hidden = true;
   if (levelupBox) levelupBox.hidden = true;
-  updateModalOpenState();
 
   // Begin game loop
   requestAnimationFrame(gameLoop);
@@ -2146,7 +2090,6 @@ function teardownMobileSession() {
   if (tapStartOverlay) tapStartOverlay.hidden = true;
   if (rotateOverlay) rotateOverlay.hidden = true;
   if (pauseBtn) pauseBtn.hidden = true;
-  updateModalOpenState();
 }
 
 // Auto-show tap-to-start on touch-capable devices when page loads

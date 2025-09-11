@@ -160,11 +160,24 @@ body {
 }
 
 #game-over {
-  position: absolute;
-  top: 40%;
-  width: 100%;
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #ffffff; /* fully opaque backdrop */
+  z-index: 10000; /* above all game elements */
   text-align: center;
   font-size: calc(var(--u) * 3.3);
+}
+#game-over[hidden] { display: none !important; }
+
+/* Hide dynamic game elements whenever a blocking modal is open */
+.modal-open .net,
+.modal-open .flower,
+.modal-open #butterfly,
+.modal-open #hud,
+.modal-open #super-timer {
+  display: none !important;
 }
 #leaderboard {
   margin-top: 12px;

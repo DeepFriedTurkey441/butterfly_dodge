@@ -343,13 +343,18 @@ if (muteMusicBtn) {
 if (pauseBtn) {
   const togglePause = (e) => {
     e.preventDefault();
-    // Only pause; resume will be handled by tap-anywhere
-    if (!paused) {
-      paused = true;
-      pauseBox.hidden = false;
+    paused = !paused;
+    pauseBox.hidden = !paused;
+    if (paused) {
       document.body.classList.add('paused');
       stopMusic();
       setCloudsPaused(true);
+      pauseBtn.textContent = '▶️';
+      pauseBtn.setAttribute('aria-label', 'Resume game');
+    } else {
+      document.body.classList.remove('paused');
+      startMusic();
+      setCloudsPaused(false);
       pauseBtn.textContent = '⏸️';
       pauseBtn.setAttribute('aria-label', 'Pause game');
     }
@@ -939,9 +944,9 @@ document.addEventListener('keydown', e => {
       }
       break;
     case 'p':
-      // Keep keyboard pause for desktop; resume is tap-anywhere on mobile
       paused = !paused;
       pauseBox.hidden = !paused;
+      // Pause/resume clouds and music
       if (paused) {
         document.body.classList.add('paused');
         stopMusic();
@@ -1991,16 +1996,6 @@ function setupPointerFlapControls() {
 
   // Dismiss overlays on tap anywhere (mobile)
   const dismissIfVisible = (e) => {
-    // Tap anywhere to resume when paused
-    if (paused && pauseBox && !pauseBox.hidden) {
-      paused = false;
-      pauseBox.hidden = true;
-      document.body.classList.remove('paused');
-      startMusic();
-      setCloudsPaused(false);
-      updateHUD();
-      return;
-    }
     if (levelupBox && !levelupBox.hidden) { levelupBox.hidden = true; paused = false; updateHUD(); return; }
     if (superMsg && !superMsg.hidden) { superMsg.hidden = true; paused = false; updateHUD(); return; }
     if (flowerMsg && !flowerMsg.hidden) { flowerMsg.hidden = true; paused = false; setCloudsPaused(false); updateHUD(); return; }

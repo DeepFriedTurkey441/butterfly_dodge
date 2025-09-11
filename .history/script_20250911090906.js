@@ -343,13 +343,18 @@ if (muteMusicBtn) {
 if (pauseBtn) {
   const togglePause = (e) => {
     e.preventDefault();
-    // Only pause; resume will be handled by tap-anywhere
-    if (!paused) {
-      paused = true;
-      pauseBox.hidden = false;
+    paused = !paused;
+    pauseBox.hidden = !paused;
+    if (paused) {
       document.body.classList.add('paused');
       stopMusic();
       setCloudsPaused(true);
+      pauseBtn.textContent = '▶️';
+      pauseBtn.setAttribute('aria-label', 'Resume game');
+    } else {
+      document.body.classList.remove('paused');
+      startMusic();
+      setCloudsPaused(false);
       pauseBtn.textContent = '⏸️';
       pauseBtn.setAttribute('aria-label', 'Pause game');
     }
@@ -939,9 +944,9 @@ document.addEventListener('keydown', e => {
       }
       break;
     case 'p':
-      // Keep keyboard pause for desktop; resume is tap-anywhere on mobile
       paused = !paused;
       pauseBox.hidden = !paused;
+      // Pause/resume clouds and music
       if (paused) {
         document.body.classList.add('paused');
         stopMusic();
@@ -1458,8 +1463,7 @@ function gameLoop() {
           activateHunterNet();
         }
         
-        // Restart just left of play area rail
-        bx = -50 + getLeftPlayMargin();
+        bx = -50;
       }
     }
 
@@ -1471,9 +1475,7 @@ function gameLoop() {
       ? Math.max(currentMaxRise, dy - 0.5 * getScreenScaleFactor())
       : Math.min(currentMaxFall, dy + currentGravity);
 
-    const leftMargin = getLeftPlayMargin();
     by = Math.max(0, Math.min(window.innerHeight - 30, by + dy));
-    // Keep within vertical screen; horizontally we respect left margin implicitly by reset/start
     butterfly.style.left = bx + 'px';
     butterfly.style.top = by + 'px';
 
@@ -1771,7 +1773,7 @@ function startGame() {
   }
 
   // Reset butterfly physics
-  bx = Math.max(0, getLeftPlayMargin());
+  bx = 0;
   by = Math.max(40, Math.min(window.innerHeight - 70, window.innerHeight / 2));
   dy = 0;
   speedIndex = 0;
@@ -1991,16 +1993,6 @@ function setupPointerFlapControls() {
 
   // Dismiss overlays on tap anywhere (mobile)
   const dismissIfVisible = (e) => {
-    // Tap anywhere to resume when paused
-    if (paused && pauseBox && !pauseBox.hidden) {
-      paused = false;
-      pauseBox.hidden = true;
-      document.body.classList.remove('paused');
-      startMusic();
-      setCloudsPaused(false);
-      updateHUD();
-      return;
-    }
     if (levelupBox && !levelupBox.hidden) { levelupBox.hidden = true; paused = false; updateHUD(); return; }
     if (superMsg && !superMsg.hidden) { superMsg.hidden = true; paused = false; updateHUD(); return; }
     if (flowerMsg && !flowerMsg.hidden) { flowerMsg.hidden = true; paused = false; setCloudsPaused(false); updateHUD(); return; }

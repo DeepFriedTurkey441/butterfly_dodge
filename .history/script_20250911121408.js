@@ -1438,17 +1438,6 @@ if (musicVolumeSlider) {
 // Main loop
 function gameLoop() {
   if (!running) return;
-  // If any modal overlay is visible, force the game into paused state
-  const anyOverlayVisible =
-    (levelupBox && !levelupBox.hidden) ||
-    (superMsg && !superMsg.hidden) ||
-    (flowerMsg && !flowerMsg.hidden) ||
-    (netMsg && !netMsg.hidden) ||
-    (skillMsg && !skillMsg.hidden);
-  if (anyOverlayVisible && !paused) {
-    paused = true;
-    setCloudsPaused(true);
-  }
   if (!paused) {
     // Auto-exit training if player progressed beyond level 2
     if (inTrainingMode && level > 2) {

@@ -754,7 +754,6 @@ document.addEventListener('keydown', e => {
     instructionsBox.style.display = 'none'; // Safety net
     gameArea.hidden = false;
     gameStarted = true;
-    unlockAudioContext();
     startMusic();
     // start training: no nets, normal gravity
     level = 0;
@@ -772,7 +771,6 @@ document.addEventListener('keydown', e => {
     instructionsBox.style.display = 'none'; // Safety net
     gameArea.hidden = false;
     gameStarted = true;
-    unlockAudioContext();
     startMusic();
     startGame();
     return;
@@ -1884,7 +1882,6 @@ function attachTapToStart() {
     // Begin game at slowest speed; use pointer for flap
     gameArea.hidden = false;
     gameStarted = true;
-    unlockAudioContext();
     startMusic();
     startGame();
     // Replace keyboard flap with pointer flap for mobile session

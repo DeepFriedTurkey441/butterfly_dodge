@@ -1884,7 +1884,6 @@ function attachTapToStart() {
     // Begin game at slowest speed; use pointer for flap
     gameArea.hidden = false;
     gameStarted = true;
-    unlockAudioContext();
     startMusic();
     startGame();
     // Replace keyboard flap with pointer flap for mobile session

@@ -28,20 +28,6 @@ const tapStartOverlay = document.getElementById('tap-start');
 const mobileStartBtn = document.getElementById('mobile-start');
 const pauseBtn = document.getElementById('pause-btn');
 // Speed bar removed
-function isLikelyDesktop() {
-  try {
-    const mqFine = window.matchMedia && matchMedia('(pointer: fine)').matches;
-    const mqHover = window.matchMedia && matchMedia('(hover: hover)').matches;
-    return mqFine && mqHover;
-  } catch(_) { return !isMobileSession; }
-}
-function setPauseMessage() {
-  if (!pauseBox) return;
-  const desktop = !isMobileSession && isLikelyDesktop();
-  pauseBox.textContent = !desktop
-    ? 'Game Paused — Tap anywhere to resume'
-    : 'Game Paused — Press any key to resume';
-}
 function positionSuperTimer() {
   if (!superTimer) return;
   // Place just to the left of the butterfly
@@ -357,14 +343,18 @@ if (muteMusicBtn) {
 if (pauseBtn) {
   const togglePause = (e) => {
     e.preventDefault();
-    // Only pause; resume will be handled by tap-anywhere
-    if (!paused) {
-      paused = true;
-      setPauseMessage();
-      pauseBox.hidden = false;
+    paused = !paused;
+    pauseBox.hidden = !paused;
+    if (paused) {
       document.body.classList.add('paused');
       stopMusic();
       setCloudsPaused(true);
+      pauseBtn.textContent = '▶️';
+      pauseBtn.setAttribute('aria-label', 'Resume game');
+    } else {
+      document.body.classList.remove('paused');
+      startMusic();
+      setCloudsPaused(false);
       pauseBtn.textContent = '⏸️';
       pauseBtn.setAttribute('aria-label', 'Pause game');
     }
@@ -818,16 +808,6 @@ document.addEventListener('keydown', e => {
     updateHUD();
     return;
   }
-  // If paused on desktop: any key resumes
-  if (paused && !isMobileSession) {
-    paused = false;
-    pauseBox.hidden = true;
-    document.body.classList.remove('paused');
-    startMusic();
-    setCloudsPaused(false);
-    updateHUD();
-    return;
-  }
   // Mobile tap-to-continue equivalents for overlays
   if (("ontouchstart" in window || navigator.maxTouchPoints > 0) && levelupBox && !levelupBox.hidden && (e.key === ' ' || e.key === 'Enter')) {
     levelupBox.hidden = true;
@@ -964,13 +944,9 @@ document.addEventListener('keydown', e => {
       }
       break;
     case 'p':
-      // Keep keyboard pause for desktop; resume is tap-anywhere on mobile
       paused = !paused;
-      if (paused) {
-        // Explicit desktop messaging when paused via keyboard
-        pauseBox.textContent = 'Game Paused — Press any key to resume';
-      }
       pauseBox.hidden = !paused;
+      // Pause/resume clouds and music
       if (paused) {
         document.body.classList.add('paused');
         stopMusic();
@@ -1800,7 +1776,7 @@ function startGame() {
   }
 
   // Reset butterfly physics
-  bx = Math.max(0, getLeftPlayMargin());
+  bx = 0;
   by = Math.max(40, Math.min(window.innerHeight - 70, window.innerHeight / 2));
   dy = 0;
   speedIndex = 0;
@@ -1899,6 +1875,7 @@ function disableTouchLocks() {
 
 function attachTapToStart() {
   if (!tapStartOverlay) return;
+  isMobileSession = true;
   // Ensure the overlay is actually visible (its parent must not be hidden)
   if (instructionsBox) {
     instructionsBox.hidden = true;
@@ -1906,23 +1883,6 @@ function attachTapToStart() {
   }
   if (gameArea) gameArea.hidden = false;
   tapStartOverlay.hidden = false;
-  // Ensure mobile overlay includes swipe instructions
-  try {
-    const wrap = tapStartOverlay.querySelector('.levelup-wrap');
-    if (wrap) {
-      const paras = wrap.querySelectorAll('p');
-      if (paras.length > 0) {
-        paras[0].textContent = 'Tap anywhere to begin. Tap and hold to flap.';
-      }
-      if (paras.length < 2) {
-        const p = document.createElement('p');
-        p.textContent = 'Swipe right to speed up. Swipe left to slow down.';
-        wrap.appendChild(p);
-      } else {
-        paras[1].textContent = 'Swipe right to speed up. Swipe left to slow down.';
-      }
-    }
-  } catch(_) {}
   showRotateGateIfNeeded();
   const onResize = () => showRotateGateIfNeeded();
   window.addEventListener('resize', onResize);
@@ -1933,9 +1893,6 @@ function attachTapToStart() {
     e.preventDefault();
     tapStartOverlay.hidden = true;
     enableTouchLocks();
-    // Mark this as a true mobile session only for touch-based starts
-    isMobileSession = !!(e && ((e.pointerType && e.pointerType !== 'mouse') || e.type === 'touchstart' || navigator.maxTouchPoints > 0));
-    setPauseMessage(); // ensure correct pause text after entering session
     requestFullscreenIfPossible();
     // Begin game at slowest speed; use pointer for flap
     gameArea.hidden = false;
@@ -1957,8 +1914,7 @@ function attachTapToStart() {
   tapStartOverlay.addEventListener('touchstart', startHandler, { passive: false });
   // Global fallback: start from anywhere if conditions are right
   const bodyStart = (e) => {
-    const isTouchEvent = (e && (e.type === 'touchstart' || (e.pointerType && e.pointerType !== 'mouse')));
-    if (!gameStarted && isLandscape() && isTouchEvent) startHandler(e);
+    if (!gameStarted && isLandscape()) startHandler(e);
   };
   document.body.addEventListener('pointerdown', bodyStart, { passive: false });
   document.body.addEventListener('click', bodyStart, { passive: false });
@@ -2040,16 +1996,6 @@ function setupPointerFlapControls() {
 
   // Dismiss overlays on tap anywhere (mobile)
   const dismissIfVisible = (e) => {
-    // Tap anywhere to resume when paused
-    if (paused && pauseBox && !pauseBox.hidden) {
-      paused = false;
-      pauseBox.hidden = true;
-      document.body.classList.remove('paused');
-      startMusic();
-      setCloudsPaused(false);
-      updateHUD();
-      return;
-    }
     if (levelupBox && !levelupBox.hidden) { levelupBox.hidden = true; paused = false; updateHUD(); return; }
     if (superMsg && !superMsg.hidden) { superMsg.hidden = true; paused = false; updateHUD(); return; }
     if (flowerMsg && !flowerMsg.hidden) { flowerMsg.hidden = true; paused = false; setCloudsPaused(false); updateHUD(); return; }
@@ -2085,8 +2031,6 @@ function tryAttachTapStartIfMobile() {
 
 document.addEventListener('DOMContentLoaded', tryAttachTapStartIfMobile);
 window.addEventListener('load', tryAttachTapStartIfMobile);
-// Ensure pause message is correct on load for desktop/mobile
-window.addEventListener('load', () => { setPauseMessage(); });
 // Safety: if instructions still visible shortly after load on mobile, force attach
 setTimeout(() => {
   if (shouldUseMobileFlow() && instructionsBox && !instructionsBox.hidden) {

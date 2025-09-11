@@ -28,20 +28,6 @@ const tapStartOverlay = document.getElementById('tap-start');
 const mobileStartBtn = document.getElementById('mobile-start');
 const pauseBtn = document.getElementById('pause-btn');
 // Speed bar removed
-function isLikelyDesktop() {
-  try {
-    const mqFine = window.matchMedia && matchMedia('(pointer: fine)').matches;
-    const mqHover = window.matchMedia && matchMedia('(hover: hover)').matches;
-    return mqFine && mqHover;
-  } catch(_) { return !isMobileSession; }
-}
-function setPauseMessage() {
-  if (!pauseBox) return;
-  const desktop = !isMobileSession && isLikelyDesktop();
-  pauseBox.textContent = !desktop
-    ? 'Game Paused — Tap anywhere to resume'
-    : 'Game Paused — Press any key to resume';
-}
 function positionSuperTimer() {
   if (!superTimer) return;
   // Place just to the left of the butterfly
@@ -203,14 +189,6 @@ function getScaledSpeed() {
   return BASE_SPEED_LEVELS[speedIndex] * scaleFactor * mobileDampen;
 }
 
-// Left control rail margin: keep butterfly out of rail
-function getLeftPlayMargin() {
-  const rail = document.getElementById('control-rail');
-  if (!rail) return 0;
-  const rect = rail.getBoundingClientRect();
-  return rect ? rect.width : 0;
-}
-
 // Vertical limits for net motion; on mobile allow closer to top/bottom
 function getNetVerticalBounds() {
   const isMobile = ("ontouchstart" in window || navigator.maxTouchPoints > 0);
@@ -306,8 +284,6 @@ function exitFullscreenIfPossible() {
 }
 
 function playTone({ frequency = 880, duration = 0.12, type = 'sine', volume = 0.2 }) {
-  ensureAudioContext();
-  try { if (audioCtx && audioCtx.state === 'suspended') { audioCtx.resume(); } } catch (_) {}
   if (muted || !audioCtx) return;
   const now = audioCtx.currentTime;
   const osc = audioCtx.createOscillator();
@@ -357,14 +333,18 @@ if (muteMusicBtn) {
 if (pauseBtn) {
   const togglePause = (e) => {
     e.preventDefault();
-    // Only pause; resume will be handled by tap-anywhere
-    if (!paused) {
-      paused = true;
-      setPauseMessage();
-      pauseBox.hidden = false;
+    paused = !paused;
+    pauseBox.hidden = !paused;
+    if (paused) {
       document.body.classList.add('paused');
       stopMusic();
       setCloudsPaused(true);
+      pauseBtn.textContent = '▶️';
+      pauseBtn.setAttribute('aria-label', 'Resume game');
+    } else {
+      document.body.classList.remove('paused');
+      startMusic();
+      setCloudsPaused(false);
       pauseBtn.textContent = '⏸️';
       pauseBtn.setAttribute('aria-label', 'Pause game');
     }
@@ -772,8 +752,6 @@ document.addEventListener('keydown', e => {
     instructionsBox.style.display = 'none'; // Safety net
     gameArea.hidden = false;
     gameStarted = true;
-    unlockAudioContext();
-    try { if (shouldUseMobileFlow()) playTone({ frequency: 523, duration: 0.05, type: 'sine', volume: 0.05 }); } catch(_) {}
     startMusic();
     // start training: no nets, normal gravity
     level = 0;
@@ -791,8 +769,6 @@ document.addEventListener('keydown', e => {
     instructionsBox.style.display = 'none'; // Safety net
     gameArea.hidden = false;
     gameStarted = true;
-    unlockAudioContext();
-    try { if (shouldUseMobileFlow()) playTone({ frequency: 523, duration: 0.05, type: 'sine', volume: 0.05 }); } catch(_) {}
     startMusic();
     startGame();
     return;
@@ -815,16 +791,6 @@ document.addEventListener('keydown', e => {
   if (levelupBox && !levelupBox.hidden && e.key === 'Enter') {
     levelupBox.hidden = true;
     paused = false;
-    updateHUD();
-    return;
-  }
-  // If paused on desktop: any key resumes
-  if (paused && !isMobileSession) {
-    paused = false;
-    pauseBox.hidden = true;
-    document.body.classList.remove('paused');
-    startMusic();
-    setCloudsPaused(false);
     updateHUD();
     return;
   }
@@ -964,13 +930,9 @@ document.addEventListener('keydown', e => {
       }
       break;
     case 'p':
-      // Keep keyboard pause for desktop; resume is tap-anywhere on mobile
       paused = !paused;
-      if (paused) {
-        // Explicit desktop messaging when paused via keyboard
-        pauseBox.textContent = 'Game Paused — Press any key to resume';
-      }
       pauseBox.hidden = !paused;
+      // Pause/resume clouds and music
       if (paused) {
         document.body.classList.add('paused');
         stopMusic();
@@ -1279,7 +1241,6 @@ function showLevelUp(newLevel) {
 let musicNodes = null;
 function startMusic() {
   ensureAudioContext();
-  try { if (audioCtx && audioCtx.state === 'suspended') { audioCtx.resume(); } } catch (_) {}
   if (musicMuted || !audioCtx || musicNodes) return;
   const master = audioCtx.createGain();
   master.gain.value = musicVolumeSlider ? (Number(musicVolumeSlider.value) / 100) * 0.4 : 0.08;
@@ -1487,8 +1448,7 @@ function gameLoop() {
           activateHunterNet();
         }
         
-        // Restart just left of play area rail
-        bx = -50 + getLeftPlayMargin();
+        bx = -50;
       }
     }
 
@@ -1500,9 +1460,7 @@ function gameLoop() {
       ? Math.max(currentMaxRise, dy - 0.5 * getScreenScaleFactor())
       : Math.min(currentMaxFall, dy + currentGravity);
 
-    const leftMargin = getLeftPlayMargin();
     by = Math.max(0, Math.min(window.innerHeight - 30, by + dy));
-    // Keep within vertical screen; horizontally we respect left margin implicitly by reset/start
     butterfly.style.left = bx + 'px';
     butterfly.style.top = by + 'px';
 
@@ -1516,9 +1474,9 @@ function gameLoop() {
       // Apply tentative position so we can measure hoop vs. container
       n.el.style.top = `${n.y}px`;
 
-      // Compute container-relative hoop offsets to enforce edge coverage (no gutter)
-      const TOP_GUTTER = 0;
-      const BOTTOM_GUTTER = 0;
+      // Compute container-relative hoop offsets to enforce edge coverage
+      const TOP_GUTTER = 2;
+      const BOTTOM_GUTTER = 2;
       const m = n.el.getBoundingClientRect();
       let minYContainer = 0;
       let maxYContainer = window.innerHeight - (m.height || 0);
@@ -1528,8 +1486,11 @@ function gameLoop() {
           const cb = circle.getBoundingClientRect();
           const offsetHoopFromTop = cb.top - m.top;   // pixels from container top to hoop top
           const hoopHeight = cb.height;
-          // Constrain so the hoop itself can reach the screen edges
-          minYContainer = TOP_GUTTER - offsetHoopFromTop;
+          // Constrain so the hoop itself can reach near the screen edges
+          minYContainer = Math.min(
+            Math.max(-(offsetHoopFromTop - TOP_GUTTER), -(offsetHoopFromTop - TOP_GUTTER)),
+            TOP_GUTTER - offsetHoopFromTop
+          );
           maxYContainer = (window.innerHeight - BOTTOM_GUTTER) - (offsetHoopFromTop + hoopHeight);
         }
       }
@@ -1585,13 +1546,13 @@ function gameLoop() {
         const cb = circle.getBoundingClientRect();
         hoopX = cb.left + cb.width / 2;
         hoopY = cb.top + cb.height / 2;
-        hoopR = (cb.width / 2) * 0.98; // slightly less shrink to improve edge collisions
+        hoopR = (cb.width / 2) * 0.95;
       } else {
         const scaleX = m2.width / NET_HOOP.view;
         const scaleY = m2.height / NET_HOOP.view;
         hoopX = m2.left + NET_HOOP.cx * scaleX;
         hoopY = m2.top + NET_HOOP.cy * scaleY;
-        hoopR = NET_HOOP.r * ((scaleX + scaleY) / 2) * 0.98;
+        hoopR = NET_HOOP.r * ((scaleX + scaleY) / 2) * 0.95;
       }
 
       const cx = b.left + b.width / 2;
@@ -1800,7 +1761,7 @@ function startGame() {
   }
 
   // Reset butterfly physics
-  bx = Math.max(0, getLeftPlayMargin());
+  bx = 0;
   by = Math.max(40, Math.min(window.innerHeight - 70, window.innerHeight / 2));
   dy = 0;
   speedIndex = 0;
@@ -1899,6 +1860,7 @@ function disableTouchLocks() {
 
 function attachTapToStart() {
   if (!tapStartOverlay) return;
+  isMobileSession = true;
   // Ensure the overlay is actually visible (its parent must not be hidden)
   if (instructionsBox) {
     instructionsBox.hidden = true;
@@ -1906,23 +1868,6 @@ function attachTapToStart() {
   }
   if (gameArea) gameArea.hidden = false;
   tapStartOverlay.hidden = false;
-  // Ensure mobile overlay includes swipe instructions
-  try {
-    const wrap = tapStartOverlay.querySelector('.levelup-wrap');
-    if (wrap) {
-      const paras = wrap.querySelectorAll('p');
-      if (paras.length > 0) {
-        paras[0].textContent = 'Tap anywhere to begin. Tap and hold to flap.';
-      }
-      if (paras.length < 2) {
-        const p = document.createElement('p');
-        p.textContent = 'Swipe right to speed up. Swipe left to slow down.';
-        wrap.appendChild(p);
-      } else {
-        paras[1].textContent = 'Swipe right to speed up. Swipe left to slow down.';
-      }
-    }
-  } catch(_) {}
   showRotateGateIfNeeded();
   const onResize = () => showRotateGateIfNeeded();
   window.addEventListener('resize', onResize);
@@ -1933,15 +1878,10 @@ function attachTapToStart() {
     e.preventDefault();
     tapStartOverlay.hidden = true;
     enableTouchLocks();
-    // Mark this as a true mobile session only for touch-based starts
-    isMobileSession = !!(e && ((e.pointerType && e.pointerType !== 'mouse') || e.type === 'touchstart' || navigator.maxTouchPoints > 0));
-    setPauseMessage(); // ensure correct pause text after entering session
     requestFullscreenIfPossible();
     // Begin game at slowest speed; use pointer for flap
     gameArea.hidden = false;
     gameStarted = true;
-    unlockAudioContext();
-    try { playTone({ frequency: 523, duration: 0.05, type: 'sine', volume: 0.05 }); } catch(_) {}
     startMusic();
     startGame();
     // Replace keyboard flap with pointer flap for mobile session
@@ -1957,8 +1897,7 @@ function attachTapToStart() {
   tapStartOverlay.addEventListener('touchstart', startHandler, { passive: false });
   // Global fallback: start from anywhere if conditions are right
   const bodyStart = (e) => {
-    const isTouchEvent = (e && (e.type === 'touchstart' || (e.pointerType && e.pointerType !== 'mouse')));
-    if (!gameStarted && isLandscape() && isTouchEvent) startHandler(e);
+    if (!gameStarted && isLandscape()) startHandler(e);
   };
   document.body.addEventListener('pointerdown', bodyStart, { passive: false });
   document.body.addEventListener('click', bodyStart, { passive: false });
@@ -2040,16 +1979,6 @@ function setupPointerFlapControls() {
 
   // Dismiss overlays on tap anywhere (mobile)
   const dismissIfVisible = (e) => {
-    // Tap anywhere to resume when paused
-    if (paused && pauseBox && !pauseBox.hidden) {
-      paused = false;
-      pauseBox.hidden = true;
-      document.body.classList.remove('paused');
-      startMusic();
-      setCloudsPaused(false);
-      updateHUD();
-      return;
-    }
     if (levelupBox && !levelupBox.hidden) { levelupBox.hidden = true; paused = false; updateHUD(); return; }
     if (superMsg && !superMsg.hidden) { superMsg.hidden = true; paused = false; updateHUD(); return; }
     if (flowerMsg && !flowerMsg.hidden) { flowerMsg.hidden = true; paused = false; setCloudsPaused(false); updateHUD(); return; }
@@ -2085,8 +2014,6 @@ function tryAttachTapStartIfMobile() {
 
 document.addEventListener('DOMContentLoaded', tryAttachTapStartIfMobile);
 window.addEventListener('load', tryAttachTapStartIfMobile);
-// Ensure pause message is correct on load for desktop/mobile
-window.addEventListener('load', () => { setPauseMessage(); });
 // Safety: if instructions still visible shortly after load on mobile, force attach
 setTimeout(() => {
   if (shouldUseMobileFlow() && instructionsBox && !instructionsBox.hidden) {

@@ -71,7 +71,7 @@ body {
   background: #fff;
   z-index: 11000;
   pointer-events: none; /* visuals only */
-  display: none !important; /* fully disabled across all devices */
+  display: none; /* hidden by default; shown on touch devices */
 }
 
 #butterfly {
@@ -198,6 +198,7 @@ body {
 #pause-btn[hidden] { display: none !important; }
 @media (pointer: coarse), (hover: none) {
   #pause-btn { display: inline-flex; align-items: center; justify-content: center; }
+  #control-rail { display: block; }
 }
 
 /* ✅ New rule to force-hide instructions when hidden */

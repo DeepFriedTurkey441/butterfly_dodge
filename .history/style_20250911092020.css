@@ -71,8 +71,11 @@ body {
   background: #fff;
   z-index: 11000;
   pointer-events: none; /* visuals only */
-  display: none !important; /* fully disabled across all devices */
+  display: none; /* hidden by default; shown on touch devices */
 }
+
+/* Show rail only when explicitly enabled during mobile sessions */
+.show-rail #control-rail { display: block; }
 
 #butterfly {
   position: absolute;

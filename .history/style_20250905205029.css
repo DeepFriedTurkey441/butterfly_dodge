@@ -61,19 +61,6 @@ body {
   height: 100vh;
 }
 
-/* Left-side control rail: out-of-play area */
-#control-rail {
-  position: fixed;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: clamp(10px, calc(var(--u) * 4), 40px);
-  background: #fff;
-  z-index: 11000;
-  pointer-events: none; /* visuals only */
-  display: none !important; /* fully disabled across all devices */
-}
-
 #butterfly {
   position: absolute;
   font-size: calc(var(--u) * 3.3);
@@ -183,13 +170,13 @@ body {
 /* Mobile pause button */
 #pause-btn {
   position: fixed;
-  top: clamp(64px, calc(var(--u) * 9), 100px);
-  left: 2px; /* move further into control rail */
+  top: 10px;
+  right: 10px;
   z-index: 12000;
   width: 44px;
   height: 44px;
   border: none;
-  border-radius: 8px;
+  border-radius: 22px;
   background: rgba(0,0,0,0.35);
   color: #fff;
   font-size: 20px;

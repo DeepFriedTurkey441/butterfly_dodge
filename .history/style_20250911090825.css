@@ -71,7 +71,6 @@ body {
   background: #fff;
   z-index: 11000;
   pointer-events: none; /* visuals only */
-  display: none !important; /* fully disabled across all devices */
 }
 
 #butterfly {
@@ -183,8 +182,8 @@ body {
 /* Mobile pause button */
 #pause-btn {
   position: fixed;
-  top: clamp(64px, calc(var(--u) * 9), 100px);
-  left: 2px; /* move further into control rail */
+  top: 10px;
+  left: 6px; /* move into control rail */
   z-index: 12000;
   width: 44px;
   height: 44px;

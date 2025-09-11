@@ -71,7 +71,6 @@ body {
   background: #fff;
   z-index: 11000;
   pointer-events: none; /* visuals only */
-  display: none !important; /* fully disabled across all devices */
 }
 
 #butterfly {

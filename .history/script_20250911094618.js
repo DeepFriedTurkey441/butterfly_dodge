@@ -28,17 +28,10 @@ const tapStartOverlay = document.getElementById('tap-start');
 const mobileStartBtn = document.getElementById('mobile-start');
 const pauseBtn = document.getElementById('pause-btn');
 // Speed bar removed
-function isLikelyDesktop() {
-  try {
-    const mqFine = window.matchMedia && matchMedia('(pointer: fine)').matches;
-    const mqHover = window.matchMedia && matchMedia('(hover: hover)').matches;
-    return mqFine && mqHover;
-  } catch(_) { return !isMobileSession; }
-}
 function setPauseMessage() {
   if (!pauseBox) return;
-  const desktop = !isMobileSession && isLikelyDesktop();
-  pauseBox.textContent = !desktop
+  const mobile = isMobileSession === true; // use actual session state
+  pauseBox.textContent = mobile
     ? 'Game Paused — Tap anywhere to resume'
     : 'Game Paused — Press any key to resume';
 }
@@ -966,10 +959,7 @@ document.addEventListener('keydown', e => {
     case 'p':
       // Keep keyboard pause for desktop; resume is tap-anywhere on mobile
       paused = !paused;
-      if (paused) {
-        // Explicit desktop messaging when paused via keyboard
-        pauseBox.textContent = 'Game Paused — Press any key to resume';
-      }
+      if (paused) setPauseMessage();
       pauseBox.hidden = !paused;
       if (paused) {
         document.body.classList.add('paused');
@@ -1906,23 +1896,6 @@ function attachTapToStart() {
   }
   if (gameArea) gameArea.hidden = false;
   tapStartOverlay.hidden = false;
-  // Ensure mobile overlay includes swipe instructions
-  try {
-    const wrap = tapStartOverlay.querySelector('.levelup-wrap');
-    if (wrap) {
-      const paras = wrap.querySelectorAll('p');
-      if (paras.length > 0) {
-        paras[0].textContent = 'Tap anywhere to begin. Tap and hold to flap.';
-      }
-      if (paras.length < 2) {
-        const p = document.createElement('p');
-        p.textContent = 'Swipe right to speed up. Swipe left to slow down.';
-        wrap.appendChild(p);
-      } else {
-        paras[1].textContent = 'Swipe right to speed up. Swipe left to slow down.';
-      }
-    }
-  } catch(_) {}
   showRotateGateIfNeeded();
   const onResize = () => showRotateGateIfNeeded();
   window.addEventListener('resize', onResize);

@@ -1906,23 +1906,6 @@ function attachTapToStart() {
   }
   if (gameArea) gameArea.hidden = false;
   tapStartOverlay.hidden = false;
-  // Ensure mobile overlay includes swipe instructions
-  try {
-    const wrap = tapStartOverlay.querySelector('.levelup-wrap');
-    if (wrap) {
-      const paras = wrap.querySelectorAll('p');
-      if (paras.length > 0) {
-        paras[0].textContent = 'Tap anywhere to begin. Tap and hold to flap.';
-      }
-      if (paras.length < 2) {
-        const p = document.createElement('p');
-        p.textContent = 'Swipe right to speed up. Swipe left to slow down.';
-        wrap.appendChild(p);
-      } else {
-        paras[1].textContent = 'Swipe right to speed up. Swipe left to slow down.';
-      }
-    }
-  } catch(_) {}
   showRotateGateIfNeeded();
   const onResize = () => showRotateGateIfNeeded();
   window.addEventListener('resize', onResize);

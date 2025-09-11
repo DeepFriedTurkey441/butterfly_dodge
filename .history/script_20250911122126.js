@@ -835,9 +835,8 @@ document.addEventListener('keydown', e => {
     updateHUD();
     return;
   }
-  // If paused on desktop: any key resumes ONLY when no modal overlays are visible
-  const overlayVisible = (levelupBox && !levelupBox.hidden) || (superMsg && !superMsg.hidden) || (flowerMsg && !flowerMsg.hidden) || (netMsg && !netMsg.hidden) || (skillMsg && !skillMsg.hidden);
-  if (paused && !isMobileSession && !overlayVisible) {
+  // If paused on desktop: any key resumes
+  if (paused && !isMobileSession) {
     paused = false;
     pauseBox.hidden = true;
     document.body.classList.remove('paused');

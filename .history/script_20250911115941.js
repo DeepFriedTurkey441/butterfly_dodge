@@ -2124,49 +2124,6 @@ function restartGame() {
   startGame();
 }
 
-// --- Enhanced Game Over Replay: Level selection ---
-function showLevelSelectOnGameOver() {
-  if (!gameOverBox) return;
-  const maxLevel = Math.max(1, highestLevelAchieved);
-  const html = `
-    <div class="levelup-wrap" style="display:inline-block; text-align:center;">
-      <h2>Congratulations!</h2>
-      <p>You reached level <strong>${level}</strong>.</p>
-      <p>Play again starting on any level up to <strong>${maxLevel}</strong>.</p>
-      <p>Please enter a level (1–${maxLevel}) and press Enter:</p>
-      <p><input id="level-restart-input" inputmode="numeric" pattern="[0-9]*" style="font-size:1.2em; padding:6px 10px; width:110px; text-align:center;" placeholder="1–${maxLevel}" aria-label="Level to restart at (1 to ${maxLevel})"></p>
-    </div>
-    <div id="leaderboard"></div>
-  `;
-  gameOverBox.innerHTML = html;
-  // Re-attach leaderboardBox reference after replacing innerHTML
-  const lb = document.getElementById('leaderboard');
-  if (lb) {
-    leaderboardBox = lb;
-  }
-  // Focus input shortly after render
-  setTimeout(() => {
-    const input = document.getElementById('level-restart-input');
-    if (input) {
-      try { input.focus(); input.select(); } catch(_) {}
-    }
-  }, 0);
-}
-
-function startAgainAtLevel(targetLevel) {
-  const maxLevel = Math.max(1, highestLevelAchieved);
-  let chosen = parseInt(targetLevel, 10);
-  if (!Number.isFinite(chosen)) return;
-  if (chosen < 1) chosen = 1;
-  if (chosen > maxLevel) chosen = maxLevel;
-  devStartLevel = chosen;
-  // Reset flags and start a fresh game at chosen level
-  running = false;
-  gameOver = false;
-  if (gameOverBox) gameOverBox.hidden = true;
-  startGame();
-}
-
 // --- Leaderboard client helpers ---
 async function postLeaderboard(name, level) {
   try {

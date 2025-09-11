@@ -1623,8 +1623,8 @@ function gameLoop() {
           if (!infiniteLives) {
             lives -= 1;
           }
-          // Show net tutorial once (skip in developer mode), but NOT on game over
-          if (!netMsgShown && netMsg && !developerMode && (lives - 0) > 0) {
+          // Show net tutorial once (skip in developer mode)
+          if (!netMsgShown && netMsg && !developerMode) {
             paused = true;
             netMsg.hidden = false;
             setCloudsPaused(true);
@@ -1635,9 +1635,6 @@ function gameLoop() {
           
           // Only trigger game over if not using infinite lives cheat
           if (lives <= 0 && !infiniteLives) {
-            // Ensure any net tutorial overlay is dismissed so only Game Over is shown
-            if (netMsg) netMsg.hidden = true;
-            paused = false;
             running = false;
             gameOver = true;
             gameOverBox.hidden = false;

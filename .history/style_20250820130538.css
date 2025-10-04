@@ -1,0 +1,228 @@
+body {
+  margin: 0;
+  overflow: hidden;
+  background-color: skyblue;
+  font-family: 'Baloo 2', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  color: black;
+}
+
+#instructions {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: skyblue;
+  color: black;
+  font-family: monospace;
+  font-size: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  box-sizing: border-box;
+  text-align: left;
+  line-height: 1.5;
+}
+
+#game-area {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+#butterfly {
+  position: absolute;
+  font-size: 24px;
+  left: 0;
+  top: 50%;
+  transform-origin: 50% 50%;
+  transition: transform 120ms ease;
+}
+
+.flower {
+  position: absolute;
+  font-size: 30px;
+  pointer-events: none;
+}
+
+.net {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  font-size: 32px;
+  color: red;
+  content: 'X';
+}
+
+/* HUD container to keep all labels on one line with fixed spaces */
+#hud {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  font-size: 22px;
+  white-space: pre; /* preserve spaces between spans */
+  text-shadow: 0 1px 0 rgba(255,255,255,0.5), 0 2px 4px rgba(0,0,0,0.25);
+}
+
+#mute-btn {
+  margin-left: 16px;
+  font-size: 18px;
+  padding: 2px 8px;
+  border: none;
+  background: rgba(255,255,255,0.5);
+  border-radius: 6px;
+  cursor: pointer;
+}
+ #mute-btn:focus { outline: 2px solid rgba(0,0,0,0.3); }
+
+#mute-sfx, #mute-music {
+  margin-left: 8px;
+  font-size: 18px;
+  padding: 2px 8px;
+  border: none;
+  background: rgba(255,255,255,0.5);
+  border-radius: 6px;
+  cursor: pointer;
+}
+#mute-sfx:focus, #mute-music:focus { outline: 2px solid rgba(0,0,0,0.3); }
+
+#music-volume {
+  vertical-align: middle;
+  width: 120px;
+  margin-left: 8px;
+}
+
+#game-over {
+  position: absolute;
+  top: 40%;
+  width: 100%;
+  text-align: center;
+  font-size: 24px;
+}
+
+#pause-message {
+  position: absolute;
+  top: 45%;
+  width: 100%;
+  text-align: center;
+  font-size: 24px;
+  color: black;
+}
+
+/* ✅ New rule to force-hide instructions when hidden */
+#instructions[hidden] {
+  display: none !important;
+}
+
+/* Level-up overlay */
+#levelup {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0,0,0,0.35);
+}
+#levelup[hidden] { display: none !important; }
+.levelup-wrap {
+  background: rgba(255,255,255,0.9);
+  color: #0c2340;
+  padding: 24px 28px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  text-align: center;
+}
+
+/* Parallax sky */
+#sky {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: -1;
+  background: linear-gradient(#90d7f5, #8cd0f0);
+}
+.cloud {
+  position: absolute;
+  width: 120px; /* half-ish size */
+  height: 60px;
+  filter: blur(0.4px);
+  animation: drift linear infinite;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  border-radius: 50% / 40%;
+  /* Soft oval mask to remove any straight edges from the bounding box */
+  -webkit-mask-image: radial-gradient(ellipse at 50% 50%, #000 68%, transparent 70%);
+          mask-image: radial-gradient(ellipse at 50% 50%, #000 68%, transparent 70%);
+  pointer-events: none;
+}
+/* Pause cloud animation when game is paused */
+.paused .cloud { animation-play-state: paused !important; }
+
+/* Fun cloud silhouettes using CSS gradients (no images) */
+.cloud-puff {
+  background:
+    radial-gradient(ellipse at 20% 60%, rgba(255,255,255,0.95) 0 60%, rgba(255,255,255,0) 61%),
+    radial-gradient(ellipse at 45% 40%, rgba(255,255,255,0.95) 0 62%, rgba(255,255,255,0) 63%),
+    radial-gradient(ellipse at 70% 55%, rgba(255,255,255,0.95) 0 58%, rgba(255,255,255,0) 59%),
+    radial-gradient(ellipse at 85% 50%, rgba(255,255,255,0.9) 0 48%, rgba(255,255,255,0) 49%);
+}
+.cloud-chicken {
+  background:
+    radial-gradient(ellipse at 25% 60%, rgba(255,255,255,0.97) 0 56%, transparent 57%), /* body */
+    radial-gradient(ellipse at 45% 40%, rgba(255,255,255,0.97) 0 48%, transparent 49%), /* head */
+    radial-gradient(ellipse at 65% 35%, rgba(255,255,255,0.97) 0 33%, transparent 34%), /* comb */
+    radial-gradient(ellipse at 18% 75%, rgba(255,255,255,0.97) 0 35%, transparent 36%); /* tail */
+}
+.cloud-dino {
+  background:
+    radial-gradient(ellipse at 30% 55%, rgba(255,255,255,0.97) 0 60%, transparent 61%), /* body */
+    radial-gradient(ellipse at 55% 35%, rgba(255,255,255,0.97) 0 36%, transparent 37%), /* head */
+    radial-gradient(ellipse at 60% 20%, rgba(255,255,255,0.97) 0 20%, transparent 21%), /* crest */
+    radial-gradient(ellipse at 15% 70%, rgba(255,255,255,0.97) 0 26%, transparent 27%); /* tail */
+}
+.cloud-eggplant {
+  background:
+    radial-gradient(ellipse at 35% 60%, rgba(255,255,255,0.97) 0 60%, transparent 61%), /* body */
+    radial-gradient(ellipse at 60% 35%, rgba(255,255,255,0.97) 0 28%, transparent 29%), /* cap */
+    radial-gradient(ellipse at 75% 45%, rgba(255,255,255,0.97) 0 22%, transparent 23%); /* tip */
+}
+
+/* Level 3 winds */
+.wind {
+  position: absolute;
+  width: 120px;
+  height: 60px;
+  background:
+    radial-gradient(ellipse at 20% 60%, rgba(220,220,220,0.7) 0 60%, transparent 61%),
+    radial-gradient(ellipse at 50% 40%, rgba(220,220,220,0.6) 0 62%, transparent 63%),
+    radial-gradient(ellipse at 80% 55%, rgba(220,220,220,0.5) 0 58%, transparent 59%);
+  filter: blur(1px);
+}
+@keyframes drift {
+  from { transform: translateX(0); }
+  to   { transform: translateX(160vw); }
+}
+
+/* Flower pop animation on collect */
+.flower.pop {
+  animation: popOut 300ms ease forwards;
+}
+@keyframes popOut {
+  0%   { transform: scale(1); opacity: 1; }
+  80%  { transform: scale(1.4); opacity: 0.9; }
+  100% { transform: scale(0.2); opacity: 0; }
+}
+
+/* Screen shake for hits */
+.shake {
+  animation: shake 150ms ease;
+}
+@keyframes shake {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(3px, -2px); }
+  50% { transform: translate(-2px, 2px); }
+  75% { transform: translate(2px, -1px); }
+  100% { transform: translate(0, 0); }
+}

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Butterfly Dodge</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Instructions screen (visible on first load only) -->
+  <div id="instructions">
+    <h2>Welcome to Butterfly Dodge</h2>
+    <p>Your butterfly can fly at one of three speeds from left to right. Increase the speed by pressing the right arrow key, and decrease the speed by pressing the left arrow key.</p>
+    <p>Your butterfly loses altitude if you do nothing. To gain altitude, press the space bar. A quick tap will flick up briefly, or hold it to keep gaining altitude.</p>
+    <p>Press P to pause the game.</p>
+    <p><strong>(NB:</strong> You start with three butterfly lives. Each time you crash into a red net, you lose one life. Out of lives? Game over!)</p>
+    <p><strong>(NB:</strong> Each time you score 10 points, you add one life.)</p>
+    <p><strong>(NB:</strong> Each time you add three new lives, you move up one level in difficulty.)</p>
+    <p><em>Press Enter to begin…</em></p>
+  </div>
+
+  <!-- Game UI (hidden until game starts) -->
+  <div id="game-area" hidden>
+    <div id="hud">
+      <span id="score">Score: 0</span>   <span id="lives">Lives: 3</span>   <span id="level">Level: 1</span>
+    </div>
+    <div id="game-over" hidden>
+      <p>Game Over!</p>
+      <p>Play again? (Y/N)</p>
+    </div>
+    <div id="pause-message" hidden>Game Paused</div>
+    <div id="butterfly"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

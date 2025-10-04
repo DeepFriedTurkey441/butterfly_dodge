@@ -1,13 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-0P4RQJL9WS"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){ dataLayer.push(arguments); }
-  gtag('js', new Date());
-  gtag('config', 'G-0P4RQJL9WS');
-</script>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -91,7 +83,6 @@
       <div class="levelup-wrap">
         <h2>Tap to Start</h2>
         <p>Tap anywhere to begin. Tap and hold to flap.</p>
-        <p>Swipe right to speed up. Swipe left to slow down.</p>
       </div>
     </div>
     <!-- Training mode banner -->
@@ -102,7 +93,6 @@
         <p>Press <strong>Enter</strong> to start the real game.</p>
       </div>
     </div>
-    <!-- Left control rail removed -->
     <div id="hud">
       <span id="score">Points: 0</span>   <span id="lives">Lives: 3</span>   <span id="level">Level: 1</span>   <span>   Mute sound:</span> <button id="mute-sfx" aria-label="Toggle sound effects" title="Toggle sound effects" tabindex="-1">🔊</button>   <span>   Music volume:</span> <input id="music-volume" type="range" min="0" max="100" value="30" />   <span id="skill">Skill: 0.000</span>
     </div>
@@ -112,8 +102,7 @@
         <h2>Nice!</h2>
         <p>Congratulations! Your butterfly just drank some nectar from a flower.</p>
         <p>You get 1 point. 10 points = 1 extra life. 5 lives = jump up a level.</p>
-        <p class="desktop-only">Press Enter to continue…</p>
-        <p class="mobile-only">Tap to continue…</p>
+        <p>Press Enter to continue…</p>
       </div>
     </div>
     <!-- Skill score tutorial overlay (level 4+ only) -->
@@ -122,8 +111,7 @@
         <h2>Skill Score Explained!</h2>
         <p>See the <strong>Skill</strong> score at the top? That's the average number of flowers you're touching per pass from left to right across the screen.</p>
         <p>If this ever reaches <strong>8.000 or higher</strong>, you'll get a powerful surprise! 🦋✨</p>
-        <p class="desktop-only">Press Enter to continue…</p>
-        <p class="mobile-only">Tap to continue…</p>
+        <p>Press Enter to continue…</p>
       </div>
     </div>
     <!-- Super timer badge (shown only during super mode) -->
@@ -134,8 +122,7 @@
         <h2>Level Up!</h2>
         <p>You reached Level <span id="levelup-num">2</span>.</p>
         <p id="levelup-details">Clouds now bump you to a random spot. Watch out!</p>
-        <p class="desktop-only">Press Enter to continue…</p>
-        <p class="mobile-only">Tap to continue…</p>
+        <p>Press Enter to continue…</p>
       </div>
     </div>
     <!-- Super Butterfly announcement overlay -->
@@ -144,8 +131,7 @@
         <h2>Super Butterfly!</h2>
         <p id="supermsg-text">Congrats! You're now a super butterfly for the next 15 seconds.</p>
         <p>While super, touching a flower slides it left to the edge and your pass restarts.</p>
-        <p class="desktop-only">Press Enter to continue…</p>
-        <p class="mobile-only">Tap to continue…</p>
+        <p>Press Enter to continue…</p>
       </div>
     </div>
     <!-- First-net tutorial overlay -->
@@ -154,24 +140,18 @@
         <h2>Oh no!</h2>
         <p>Your butterfly just got caught in a net.</p>
         <p>You lose 1 life. Out of lives = game over. 5 lives = jump up to a new level and start with 3 lives.</p>
-        <p class="desktop-only">Press Enter to continue…</p>
-        <p class="mobile-only">Tap to continue…</p>
+        <p>Press Enter to continue…</p>
       </div>
     </div>
     <div id="game-over" hidden>
       <p>Game Over!</p>
-      <p class="desktop-only">Play again? (Y/N)</p>
-      <p class="mobile-only">Tap to play again</p>
+      <p>Play again? (Y/N)</p>
       <div id="leaderboard" aria-live="polite"></div>
     </div>
-    <div id="pause-message" hidden>Game Paused — Press any key to resume</div>
-    <!-- Mobile pause/play button (shows on touch devices) -->
-    <button id="pause-btn" hidden aria-label="Pause game">⏸️</button>
+    <div id="pause-message" hidden>Game Paused</div>
     <div id="butterfly"></div>
-    <!-- Mobile pause button -->
-    <button id="pause-btn" class="mobile-only" aria-label="Pause game" hidden>⏸️</button>
   </div>
 
-  <script src="script.js?v=desktopPauseFix1"></script>
+  <script src="script.js"></script>
 </body>
 </html>

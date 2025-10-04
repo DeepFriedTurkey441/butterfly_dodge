@@ -1,13 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-0P4RQJL9WS"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){ dataLayer.push(arguments); }
-  gtag('js', new Date());
-  gtag('config', 'G-0P4RQJL9WS');
-</script>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -91,7 +83,6 @@
       <div class="levelup-wrap">
         <h2>Tap to Start</h2>
         <p>Tap anywhere to begin. Tap and hold to flap.</p>
-        <p>Swipe right to speed up. Swipe left to slow down.</p>
       </div>
     </div>
     <!-- Training mode banner -->
@@ -102,7 +93,6 @@
         <p>Press <strong>Enter</strong> to start the real game.</p>
       </div>
     </div>
-    <!-- Left control rail removed -->
     <div id="hud">
       <span id="score">Points: 0</span>   <span id="lives">Lives: 3</span>   <span id="level">Level: 1</span>   <span>   Mute sound:</span> <button id="mute-sfx" aria-label="Toggle sound effects" title="Toggle sound effects" tabindex="-1">🔊</button>   <span>   Music volume:</span> <input id="music-volume" type="range" min="0" max="100" value="30" />   <span id="skill">Skill: 0.000</span>
     </div>
@@ -160,18 +150,19 @@
     </div>
     <div id="game-over" hidden>
       <p>Game Over!</p>
-      <p class="desktop-only">Play again? (Y/N)</p>
-      <p class="mobile-only">Tap to play again</p>
+      <p>Play again? (Y/N)</p>
       <div id="leaderboard" aria-live="polite"></div>
     </div>
-    <div id="pause-message" hidden>Game Paused — Press any key to resume</div>
-    <!-- Mobile pause/play button (shows on touch devices) -->
-    <button id="pause-btn" hidden aria-label="Pause game">⏸️</button>
+    <div id="pause-message" hidden>Game Paused</div>
     <div id="butterfly"></div>
-    <!-- Mobile pause button -->
-    <button id="pause-btn" class="mobile-only" aria-label="Pause game" hidden>⏸️</button>
+    <!-- Mobile speed control bar -->
+    <div id="speed-bar" class="mobile-only-ui" hidden>
+      <button id="speed-dec" aria-label="Slow down" tabindex="-1">−</button>
+      <div id="speed-readout" aria-live="polite">Speed</div>
+      <button id="speed-inc" aria-label="Speed up" tabindex="-1">+</button>
+    </div>
   </div>
 
-  <script src="script.js?v=desktopPauseFix1"></script>
+  <script src="script.js"></script>
 </body>
 </html>

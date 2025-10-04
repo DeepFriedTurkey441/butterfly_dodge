@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Butterfly Dodge</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Parallax sky background -->
+  <div id="sky" aria-hidden="true">
+    <div class="cloud cloud-chicken" style="top:12%; left:-20%; animation-duration: 60s;"></div>
+    <div class="cloud cloud-dino"    style="top:28%; left:-40%; animation-duration: 75s;"></div>
+    <div class="cloud cloud-eggplant"style="top:52%; left:-30%; animation-duration: 65s;"></div>
+    <div class="cloud cloud-puff"    style="top:72%; left:-50%; animation-duration: 80s;"></div>
+  </div>
+  <!-- Instructions screen (visible on first load only) -->
+  <div id="instructions">
+    <h2>Welcome to Butterfly Dodge</h2>
+    <p>Your butterfly can fly at one of three speeds from left to right. Increase the speed by pressing the right arrow key, and decrease the speed by pressing the left arrow key.</p>
+    <p>Your butterfly loses altitude if you do nothing. To gain altitude, press the space bar. A quick tap will flick up briefly, or hold it to keep gaining altitude.</p>
+    <p>Press P to pause the game.</p>
+    <p><strong>(NB:</strong> You start with three lives. Hitting a red net costs one life. At 0 lives: Game Over.)</p>
+    <p><strong>(NB:</strong> Each flower adds +1 to your score. When your score reaches 11, you gain +1 life and your score resets to 0.)</p>
+    <p><strong>(NB:</strong> When Lives reaches 5, your Level increases by 1 and Lives reset to 3.)</p>
+    <p><em>Press Enter to begin…</em></p>
+  </div>
+
+  <!-- Game UI (hidden until game starts) -->
+  <div id="game-area" hidden>
+    <div id="hud">
+      <span id="score">Score: 0</span>   <span id="lives">Lives: 3</span>   <span id="level">Level: 1</span>   <span>   Mute sound:</span> <button id="mute-sfx" aria-label="Toggle sound effects" title="Toggle sound effects">🔊</button>   <span>   Music volume:</span> <input id="music-volume" type="range" min="0" max="100" value="30" />
+    </div>
+    <div id="game-over" hidden>
+      <p>Game Over!</p>
+      <p>Play again? (Y/N)</p>
+    </div>
+    <div id="pause-message" hidden>Game Paused</div>
+    <div id="butterfly"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

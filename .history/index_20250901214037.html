@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Butterfly Dodge</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+</head>
+<body>
+  <!-- Parallax sky background -->
+  <div id="sky" aria-hidden="true">
+    <div class="cloud cloud-chicken" style="top:12%; left:-20%; animation-duration: 60s;"></div>
+    <div class="cloud cloud-dino"    style="top:28%; left:-40%; animation-duration: 75s;"></div>
+    <div class="cloud cloud-eggplant"style="top:52%; left:-30%; animation-duration: 65s;"></div>
+    <div class="cloud cloud-puff"    style="top:72%; left:-50%; animation-duration: 80s;"></div>
+  </div>
+  <!-- Instructions screen (visible on first load only) -->
+  <div id="instructions" role="dialog" aria-modal="true">
+    <h2>Welcome to Butterfly Dodge</h2>
+    <ul class="intro-bullets">
+      <li>Avoid 
+        <span class="ico" aria-hidden="true">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <!-- Hoop -->
+            <circle cx="62" cy="38" r="24" fill="none" stroke="red" stroke-width="8"/>
+            <!-- Mesh inside the hoop (simple grid clipped to circle) -->
+            <defs>
+              <clipPath id="introNetClip"><circle cx="62" cy="38" r="24"/></clipPath>
+            </defs>
+            <g clip-path="url(#introNetClip)" stroke="red" stroke-width="3" opacity="0.9">
+              <path d="M38 22 H86 M38 30 H86 M38 38 H86 M38 46 H86 M38 54 H86"/>
+              <path d="M46 14 V62 M54 14 V62 M62 14 V62 M70 14 V62 M78 14 V62"/>
+            </g>
+            <!-- Handle -->
+            <path d="M24 84 L55 55" stroke="red" stroke-width="10" stroke-linecap="round"/>
+          </svg>
+        </span>
+        or lose one life
+      </li>
+      <li>Drink nectar from 
+        <span class="ico" role="img" aria-label="flower">🌸</span>
+        to get one point per flower
+      </li>
+      <li>10 points adds one life</li>
+      <li>0 lives = game over</li>
+    </ul>
+
+    <p><strong>Training option</strong>: Press <strong>Shift + Enter</strong> to start a Learn‑to‑Fly session (no nets, same gravity) to practice controls.</p>
+
+    <p><strong>Leveling up</strong>: When Lives reaches 5, you go up a level and Lives reset to 3.</p>
+    <p><strong>Tip</strong>: For best results, set browser zoom to 100%.</p>
+
+    <p><strong>Butterfly control — use keyboard</strong></p>
+    <ul class="intro-bullets">
+      <li>Press Left Arrow = slow down</li>
+      <li>Press Right Arrow = speed up</li>
+      <li>Press Spacebar = flap wings to fly up</li>
+      <li>Release Spacebar = butterfly descends</li>
+    </ul>
+
+    <p>Touch as many flowers on each pass of the screen from left to right as possible to increase your <strong>Skill</strong> score (average flowers touched per pass).</p>
+    <p class="mobile-hint"><em>On mobile: rotate to landscape and tap to start</em></p>
+    <p class="mobile-hint"><button id="mobile-start" aria-label="Tap to start the game">Tap to Start</button></p>
+    <p class="desktop-hint"><em>On desktop: Press Enter to begin…</em></p>
+  </div>
+
+  <!-- Game UI (hidden until game starts) -->
+  <div id="game-area" hidden>
+    <!-- Rotate-to-landscape gate for mobile -->
+    <div id="rotate-overlay" hidden>
+      <div class="levelup-wrap">
+        <h2>Rotate Your Phone</h2>
+        <p>Please rotate your phone to landscape to play.</p>
+        <p style="font-size:0.9em; opacity:0.8;">If rotation is locked, unlock it in Control Center/Quick Settings.</p>
+      </div>
+    </div>
+    <!-- Tap-to-start overlay for mobile -->
+    <div id="tap-start" hidden>
+      <div class="levelup-wrap">
+        <h2>Tap to Start</h2>
+        <p>Tap anywhere to begin. Tap and hold to flap.</p>
+      </div>
+    </div>
+    <!-- Training mode banner -->
+    <div id="training-banner" hidden>
+      <div class="levelup-wrap">
+        <h2>Training Mode</h2>
+        <p>You are in a special training mode. Nets are disabled so you can practice flying.</p>
+        <p>Press <strong>Enter</strong> to start the real game.</p>
+      </div>
+    </div>
+    <div id="hud">
+      <span id="score">Points: 0</span>   <span id="lives">Lives: 3</span>   <span id="level">Level: 1</span>   <span>   Mute sound:</span> <button id="mute-sfx" aria-label="Toggle sound effects" title="Toggle sound effects" tabindex="-1">🔊</button>   <span>   Music volume:</span> <input id="music-volume" type="range" min="0" max="100" value="30" />   <span id="skill">Skill: 0.000</span>
+    </div>
+    <!-- First-flower tutorial overlay -->
+    <div id="flowermsg" hidden>
+      <div class="levelup-wrap">
+        <h2>Nice!</h2>
+        <p>Congratulations! Your butterfly just drank some nectar from a flower.</p>
+        <p>You get 1 point. 10 points = 1 extra life. 5 lives = jump up a level.</p>
+        <p class="desktop-only">Press Enter to continue…</p>
+        <p class="mobile-only">Tap to continue…</p>
+      </div>
+    </div>
+    <!-- Skill score tutorial overlay (level 4+ only) -->
+    <div id="skillmsg" hidden>
+      <div class="levelup-wrap">
+        <h2>Skill Score Explained!</h2>
+        <p>See the <strong>Skill</strong> score at the top? That's the average number of flowers you're touching per pass from left to right across the screen.</p>
+        <p>If this ever reaches <strong>8.000 or higher</strong>, you'll get a powerful surprise! 🦋✨</p>
+        <p class="desktop-only">Press Enter to continue…</p>
+        <p class="mobile-only">Tap to continue…</p>
+      </div>
+    </div>
+    <!-- Super timer badge (shown only during super mode) -->
+    <div id="super-timer" hidden>15</div>
+    <!-- Level-up announcement overlay -->
+    <div id="levelup" hidden>
+      <div class="levelup-wrap">
+        <h2>Level Up!</h2>
+        <p>You reached Level <span id="levelup-num">2</span>.</p>
+        <p id="levelup-details">Clouds now bump you to a random spot. Watch out!</p>
+        <p class="desktop-only">Press Enter to continue…</p>
+        <p class="mobile-only">Tap to continue…</p>
+      </div>
+    </div>
+    <!-- Super Butterfly announcement overlay -->
+    <div id="supermsg" hidden>
+      <div class="levelup-wrap">
+        <h2>Super Butterfly!</h2>
+        <p id="supermsg-text">Congrats! You're now a super butterfly for the next 15 seconds.</p>
+        <p>While super, touching a flower slides it left to the edge and your pass restarts.</p>
+        <p class="desktop-only">Press Enter to continue…</p>
+        <p class="mobile-only">Tap to continue…</p>
+      </div>
+    </div>
+    <!-- First-net tutorial overlay -->
+    <div id="netmsg" hidden>
+      <div class="levelup-wrap">
+        <h2>Oh no!</h2>
+        <p>Your butterfly just got caught in a net.</p>
+        <p>You lose 1 life. Out of lives = game over. 5 lives = jump up to a new level and start with 3 lives.</p>
+        <p class="desktop-only">Press Enter to continue…</p>
+        <p class="mobile-only">Tap to continue…</p>
+      </div>
+    </div>
+    <div id="game-over" hidden>
+      <p>Game Over!</p>
+      <p class="desktop-only">Play again? (Y/N)</p>
+      <p class="mobile-only">Tap to play again</p>
+      <div id="leaderboard" aria-live="polite"></div>
+    </div>
+    <div id="pause-message" hidden>Game Paused</div>
+    <div id="butterfly"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

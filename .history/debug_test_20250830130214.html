@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Test</title>
+</head>
+<body>
+    <h1>Debug Test for Enter Key</h1>
+    <p>Press Enter to test if key events are working...</p>
+    <div id="output"></div>
+    
+    <script>
+        console.log('Debug script loaded');
+        
+        // Test if basic key events work
+        document.addEventListener('keydown', (e) => {
+            console.log('Key pressed:', e.key, 'Code:', e.code);
+            document.getElementById('output').innerHTML += `<p>Key: ${e.key}, Code: ${e.code}</p>`;
+            
+            if (e.key === 'Enter') {
+                alert('Enter key detected!');
+            }
+        });
+        
+        // Test if game variables exist
+        setTimeout(() => {
+            console.log('Testing game variables...');
+            console.log('gameStarted exists:', typeof gameStarted !== 'undefined');
+            console.log('instructionsBox exists:', !!document.getElementById('instructions'));
+            console.log('gameArea exists:', !!document.getElementById('game-area'));
+        }, 1000);
+    </script>
+</body>
+</html>

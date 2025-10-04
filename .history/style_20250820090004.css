@@ -1,0 +1,87 @@
+body {
+  margin: 0;
+  overflow: hidden;
+  background-color: skyblue;
+  font-family: monospace;
+  color: black;
+}
+
+#instructions {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: skyblue;
+  color: black;
+  font-family: monospace;
+  font-size: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  box-sizing: border-box;
+  text-align: left;
+  line-height: 1.5;
+}
+
+#game-area {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+#butterfly {
+  position: absolute;
+  font-size: 24px;
+  left: 0;
+  top: 50%;
+}
+
+.flower {
+  position: absolute;
+  font-size: 30px;
+  pointer-events: none;
+}
+
+.net {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  font-size: 32px;
+  color: red;
+  content: 'X';
+}
+
+/* HUD container to keep all labels on one line with fixed spaces */
+#hud {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  font-size: 20px;
+  white-space: pre; /* preserve spaces between spans */
+}
+
+#game-over {
+  position: absolute;
+  top: 40%;
+  width: 100%;
+  text-align: center;
+  font-size: 24px;
+}
+
+#pause-message {
+  position: absolute;
+  top: 45%;
+  width: 100%;
+  text-align: center;
+  font-size: 24px;
+  color: black;
+}
+
+/* ✅ New rule to force-hide instructions when hidden */
+#instructions[hidden] {
+  display: none !important;
+}

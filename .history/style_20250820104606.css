@@ -1,0 +1,163 @@
+body {
+  margin: 0;
+  overflow: hidden;
+  background-color: skyblue;
+  font-family: 'Baloo 2', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  color: black;
+}
+
+#instructions {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: skyblue;
+  color: black;
+  font-family: monospace;
+  font-size: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  box-sizing: border-box;
+  text-align: left;
+  line-height: 1.5;
+}
+
+#game-area {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+#butterfly {
+  position: absolute;
+  font-size: 24px;
+  left: 0;
+  top: 50%;
+  transform-origin: 50% 50%;
+  transition: transform 120ms ease;
+}
+
+.flower {
+  position: absolute;
+  font-size: 30px;
+  pointer-events: none;
+}
+
+.net {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  font-size: 32px;
+  color: red;
+  content: 'X';
+}
+
+/* HUD container to keep all labels on one line with fixed spaces */
+#hud {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  font-size: 22px;
+  white-space: pre; /* preserve spaces between spans */
+  text-shadow: 0 1px 0 rgba(255,255,255,0.5), 0 2px 4px rgba(0,0,0,0.25);
+}
+
+#mute-btn {
+  margin-left: 16px;
+  font-size: 18px;
+  padding: 2px 8px;
+  border: none;
+  background: rgba(255,255,255,0.5);
+  border-radius: 6px;
+  cursor: pointer;
+}
+ #mute-btn:focus { outline: 2px solid rgba(0,0,0,0.3); }
+
+#mute-sfx, #mute-music {
+  margin-left: 8px;
+  font-size: 18px;
+  padding: 2px 8px;
+  border: none;
+  background: rgba(255,255,255,0.5);
+  border-radius: 6px;
+  cursor: pointer;
+}
+#mute-sfx:focus, #mute-music:focus { outline: 2px solid rgba(0,0,0,0.3); }
+
+#music-volume {
+  vertical-align: middle;
+  width: 120px;
+  margin-left: 8px;
+}
+
+#game-over {
+  position: absolute;
+  top: 40%;
+  width: 100%;
+  text-align: center;
+  font-size: 24px;
+}
+
+#pause-message {
+  position: absolute;
+  top: 45%;
+  width: 100%;
+  text-align: center;
+  font-size: 24px;
+  color: black;
+}
+
+/* ✅ New rule to force-hide instructions when hidden */
+#instructions[hidden] {
+  display: none !important;
+}
+
+/* Parallax sky */
+#sky {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: -1;
+  background: linear-gradient(#90d7f5, #8cd0f0);
+}
+.cloud {
+  position: absolute;
+  width: 220px;
+  height: 80px;
+  background: radial-gradient(ellipse at 25% 50%, rgba(255,255,255,0.95), rgba(255,255,255,0.7) 60%, rgba(255,255,255,0) 61%),
+              radial-gradient(ellipse at 55% 50%, rgba(255,255,255,0.95), rgba(255,255,255,0.7) 60%, rgba(255,255,255,0) 61%),
+              radial-gradient(ellipse at 80% 50%, rgba(255,255,255,0.95), rgba(255,255,255,0.7) 60%, rgba(255,255,255,0) 61%);
+  filter: blur(0.5px);
+  animation: drift linear infinite;
+}
+@keyframes drift {
+  from { transform: translateX(0); }
+  to   { transform: translateX(160vw); }
+}
+
+/* Flower pop animation on collect */
+.flower.pop {
+  animation: popOut 300ms ease forwards;
+}
+@keyframes popOut {
+  0%   { transform: scale(1); opacity: 1; }
+  80%  { transform: scale(1.4); opacity: 0.9; }
+  100% { transform: scale(0.2); opacity: 0; }
+}
+
+/* Screen shake for hits */
+.shake {
+  animation: shake 150ms ease;
+}
+@keyframes shake {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(3px, -2px); }
+  50% { transform: translate(-2px, 2px); }
+  75% { transform: translate(2px, -1px); }
+  100% { transform: translate(0, 0); }
+}

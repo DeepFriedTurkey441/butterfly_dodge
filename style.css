@@ -1,12 +1,10 @@
+:root { --u: min(1vw, 1vh); }
+
 body {
   margin: 0;
   overflow: hidden;
-<<<<<<< HEAD
   background-color: skyblue;
-=======
-  background-color: rgb(13, 116, 157);
->>>>>>> 9f1daf9 (Initial commit from bd_game_project)
-  font-family: monospace;
+  font-family: 'Baloo 2', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
   color: black;
 }
 
@@ -19,7 +17,7 @@ body {
   background-color: skyblue;
   color: black;
   font-family: monospace;
-  font-size: 18px;
+  font-size: clamp(16px, calc(var(--u) * 2.5), 28px);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -28,7 +26,34 @@ body {
   box-sizing: border-box;
   text-align: left;
   line-height: 1.5;
+  overflow: auto; /* allow scroll at extreme zoom */
 }
+
+.mobile-hint { display: none; }
+.desktop-hint { display: block; }
+.mobile-only { display: none; }
+.desktop-only { display: inline; }
+@media (pointer: coarse), (hover: none) {
+  .mobile-hint { display: block; }
+  .desktop-hint { display: none; }
+  .mobile-only { display: inline; }
+  .desktop-only { display: none; }
+}
+
+/* Remove old continue-hint logic */
+
+#mobile-start {
+  font-size: 1em;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 10px;
+  background: #0b74ff;
+  color: #fff;
+}
+
+.intro-bullets { margin: 8px 0 10px 22px; }
+.ico { display:inline-block; width:1.4em; height:1.4em; vertical-align:-0.25em; }
+.ico svg { width:100%; height:100%; display:block; }
 
 #game-area {
   position: relative;
@@ -36,52 +61,339 @@ body {
   height: 100vh;
 }
 
+/* Left-side control rail: out-of-play area */
+#control-rail {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: clamp(10px, calc(var(--u) * 4), 40px);
+  background: #fff;
+  z-index: 11000;
+  pointer-events: none; /* visuals only */
+  display: none !important; /* fully disabled across all devices */
+}
+
 #butterfly {
   position: absolute;
-<<<<<<< HEAD
-  font-size: 24px;
-=======
-  font-size: 18px;
->>>>>>> 9f1daf9 (Initial commit from bd_game_project)
   left: 0;
   top: 50%;
+  transform-origin: 50% 50%;
+  transition: transform 120ms ease;
+  width: calc(var(--u) * 6);
+  height: calc(var(--u) * 6);
+  z-index: 1000;
 }
+
+.butterfly-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.4));
+}
+
+/* Enhanced colors to match the photo */
+.butterfly-svg .upper-wings path,
+.butterfly-svg .lower-wings path {
+  filter: brightness(1.1) saturate(1.2);
+}
+
+/* Blue patches with iridescent effect */
+.butterfly-svg .lower-wings circle[fill="#4169E1"] {
+  filter: brightness(1.3) saturate(1.5);
+  animation: iridescent 3s ease-in-out infinite alternate;
+}
+
+/* Orange eyespots with glow */
+.butterfly-svg .lower-wings circle[fill="#FF8C00"] {
+  filter: brightness(1.2) saturate(1.4);
+  animation: eyespotGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes iridescent {
+  0% { opacity: 0.8; }
+  100% { opacity: 1.0; }
+}
+
+@keyframes eyespotGlow {
+  0% { opacity: 0.9; }
+  100% { opacity: 1.0; }
+}
+
+/* Wing animation for flapping */
+.upper-wings {
+  transform-origin: 50% 50%;
+  transition: transform 0.1s ease;
+}
+
+.lower-wings {
+  transform-origin: 50% 50%;
+  transition: transform 0.1s ease;
+}
+
+/* Active flapping animation when butterfly is flapping */
+#butterfly.flapping .upper-wings {
+  animation: wingFlap 0.15s ease-in-out infinite alternate;
+  transform-origin: 60% 40%;
+}
+
+#butterfly.flapping .lower-wings {
+  animation: wingFlap 0.15s ease-in-out infinite alternate-reverse;
+  transform-origin: 60% 60%;
+}
+
+/* Single flap animation for quick taps */
+#butterfly.single-flap .upper-wings {
+  animation: singleWingFlap 0.3s ease-out;
+  transform-origin: 60% 40%;
+}
+
+#butterfly.single-flap .lower-wings {
+  animation: singleWingFlap 0.3s ease-out reverse;
+  transform-origin: 60% 60%;
+}
+
+@keyframes wingFlap {
+  0% { transform: rotateX(0deg) rotateY(0deg); }
+  100% { transform: rotateX(20deg) rotateY(5deg); }
+}
+
+@keyframes singleWingFlap {
+  0% { transform: rotateX(0deg) rotateY(0deg); }
+  30% { transform: rotateX(25deg) rotateY(8deg); }
+  70% { transform: rotateX(15deg) rotateY(3deg); }
+  100% { transform: rotateX(0deg) rotateY(0deg); }
+}
+
+/* Enhanced wing patterns with subtle animation */
+.wing-patterns circle {
+  animation: patternGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes patternGlow {
+  0% { opacity: 0.6; }
+  100% { opacity: 0.9; }
+}
+
+/* Swallowtail extensions animation */
+.swallowtails {
+  animation: tailSway 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes tailSway {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(2deg); }
+}
+
+/* removed mobile speed bar */
+
+/* Super timer badge next to butterfly */
+#super-timer {
+  position: absolute;
+  font-size: calc(var(--u) * 3);
+  color: #000;
+  background: transparent;
+  z-index: 9000;
+}
+#super-timer[hidden] { display: none !important; }
 
 .flower {
   position: absolute;
-  font-size: 30px;
+  font-size: calc(var(--u) * 4.2);
   pointer-events: none;
 }
 
 .net {
   position: absolute;
-  width: 80px;
-  height: 80px;
+  width: calc(var(--u) * 5.5);
+  height: calc(var(--u) * 5.5);
   font-size: 32px;
-<<<<<<< HEAD
   color: red;
-=======
-  color: rgb(174, 255, 0);
->>>>>>> 9f1daf9 (Initial commit from bd_game_project)
   content: 'X';
+  transform-origin: center center;
 }
 
-#score, #lives, #level {
+/* HUD container - responsive row with wrapping */
+#hud {
   position: absolute;
-  top: 10px;
-  font-size: 20px;
+  top: 6px;
+  left: 10px;
+  right: 10px;
+  font-size: clamp(12px, calc(var(--u) * 3), 24px);
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 12px;
+  row-gap: 4px;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.5), 0 2px 4px rgba(0,0,0,0.25);
 }
 
-#score { left: 10px; }
-#lives { left: 140px; }
-#level { left: 260px; }
+/* Place Skill at the end of the row; it will wrap if space is tight */
+#skill {
+  margin-left: auto;
+  padding-left: 12px;
+}
+
+#mute-btn {
+  margin-left: 16px;
+  font-size: 18px;
+  padding: 2px 8px;
+  border: none;
+  background: rgba(255,255,255,0.5);
+  border-radius: 6px;
+  cursor: pointer;
+}
+ #mute-btn:focus { outline: 2px solid rgba(0,0,0,0.3); }
+
+#mute-sfx, #mute-music {
+  margin-left: 8px;
+  font-size: 18px;
+  padding: 2px 8px;
+  border: none;
+  background: rgba(255,255,255,0.5);
+  border-radius: 6px;
+  cursor: pointer;
+}
+#mute-sfx:focus, #mute-music:focus { outline: 2px solid rgba(0,0,0,0.3); }
+
+#music-volume {
+  vertical-align: middle;
+  width: 120px;
+  margin-left: 8px;
+}
 
 #game-over {
-  position: absolute;
-  top: 40%;
-  width: 100%;
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #ffffff; /* fully opaque backdrop */
+  z-index: 10000; /* above all game elements */
   text-align: center;
-  font-size: 24px;
+  font-size: calc(var(--u) * 3.3);
+  padding: 20px;
+  box-sizing: border-box;
+}
+#game-over[hidden] { display: none !important; }
+
+/* Enhanced Game Over UI */
+.game-over-content {
+  max-width: 600px;
+  width: 100%;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  border: 2px solid #dee2e6;
+}
+
+.congratulations-section {
+  margin-bottom: 25px;
+}
+
+.congratulations-section h2 {
+  color: #2c3e50;
+  font-size: 2.2em;
+  margin: 0 0 15px 0;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.level-reached {
+  font-size: 1.3em;
+  color: #27ae60;
+  margin: 10px 0;
+  font-weight: 600;
+}
+
+.restart-prompt {
+  font-size: 1.1em;
+  color: #34495e;
+  margin: 15px 0;
+}
+
+.level-selection {
+  margin: 25px 0;
+}
+
+.two-options {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.option-btn {
+  background: white;
+  border: 3px solid #bdc3c7;
+  border-radius: 16px;
+  padding: 25px 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  min-width: 200px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.option-btn:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.level-1-btn {
+  border-color: #27ae60;
+}
+
+.level-1-btn:hover {
+  border-color: #229954;
+  background: linear-gradient(135deg, #f8fff8 0%, #e8f5e8 100%);
+}
+
+.level-last-btn {
+  border-color: #3498db;
+}
+
+.level-last-btn:hover {
+  border-color: #2980b9;
+  background: linear-gradient(135deg, #f8fbff 0%, #e8f4fd 100%);
+}
+
+.option-icon {
+  font-size: 2.5em;
+  margin-bottom: 5px;
+}
+
+.option-title {
+  font-size: 1.3em;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 5px;
+}
+
+.option-desc {
+  font-size: 1em;
+  color: #7f8c8d;
+  font-weight: 500;
+}
+
+.leaderboard-section {
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid #bdc3c7;
+}
+
+/* Hide dynamic game elements whenever a blocking modal is open */
+.modal-open .net,
+.modal-open .flower,
+.modal-open #butterfly,
+.modal-open #hud,
+.modal-open #super-timer {
+  display: none !important;
+}
+#leaderboard {
+  margin-top: 12px;
+  font-size: calc(var(--u) * 2.4);
 }
 
 #pause-message {
@@ -89,11 +401,229 @@ body {
   top: 45%;
   width: 100%;
   text-align: center;
-  font-size: 24px;
+  font-size: calc(var(--u) * 3.3);
   color: black;
+}
+
+/* Mobile pause button */
+#pause-btn {
+  position: fixed;
+  top: clamp(64px, calc(var(--u) * 9), 100px);
+  left: 2px; /* move further into control rail */
+  z-index: 12000;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(0,0,0,0.35);
+  color: #fff;
+  font-size: 20px;
+  display: none;
+}
+#pause-btn[hidden] { display: none !important; }
+@media (pointer: coarse), (hover: none) {
+  #pause-btn { display: inline-flex; align-items: center; justify-content: center; }
 }
 
 /* ✅ New rule to force-hide instructions when hidden */
 #instructions[hidden] {
   display: none !important;
+}
+
+/* Level-up overlay */
+#levelup {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0,0,0,0.35);
+  z-index: 10000; /* always above clouds, nets, flowers */
+}
+#levelup[hidden] { display: none !important; }
+.levelup-wrap {
+  background: rgba(255,255,255,0.9);
+  color: #0c2340;
+  padding: 24px 28px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  text-align: center;
+}
+
+/* Super message shares same overlay style */
+#supermsg { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,0.35); z-index: 10000; }
+#supermsg[hidden] { display: none !important; }
+/* Flower and net overlays share style */
+#flowermsg { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,0.35); z-index: 10000; }
+#flowermsg[hidden] { display: none !important; }
+#netmsg { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,0.35); z-index: 10000; }
+#netmsg[hidden] { display: none !important; }
+/* Skill tutorial - more compact */
+#skillmsg { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,0.35); z-index: 10000; }
+#skillmsg[hidden] { display: none !important; }
+#skillmsg .levelup-wrap { 
+  padding: 16px 20px; 
+  max-width: 400px; 
+  font-size: 0.9em; 
+}
+
+/* Training banner overlay */
+#training-banner { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,0.35); z-index: 10000; }
+#training-banner[hidden] { display: none !important; }
+
+/* Mobile overlays */
+#rotate-overlay, #tap-start { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,0.35); z-index: 10000; }
+#rotate-overlay[hidden], #tap-start[hidden] { display: none !important; }
+
+/* Gesture locks during gameplay */
+.touch-lock {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  overscroll-behavior: none;
+}
+
+/* Parallax sky */
+#sky {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: -1;
+  background: linear-gradient(#90d7f5, #8cd0f0);
+}
+.cloud {
+  position: absolute;
+  width: calc(var(--u) * 16);
+  height: calc(var(--u) * 8);
+  filter: blur(0.4px);
+  animation: drift linear infinite;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  border-radius: 50% / 40%;
+  /* Soft oval mask to remove any straight edges from the bounding box */
+  -webkit-mask-image: radial-gradient(ellipse at 50% 50%, #000 68%, transparent 70%);
+          mask-image: radial-gradient(ellipse at 50% 50%, #000 68%, transparent 70%);
+  pointer-events: none;
+}
+/* Pause cloud animation when game is paused */
+.paused .cloud { animation-play-state: paused !important; }
+
+/* Fun cloud silhouettes using CSS gradients (no images) */
+.cloud-puff {
+  background:
+    radial-gradient(ellipse at 20% 60%, rgba(255,255,255,0.95) 0 60%, rgba(255,255,255,0) 61%),
+    radial-gradient(ellipse at 45% 40%, rgba(255,255,255,0.95) 0 62%, rgba(255,255,255,0) 63%),
+    radial-gradient(ellipse at 70% 55%, rgba(255,255,255,0.95) 0 58%, rgba(255,255,255,0) 59%),
+    radial-gradient(ellipse at 85% 50%, rgba(255,255,255,0.9) 0 48%, rgba(255,255,255,0) 49%);
+}
+.cloud-chicken {
+  background:
+    radial-gradient(ellipse at 25% 60%, rgba(255,255,255,0.97) 0 56%, transparent 57%), /* body */
+    radial-gradient(ellipse at 45% 40%, rgba(255,255,255,0.97) 0 48%, transparent 49%), /* head */
+    radial-gradient(ellipse at 65% 35%, rgba(255,255,255,0.97) 0 33%, transparent 34%), /* comb */
+    radial-gradient(ellipse at 18% 75%, rgba(255,255,255,0.97) 0 35%, transparent 36%); /* tail */
+}
+.cloud-dino {
+  background:
+    radial-gradient(ellipse at 30% 55%, rgba(255,255,255,0.97) 0 60%, transparent 61%), /* body */
+    radial-gradient(ellipse at 55% 35%, rgba(255,255,255,0.97) 0 36%, transparent 37%), /* head */
+    radial-gradient(ellipse at 60% 20%, rgba(255,255,255,0.97) 0 20%, transparent 21%), /* crest */
+    radial-gradient(ellipse at 15% 70%, rgba(255,255,255,0.97) 0 26%, transparent 27%); /* tail */
+}
+.cloud-eggplant {
+  background:
+    radial-gradient(ellipse at 35% 60%, rgba(255,255,255,0.97) 0 60%, transparent 61%), /* body */
+    radial-gradient(ellipse at 60% 35%, rgba(255,255,255,0.97) 0 28%, transparent 29%), /* cap */
+    radial-gradient(ellipse at 75% 45%, rgba(255,255,255,0.97) 0 22%, transparent 23%); /* tip */
+}
+
+/* Level 3 winds */
+.wind {
+  position: absolute;
+  width: calc(var(--u) * 16);
+  height: calc(var(--u) * 8);
+  filter: blur(0.2px);
+  z-index: 0;
+}
+@keyframes drift {
+  from { transform: translateX(0); }
+  to   { transform: translateX(160vw); }
+}
+
+/* Flower pop animation on collect */
+.flower.pop {
+  animation: popOut 300ms ease forwards;
+}
+@keyframes popOut {
+  0%   { transform: scale(1); opacity: 1; }
+  80%  { transform: scale(1.4); opacity: 0.9; }
+  100% { transform: scale(0.2); opacity: 0; }
+}
+
+/* Screen shake for hits */
+.shake {
+  animation: shake 150ms ease;
+}
+@keyframes shake {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(3px, -2px); }
+  50% { transform: translate(-2px, 2px); }
+  75% { transform: translate(2px, -1px); }
+  100% { transform: translate(0, 0); }
+}
+
+/* Developer Mode Styles */
+.dev-tab {
+  background: none;
+  border: none;
+  color: #0f0;
+  padding: 6px 12px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+.dev-tab:hover {
+  background: rgba(0, 255, 0, 0.1);
+}
+
+.dev-tab.active {
+  border-bottom-color: #0f0;
+  color: #fff;
+}
+
+.dev-tab-content {
+  line-height: 1.4;
+}
+
+.dev-tab-content label {
+  cursor: pointer;
+  user-select: none;
+}
+
+.dev-tab-content input[type="checkbox"] {
+  margin-right: 6px;
+}
+
+.dev-tab-content input[type="number"] {
+  background: rgba(0, 255, 0, 0.1);
+  border: 1px solid #0f0;
+  color: #0f0;
+  padding: 2px 4px;
+  font-family: monospace;
+}
+
+.dev-tab-content button {
+  background: rgba(0, 255, 0, 0.2);
+  border: 1px solid #0f0;
+  color: #0f0;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-family: monospace;
+  font-size: 11px;
+}
+
+.dev-tab-content button:hover {
+  background: rgba(0, 255, 0, 0.3);
 }
